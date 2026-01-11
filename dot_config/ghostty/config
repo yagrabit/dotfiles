@@ -1,2 +1,38 @@
-command = /opt/homebrew/bin/fish
+# テーマ
+theme = TokyoNight
+
+# フォント設定
+font-family = PlemolJP Console NF
+font-thicken = true
+adjust-cell-height = 2
+
+# 背景設定
+background-opacity = 0.85
+background-blur = true
+
+# ウィンドウ設定
+maximize = true
+macos-titlebar-style = tabs
+window-inherit-working-directory = true
+window-new-tab-position = current
+
+# シェル統合
 shell-integration = fish
+command = /opt/homebrew/bin/fish
+
+# キーバインド - 画面分割移動
+keybind = ctrl+h=goto_split:left
+keybind = ctrl+l=goto_split:right
+keybind = ctrl+j=goto_split:bottom
+keybind = ctrl+k=goto_split:top
+
+# クイックターミナル
+quick-terminal-position = right
+quick-terminal-screen = main
+quick-terminal-animation-duration = 0.3
+keybind = cmd+shift+t=toggle_quick_terminal
+
+# クリップボード
+clipboard-write = allow
+clipboard-trim-trailing-spaces = true
+
