@@ -42,3 +42,9 @@ if status is-interactive
         echo "インストールするには: brew install tmux"
     end
 end
+
+# Starship プロンプト
+if type -q starship
+    starship init fish | source
+end
+
