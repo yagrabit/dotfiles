@@ -20,12 +20,6 @@ window-new-tab-position = current
 shell-integration = fish
 command = /opt/homebrew/bin/fish
 
-# キーバインド - 画面分割移動
-keybind = ctrl+h=goto_split:left
-keybind = ctrl+l=goto_split:right
-keybind = ctrl+j=goto_split:bottom
-keybind = ctrl+k=goto_split:top
-
 # クイックターミナル
 quick-terminal-position = right
 quick-terminal-screen = main
