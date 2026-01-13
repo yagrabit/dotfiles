@@ -28,23 +28,23 @@ end
 set -x FZF_DEFAULT_COMMAND 'fd --type f --hidden --follow --exclude .git'
 set -x FZF_DEFAULT_OPTS '--height 40% --layout=reverse --border'
 
-# tmux自動起動設定
-if status is-interactive
-    # tmuxがインストールされているか確認
-    if command -v tmux > /dev/null
-        # tmux内にいない場合のみ起動
-        if not set -q TMUX
-            # 既存のセッションにアタッチ、なければ新規作成
-            tmux attach-session -t default || tmux new-session -s default
-        end
-    else
-        echo "⚠️  tmuxがインストールされていません"
-        echo "インストールするには: brew install tmux"
-    end
-end
-
 # Starship プロンプト
 if type -q starship
     starship init fish | source
+end
+
+# tmux自動起動設定（クイックターミナル以外）
+if status is-interactive
+    # クイックターミナルでない場合のみtmuxを起動
+    if not set -q GHOSTTY_QUICK_TERMINAL
+        if command -v tmux > /dev/null
+            if not set -q TMUX
+                tmux attach-session -t default || tmux new-session -s default
+            end
+        else
+            echo "⚠️  tmuxがインストールされていません"
+            echo "インストールするには: brew install tmux"
+        end
+    end
 end
 
