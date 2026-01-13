@@ -33,18 +33,19 @@ if type -q starship
     starship init fish | source
 end
 
-# tmux自動起動設定（クイックターミナル以外）
+# tmux自動起動設定
 if status is-interactive
-    # クイックターミナルでない場合のみtmuxを起動
-    if not set -q GHOSTTY_QUICK_TERMINAL
-        if command -v tmux > /dev/null
-            if not set -q TMUX
-                tmux attach-session -t default || tmux new-session -s default
-            end
-        else
-            echo "⚠️  tmuxがインストールされていません"
-            echo "インストールするには: brew install tmux"
+    if command -v tmux > /dev/null
+        if not set -q TMUX
+            # PPIDからセッション名を生成（ターミナルごとに別セッション）
+            set session_name "ghostty-$fish_pid"
+            
+            # セッションが存在すればアタッチ、なければ新規作成
+            tmux attach-session -t $session_name 2>/dev/null || tmux new-session -s $session_name
         end
+    else
+        echo "⚠️  tmuxがインストールされていません"
+        echo "インストールするには: brew install tmux"
     end
 end
 

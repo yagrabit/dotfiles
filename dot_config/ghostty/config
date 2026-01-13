@@ -26,9 +26,6 @@ quick-terminal-screen = main
 quick-terminal-animation-duration = 0.3
 keybind = cmd+shift+t=toggle_quick_terminal
 
-# クイックターミナルで環境変数を設定
-quick-terminal-command = env GHOSTTY_QUICK_TERMINAL=1 fish
-
 # クリップボード
 clipboard-write = allow
 clipboard-trim-trailing-spaces = true
