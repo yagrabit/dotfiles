@@ -4,7 +4,7 @@ local opt = vim.opt
 
 -- 行番号
 opt.number = true           -- 行番号を表示
-opt.relativenumber = true   -- 相対行番号を表示
+opt.relativenumber = false  -- 相対行番号を表示
 
 -- インデント
 opt.tabstop = 2             -- タブの幅
