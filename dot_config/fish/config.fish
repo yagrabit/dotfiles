@@ -49,3 +49,13 @@ if status is-interactive
     end
 end
 
+# Ctrl+gでghqリポジトリに移動
+function ghq_cd
+    set selected_repo (ghq list -p | fzf)
+    if test -n "$selected_repo"
+        cd $selected_repo
+        commandline -f repaint
+    end
+end
+
+bind \cg ghq_cd
