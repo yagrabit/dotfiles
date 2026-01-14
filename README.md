@@ -1,9 +1,10 @@
 # dotfiles
 
-macOS向けの個人用dotfilesリポジトリ。Fish、tmux、NeoVim、Ghosttyを中心としたモダンなターミナル環境を構築する。
+macOS向けの個人用dotfilesリポジトリ。Fish、tmux、NeoVim、Ghosttyを中心としたモダンなターミナル環境を構築する。dotfilesの管理にはchezmoiを使用。
 
 ## 概要
 
+- dotfiles管理: chezmoi
 - シェル: Fish
 - ターミナル: Ghostty
 - マルチプレクサ: tmux
@@ -16,6 +17,10 @@ macOS向けの個人用dotfilesリポジトリ。Fish、tmux、NeoVim、Ghostty�
 ### パッケージマネージャ
 
 - Homebrew
+
+### dotfiles管理
+
+- chezmoi
 
 ### コアツール
 
@@ -55,7 +60,7 @@ dotfiles/
 │           └── plugins/       # プラグイン設定
 ```
 
-ファイル名の`dot_`プレフィックスは、デプロイ時に`.`に変換される（例: `dot_tmux.conf` → `~/.tmux.conf`）。
+ファイル名の`dot_`プレフィックスはchezmoiの命名規則で、適用時に`.`に変換される（例: `dot_tmux.conf` → `~/.tmux.conf`）。
 
 ## tmux
 
@@ -189,9 +194,10 @@ Ghosttyのクイックターミナル機能を使用して、ホットキーで�
 
 ## セットアップ
 
-1. 必要なツールをHomebrewでインストール
+1. chezmoiと必要なツールをHomebrewでインストール
 
 ```sh
+brew install chezmoi
 brew install fish tmux neovim ghostty
 brew install eza bat fd ripgrep zoxide fzf ghq starship
 ```
@@ -209,14 +215,13 @@ chsh -s /opt/homebrew/bin/fish
 curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher
 ```
 
-4. dotfilesを配置
+4. chezmoiでdotfilesを適用
 
 ```sh
-# 例: シンボリックリンクを作成
-ln -s ~/path/to/dotfiles/dot_tmux.conf ~/.tmux.conf
-ln -s ~/path/to/dotfiles/dot_config/fish ~/.config/fish
-ln -s ~/path/to/dotfiles/dot_config/nvim ~/.config/nvim
-ln -s ~/path/to/dotfiles/dot_config/ghostty ~/.config/ghostty
+# 新しいマシンでの初期設定
+chezmoi init https://github.com/yagrabit/dotfiles.git
+chezmoi diff  # 変更内容を確認
+chezmoi apply # dotfilesを適用
 ```
 
 5. Fisherプラグインをインストール
@@ -224,6 +229,16 @@ ln -s ~/path/to/dotfiles/dot_config/ghostty ~/.config/ghostty
 ```sh
 fisher update
 ```
+
+### chezmoiの基本コマンド
+
+| コマンド | 説明 |
+|----------|------|
+| `chezmoi diff` | 適用される変更の差分を表示 |
+| `chezmoi apply` | dotfilesをホームディレクトリに適用 |
+| `chezmoi edit ~/.config/fish/config.fish` | ファイルを編集（ソースを更新） |
+| `chezmoi cd` | chezmoiのソースディレクトリへ移動 |
+| `chezmoi update` | リモートから最新を取得して適用 |
 
 ## ライセンス
 
