@@ -24,8 +24,8 @@ command = /opt/homebrew/bin/fish
 quick-terminal-position = right
 quick-terminal-screen = main
 quick-terminal-animation-duration = 0.3
-# クイックターミナル（環境変数付きで起動）
-keybind = super+shift+t=new_window:GHOSTTY_QUICK_TERMINAL=1
+# クイックターミナル
+keybind = super+shift+t=new_window
 
 # クリップボード
 clipboard-write = allow
