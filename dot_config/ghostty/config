@@ -20,13 +20,6 @@ window-new-tab-position = current
 shell-integration = fish
 command = /opt/homebrew/bin/fish
 
-# クイックターミナル
-quick-terminal-position = right
-quick-terminal-screen = main
-quick-terminal-animation-duration = 0.3
-# クイックターミナル
-keybind = super+shift+t=new_window
-
 # クリップボード
 clipboard-write = allow
 clipboard-trim-trailing-spaces = true
