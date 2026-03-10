@@ -1,0 +1,19 @@
+# Ghosttyターミナル設定
+
+# テーマ
+theme = tokyonight
+
+# フォント
+font-family = PlemolJP Console NF
+font-size = 14
+
+# 背景透過
+background-opacity = 0.85
+background-blur = true
+
+# ウィンドウ
+maximize = true
+macos-titlebar-style = tabs
+
+# シェル統合
+shell-integration = fish
