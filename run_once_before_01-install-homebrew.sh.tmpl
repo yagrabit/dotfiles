@@ -1,0 +1,25 @@
+#!/bin/bash
+# Homebrewのインストールスクリプト
+# 未インストールの場合のみインストールを実行する
+
+set -eufo pipefail
+
+{{ if eq .chezmoi.os "darwin" -}}
+BREW_BIN="/opt/homebrew/bin/brew"
+{{ else -}}
+BREW_BIN="/home/linuxbrew/.linuxbrew/bin/brew"
+{{ end -}}
+
+# 既にインストール済みならスキップ
+if command -v brew &>/dev/null || [ -x "$BREW_BIN" ]; then
+  echo "Homebrew は既にインストールされています。スキップします。"
+  exit 0
+fi
+
+echo "Homebrew をインストールします..."
+NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# インストール後にPATHを通す
+eval "$("$BREW_BIN" shellenv)"
+
+echo "Homebrew のインストールが完了しました。"

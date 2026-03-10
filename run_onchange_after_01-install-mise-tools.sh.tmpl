@@ -1,0 +1,15 @@
+#!/bin/bash
+# miseツールの一括インストールスクリプト
+# config.tomlの内容が変更されると自動的に再実行される
+
+# config.toml hash: {{ include "dot_config/mise/config.toml" | sha256sum }}
+
+set -eufo pipefail
+
+# miseへのPATHを設定
+export PATH="$HOME/.local/bin:$PATH"
+
+echo "mise でツールをインストールします..."
+mise install --yes
+
+echo "mise ツールのインストールが完了しました。"

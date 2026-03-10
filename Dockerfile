@@ -20,34 +20,21 @@ ENV LC_ALL=ja_JP.UTF-8
 RUN useradd -m -s /bin/bash test \
     && echo "test ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# Homebrew（Linuxbrew）インストール
+# Homebrew（Linuxbrew）インストール（キャッシュ効率のためDockerfileで実行）
 USER test
 ENV HOMEBREW_NO_AUTO_UPDATE=1
 RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ENV PATH="/home/linuxbrew/.linuxbrew/bin:${PATH}"
 
-# Brewfileでfish, tmuxインストール
-COPY --chown=test:test Brewfile /home/test/Brewfile
-RUN brew bundle --file=/home/test/Brewfile && brew cleanup --prune=all
-RUN rm /home/test/Brewfile
-
-# fishをデフォルトシェルに変更
-USER root
-RUN chsh -s /home/linuxbrew/.linuxbrew/bin/fish test
-USER test
-
-# mise インストール + ツールインストール
-COPY --chown=test:test .mise.toml /home/test/.mise.toml
-RUN curl https://mise.run | sh
+# chezmoiインストール（curl経由）
+RUN sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /home/test/.local/bin
 ENV PATH="/home/test/.local/bin:${PATH}"
-RUN mise trust ~/.mise.toml && mise install
 
-# dotfiles COPY + chezmoi apply
+# dotfiles COPY → chezmoi init --apply で残り全部自動
 WORKDIR /home/test
 COPY --chown=test:test . /home/test/dotfiles/
 SHELL ["/bin/bash", "-c"]
-RUN mkdir -p ~/.local/share && ln -s ~/dotfiles ~/.local/share/chezmoi \
-    && mise exec -- chezmoi init --apply
+RUN chezmoi init --apply --source /home/test/dotfiles
 
 # エントリポイント
 ENTRYPOINT ["fish", "-l"]

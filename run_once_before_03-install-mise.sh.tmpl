@@ -1,0 +1,16 @@
+#!/bin/bash
+# miseのインストールスクリプト
+# 未インストールの場合のみインストールを実行する
+
+set -eufo pipefail
+
+# 既にインストール済みならスキップ
+if command -v mise &>/dev/null; then
+  echo "mise は既にインストールされています。スキップします。"
+  exit 0
+fi
+
+echo "mise をインストールします..."
+curl -fsSL https://mise.run | sh
+
+echo "mise のインストールが完了しました。"
