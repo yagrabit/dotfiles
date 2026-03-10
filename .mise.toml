@@ -1,0 +1,11 @@
+[tools]
+bat = "latest"
+chezmoi = "latest"
+eza = "latest"
+fd = "latest"
+fzf = "latest"
+ghq = "latest"
+neovim = "latest"
+ripgrep = "latest"
+starship = "latest"
+zoxide = "latest"

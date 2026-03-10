@@ -8,6 +8,9 @@ set -gx GHQ_ROOT ~/ghq
 {{ if eq .chezmoi.os "darwin" }}
 # macOS固有設定
 set -gx PATH /opt/homebrew/bin /opt/homebrew/sbin $PATH
+{{ else }}
+# Linux Homebrew
+set -gx PATH /home/linuxbrew/.linuxbrew/bin $PATH
 {{ end }}
 
 # モダンツールのエイリアス
@@ -22,25 +25,9 @@ if type -q bat
     alias cat 'bat --paging=never'
 end
 
-{{ if eq .chezmoi.os "linux" }}
-# Ubuntu/Debianではbatcatという名前
-if type -q batcat; and not type -q bat
-    alias cat 'batcat --paging=never'
-    alias bat 'batcat'
-end
-{{ end }}
-
 if type -q fd
     alias find 'fd'
 end
-
-{{ if eq .chezmoi.os "linux" }}
-# Ubuntu/Debianではfdfindという名前
-if type -q fdfind; and not type -q fd
-    alias find 'fdfind'
-    alias fd 'fdfind'
-end
-{{ end }}
 
 if type -q rg
     alias grep 'rg'
@@ -59,6 +46,11 @@ end
 # fzf設定
 if type -q fzf
     set -gx FZF_DEFAULT_OPTS '--height 40% --layout=reverse --border'
+end
+
+# mise初期化
+if type -q mise
+    mise activate fish | source
 end
 
 # starship初期化

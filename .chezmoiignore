@@ -4,3 +4,5 @@ Dockerfile
 README.md
 CLAUDE.md
 .git/
+Brewfile
+.mise.toml
