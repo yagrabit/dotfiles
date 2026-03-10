@@ -1,0 +1,35 @@
+#!/bin/bash
+# fishシェルをデフォルトに設定するスクリプト
+# 既にfishがデフォルトシェルの場合はスキップ
+
+set -eufo pipefail
+
+{{ if eq .chezmoi.os "darwin" -}}
+FISH_PATH="/opt/homebrew/bin/fish"
+{{ else -}}
+FISH_PATH="/home/linuxbrew/.linuxbrew/bin/fish"
+{{ end -}}
+
+# fishが存在するか確認
+if [ ! -x "$FISH_PATH" ]; then
+  echo "fish が見つかりません: $FISH_PATH"
+  exit 1
+fi
+
+# 既にデフォルトシェルならスキップ
+if [ "$SHELL" = "$FISH_PATH" ]; then
+  echo "fish は既にデフォルトシェルです。スキップします。"
+  exit 0
+fi
+
+# /etc/shells にfishが登録されていなければ追加
+if ! grep -qx "$FISH_PATH" /etc/shells; then
+  echo "fish を /etc/shells に追加します..."
+  echo "$FISH_PATH" | sudo tee -a /etc/shells
+fi
+
+# デフォルトシェルをfishに変更
+echo "デフォルトシェルを fish に変更します..."
+sudo chsh -s "$FISH_PATH" "$(whoami)"
+
+echo "fish シェルの設定が完了しました。"

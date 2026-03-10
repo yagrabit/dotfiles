@@ -1,0 +1,22 @@
+#!/bin/bash
+# Brewパッケージのインストールスクリプト
+# Brewfileの内容が変更されると自動的に再実行される
+
+set -eufo pipefail
+
+# brewコマンドへのPATHを設定
+{{ if eq .chezmoi.os "darwin" -}}
+eval "$(/opt/homebrew/bin/brew shellenv)"
+{{ else -}}
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+{{ end -}}
+
+echo "Brewfile に基づいてパッケージをインストールします..."
+
+# Brewfileの内容をheredocで埋め込み（内容変更時にrun_onchangeが再実行される）
+brew bundle --file=/dev/stdin <<EOF
+brew "fish"
+brew "tmux"
+EOF
+
+echo "Brewパッケージのインストールが完了しました。"
