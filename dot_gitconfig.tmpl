@@ -1,0 +1,32 @@
+[user]
+{{ if eq .chezmoi.os "darwin" }}
+    name = tairano
+    email = tairano@users.noreply.github.com
+{{ else }}
+    name = test
+    email = test@example.com
+{{ end }}
+
+[core]
+    editor = nvim
+    autocrlf = input
+    quotepath = false
+
+[init]
+    defaultBranch = main
+
+[alias]
+    st = status
+    co = checkout
+    br = branch
+    lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    cm = commit
+    df = diff
+    pl = pull
+    ps = push
+
+[pull]
+    rebase = true
+
+[push]
+    autoSetupRemote = true
