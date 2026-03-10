@@ -1,0 +1,89 @@
+# config.fish - fish shell設定
+
+# 環境変数
+set -gx EDITOR nvim
+set -gx LANG ja_JP.UTF-8
+set -gx GHQ_ROOT ~/ghq
+
+{{ if eq .chezmoi.os "darwin" }}
+# macOS固有設定
+set -gx PATH /opt/homebrew/bin /opt/homebrew/sbin $PATH
+{{ end }}
+
+# モダンツールのエイリアス
+if type -q eza
+    alias ls 'eza --icons --git'
+    alias ll 'eza --icons --git -l'
+    alias la 'eza --icons --git -la'
+    alias tree 'eza --icons --tree'
+end
+
+if type -q bat
+    alias cat 'bat --paging=never'
+end
+
+{{ if eq .chezmoi.os "linux" }}
+# Ubuntu/Debianではbatcatという名前
+if type -q batcat; and not type -q bat
+    alias cat 'batcat --paging=never'
+    alias bat 'batcat'
+end
+{{ end }}
+
+if type -q fd
+    alias find 'fd'
+end
+
+{{ if eq .chezmoi.os "linux" }}
+# Ubuntu/Debianではfdfindという名前
+if type -q fdfind; and not type -q fd
+    alias find 'fdfind'
+    alias fd 'fdfind'
+end
+{{ end }}
+
+if type -q rg
+    alias grep 'rg'
+end
+
+if type -q nvim
+    alias vim 'nvim'
+    alias vi 'nvim'
+end
+
+# zoxide初期化
+if type -q zoxide
+    zoxide init fish | source
+end
+
+# fzf設定
+if type -q fzf
+    set -gx FZF_DEFAULT_OPTS '--height 40% --layout=reverse --border'
+end
+
+# starship初期化
+if type -q starship
+    starship init fish | source
+end
+
+# Ctrl+G プレフィックスのキーバインド
+# Ctrl+G → Ctrl+G: ghqリポジトリ移動
+# Ctrl+G → Ctrl+R: ローカルブランチ切り替え
+# Ctrl+G → Ctrl+M: リモートブランチ切り替え
+if type -q fzf
+    bind \cg\cg ghq_fzf_repo
+    bind \cg\cr fbr
+    bind \cg\cm fbrm
+end
+
+# tmux自動起動（インタラクティブシェルかつtmux外の場合）
+if status is-interactive; and type -q tmux; and not set -q TMUX
+{{ if eq .chezmoi.os "darwin" }}
+    # macOS: Ghosttyクイックターミナルでは起動しない
+    if not set -q GHOSTTY_QUICK_TERMINAL
+        tmux new-session -A -s main
+    end
+{{ else }}
+    tmux new-session -A -s main
+{{ end }}
+end
