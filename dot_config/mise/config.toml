@@ -1,6 +1,5 @@
 [tools]
 bat = "latest"
-chezmoi = "latest"
 eza = "latest"
 fd = "latest"
 fzf = "latest"
