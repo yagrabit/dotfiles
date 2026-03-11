@@ -5,3 +5,5 @@ README.md
 CLAUDE.md
 .git/
 Brewfile
+.mcp.json
+.hooks/

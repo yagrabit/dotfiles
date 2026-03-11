@@ -1,0 +1,34 @@
+#!/bin/bash
+# pre-commitフック: テンプレート内の絶対ホームパスをchezmoi変数に自動置換
+
+HOME_PATH="$HOME"
+TEMPLATE_VAR='{{ .chezmoi.homeDir }}'
+
+# ステージング中の.tmplファイルを取得
+staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.tmpl$')
+
+if [ -z "$staged_files" ]; then
+  exit 0
+fi
+
+modified=false
+
+for file in $staged_files; do
+  if grep -q "$HOME_PATH" "$file" 2>/dev/null; then
+    # macOS/Linuxでsed -iの構文が異なる
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      sed -i '' "s|$HOME_PATH|$TEMPLATE_VAR|g" "$file"
+    else
+      sed -i "s|$HOME_PATH|$TEMPLATE_VAR|g" "$file"
+    fi
+    git add "$file"
+    modified=true
+    echo "絶対パスを置換しました: $file"
+  fi
+done
+
+if [ "$modified" = true ]; then
+  echo "ホームパスを {{ .chezmoi.homeDir }} に置換しました"
+fi
+
+exit 0
