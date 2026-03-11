@@ -1,5 +1,6 @@
 [tools]
 bat = "latest"
+claude = "latest"
 eza = "latest"
 fd = "latest"
 fzf = "latest"
