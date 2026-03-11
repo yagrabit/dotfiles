@@ -16,9 +16,9 @@ set -gx PATH /home/linuxbrew/.linuxbrew/bin $PATH
 # モダンツールのエイリアス
 if type -q eza
     alias ls 'eza --icons --git'
-    alias ll 'eza --icons --git -l'
-    alias la 'eza --icons --git -la'
-    alias tree 'eza --icons --tree'
+    abbr -a ll 'eza --icons --git -l'
+    abbr -a la 'eza --icons --git -la'
+    abbr -a tree 'eza --icons --tree'
 end
 
 if type -q bat
