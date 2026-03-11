@@ -204,6 +204,11 @@ if [ -n "$git_stats" ]; then
   line1+="${SEP}✏️  ${GREEN}${git_stats}${RESET}"
 fi
 
+if [ -n "$cwd" ]; then
+  dir_name=$(basename "$cwd")
+  line1+="${SEP}📂 ${dir_name}"
+fi
+
 if [ -n "$git_branch" ]; then
   line1+="${SEP}🔀 ${git_branch}"
 fi
