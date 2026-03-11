@@ -19,7 +19,7 @@ chezmoi管理のdotfilesリポジトリ。macOS / Linux対応。
 
 ```sh
 sh -c "$(curl -fsLS get.chezmoi.io)"
-chezmoi init --apply yagrabit
+chezmoi init --apply <github-username>
 ```
 
 ## 設定の概要
@@ -31,12 +31,14 @@ chezmoi init --apply yagrabit
 - プラグイン: fisher管理。fzf.fish, autopair.fish
 - tmux自動起動: インタラクティブかつtmux未起動時に自動アタッチ（macOSではGhosttyクイックターミナル除外）
 - zoxide, fzf, starship の初期化
+- cd後に自動でeza表示
+- ghq管理下リポジトリの一括pull関数（ghq_pull_all）
 
 ### Neovim
 
 - プラグイン管理: lazy.nvim
 - リーダーキー: スペース
-- 主要プラグイン: nvim-tree（ファイルツリー）、telescope.nvim（ファジーファインダー）、tokyonight.nvim（カラースキーム）
+- 主要プラグイン: nvim-tree（ファイルツリー）、telescope.nvim（ファジーファインダー）、tokyonight.nvim（カラースキーム）、oil.nvim（バッファ型ファイラー）、sidekick.nvim（Claude Code連携）
 - 基本操作: `<leader>w`保存、`<leader>q`終了、`<leader>e`ファイルツリー、`<leader>ff`ファイル検索、`<leader>fg`文字列検索
 
 ### tmux
@@ -85,11 +87,28 @@ dot_config/
 │   └── lua/
 │       ├── config/
 │       └── plugins/
+├── mise/           → ~/.config/mise/
 └── starship.toml   → ~/.config/starship.toml
 dot_claude/          → ~/.claude/
-dot_gitconfig.tmpl   → ~/.gitconfig
 dot_tmux.conf        → ~/.tmux.conf
 ```
+
+## chezmoi初期化スクリプト
+
+chezmoiの `run_` スクリプトにより、初回適用時や設定変更時に自動セットアップが実行される。
+
+| スクリプト | 内容 |
+|---|---|
+| run_once_before_01 | Homebrewインストール |
+| run_once_before_03 | miseインストール |
+| run_onchange_before_02 | Brewfileのパッケージインストール |
+| run_onchange_after_01 | miseツール一括インストール |
+| run_once_after_02 | fishをデフォルトシェルに設定 |
+| run_once_after_04 | git hooks設定、gitエイリアス設定 |
+
+## .hooks/
+
+- pre-commitフック: テンプレート内の絶対ホームパスを自動的に`{{ .chezmoi.homeDir }}`に置換
 
 ## Docker検証
 
@@ -115,6 +134,5 @@ docker run --rm -it dotfiles-test
 | 項目 | macOS | Linux |
 |---|---|---|
 | PATH | /opt/homebrew/bin を追加 | 追加なし |
-| Git user | yagrabit | test（テスト用） |
 | コマンド名 | bat, fd | batcat, fdfind（エイリアスで吸収済み） |
 | tmux自動起動 | Ghosttyクイックターミナル内で無効化 | 常に有効 |
