@@ -46,6 +46,7 @@ chezmoi init --apply <github-username>
 - プレフィックス: Ctrl+q
 - ペイン移動: h/j/k/l（Vim風）
 - ウィンドウ分割: | （横）、- （縦）
+- テンプレート付きウィンドウ作成: Prefix+C（上下50%、左上70%右上30%の3ペインレイアウト）
 - コピーモード: viキーバインド
 - プラグイン: tpm, tmux-fzf（Ctrl+fで検索）、tmux-rename-window-project
 - ポップアップ: Prefix+g（tig）、Prefix+t（fzf）
