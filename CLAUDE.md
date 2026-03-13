@@ -38,3 +38,4 @@ Ghostty + tmux + Neovim + fish + starship + ghq + fzf + eza + bat + fd + rg
 - `~/.claude/` 内の動的ファイル（history.jsonl, projects/, todos/等）はchezmoi管理対象外
 - `.chezmoiignore` でDockerfile, .claude/, .git/等を除外済み
 - Neovimプラグインはlazy.nvimで管理（dot_config/nvim/lua/plugins/）
+- このリポジトリはdotfilesリポジトリです。設定ファイルの内容を確認する際は、デプロイ先（`~/.claude/` や `~/.config/` など）ではなく、必ずこのリポジトリ内のファイル（`dot_claude/`、`dot_config/` など）を参照してください

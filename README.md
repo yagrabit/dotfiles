@@ -49,7 +49,7 @@ chezmoi init --apply <github-username>
 - テンプレート付きウィンドウ作成: Prefix+C（上下50%、左上70%右上30%の3ペインレイアウト）
 - コピーモード: viキーバインド
 - プラグイン: tpm, tmux-fzf（Ctrl+fで検索）、tmux-rename-window-project
-- ポップアップ: Prefix+g（tig）、Prefix+t（fzf）
+- ポップアップ: Prefix+g（tig）、Prefix+t（fzf）、Prefix+m（Claude Code監視）
 
 ### Git
 
@@ -73,6 +73,7 @@ chezmoi init --apply <github-username>
 
 - ユーザーレベルのCLAUDE.md、settings.json、カスタムスキル、プラグイン設定をchezmoi管理
 - `/sync-claude-config` コマンドで設定変更をdotfilesに同期
+- tmux監視システム: 複数ウィンドウで起動したClaude Codeの状態（許可待ち・入力待ち・実行中）をステータスバーに集計表示し、Prefix+mで一覧から移動
 
 ## ディレクトリ構成
 
@@ -90,10 +91,11 @@ dot_config/
 │       ├── config/
 │       └── plugins/
 ├── mise/           → ~/.config/mise/
+├── tmux/           → ~/.config/tmux/ (Claude Code監視スクリプト)
 └── starship.toml   → ~/.config/starship.toml
 dot_claude/          → ~/.claude/
 ├── commands/        カスタムコマンド
-├── hooks/           PreToolUseフック
+├── hooks/           PreToolUse / Notification フック
 ├── private_plugins/ プラグイン設定
 └── skills/          カスタムスキル
 dot_tmux.conf        → ~/.tmux.conf
