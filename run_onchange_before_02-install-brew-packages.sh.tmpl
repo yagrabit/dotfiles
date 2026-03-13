@@ -2,6 +2,8 @@
 # Brewパッケージのインストールスクリプト
 # Brewfileの内容が変更されると自動的に再実行される
 
+# Brewfile hash: {{ include "Brewfile" | sha256sum }}
+
 set -eufo pipefail
 
 # brewコマンドへのPATHを設定
@@ -11,12 +13,18 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 {{ end -}}
 
+# brewコマンドの存在確認
+if ! command -v brew &>/dev/null; then
+  echo "エラー: brewコマンドが見つかりません。先にHomebrewをインストールしてください。"
+  exit 1
+fi
+
 echo "Brewfile に基づいてパッケージをインストールします..."
 
-# Brewfileの内容をheredocで埋め込み（内容変更時にrun_onchangeが再実行される）
-brew bundle --file=/dev/stdin <<EOF
-brew "fish"
-brew "tmux"
-EOF
+# Brewfileを直接参照（--no-upgradeで意図しないアップグレードを防止）
+if ! brew bundle --file={{ .chezmoi.sourceDir }}/Brewfile --no-upgrade; then
+  echo "エラー: brew bundle に失敗しました。ネットワーク接続を確認してください。"
+  exit 1
+fi
 
 echo "Brewパッケージのインストールが完了しました。"

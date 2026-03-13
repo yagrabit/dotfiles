@@ -1,6 +1,8 @@
 #!/bin/bash
 # dotfilesリポジトリのgitフックとエイリアスを設定
 
+set -eufo pipefail
+
 DOTFILES_DIR="{{ .chezmoi.sourceDir }}"
 
 if [ -d "$DOTFILES_DIR/.git" ]; then

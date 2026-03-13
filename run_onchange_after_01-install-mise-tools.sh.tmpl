@@ -9,7 +9,23 @@ set -eufo pipefail
 # miseへのPATHを設定
 export PATH="$HOME/.local/bin:$PATH"
 
+# miseコマンドの存在確認
+if ! command -v mise &>/dev/null; then
+  echo "エラー: miseコマンドが見つかりません。先にmiseをインストールしてください。"
+  exit 1
+fi
+
+# 未インストールのツールをチェック
+missing=$(mise ls --missing 2>/dev/null || true)
+if [ -z "$missing" ]; then
+  echo "mise ツールは全てインストール済みです。スキップします。"
+  exit 0
+fi
+
 echo "mise でツールをインストールします..."
-mise install --yes
+if ! mise install --yes; then
+  echo "エラー: mise install に失敗しました。ネットワーク接続を確認してください。"
+  exit 1
+fi
 
 echo "mise ツールのインストールが完了しました。"
