@@ -71,7 +71,8 @@ chezmoi init --apply <github-username>
 
 ### Claude Code
 
-- ユーザーレベルのCLAUDE.md、settings.json、カスタムスキルをchezmoi管理
+- ユーザーレベルのCLAUDE.md、settings.json、カスタムスキル、プラグイン設定をchezmoi管理
+- `/sync-claude-config` コマンドで設定変更をdotfilesに同期
 
 ## ディレクトリ構成
 
@@ -91,6 +92,10 @@ dot_config/
 ├── mise/           → ~/.config/mise/
 └── starship.toml   → ~/.config/starship.toml
 dot_claude/          → ~/.claude/
+├── commands/        カスタムコマンド
+├── hooks/           PreToolUseフック
+├── private_plugins/ プラグイン設定
+└── skills/          カスタムスキル
 dot_tmux.conf        → ~/.tmux.conf
 ```
 
