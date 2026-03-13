@@ -235,6 +235,37 @@ else
   line3="${GRAY}📅 7d  ▱▱▱▱▱▱▱▱▱▱  --%${RESET}"
 fi
 
+# ---------- tmux監視: active状態の書き出し ----------
+if [ -n "${TMUX_PANE:-}" ]; then
+  _mon_pane_id="$TMUX_PANE"
+  _mon_safe_id="${_mon_pane_id//%/pct}"
+  _mon_dir="/tmp/claude-sessions"
+  _mon_file="${_mon_dir}/${_mon_safe_id}.json"
+  mkdir -p "$_mon_dir" 2>/dev/null
+  _mon_ts=$(date +%s)
+  # tmux情報取得
+  _mon_tmux_info=$(tmux display-message -t "$_mon_pane_id" -p '#{window_name}||#{window_index}||#{session_name}' 2>/dev/null || true)
+  if [ -n "$_mon_tmux_info" ]; then
+    _mon_win_name="${_mon_tmux_info%%||*}"
+    _mon_rest="${_mon_tmux_info#*||}"
+    _mon_win_idx="${_mon_rest%%||*}"
+    _mon_sess="${_mon_rest#*||}"
+    _mon_tmp="${_mon_file}.tmp.$$"
+    jq -n \
+      --arg pid "$_mon_pane_id" \
+      --arg st "active" \
+      --arg wn "$_mon_win_name" \
+      --arg wi "$_mon_win_idx" \
+      --arg sn "$_mon_sess" \
+      --arg pp "${cwd:-}" \
+      --arg mn "${model_name:-}" \
+      --arg cp "${ctx_pct_int:-0}" \
+      --argjson ts "$_mon_ts" \
+      '{pane_id:$pid, state:$st, window_name:$wn, window_index:$wi, session_name:$sn, pane_path:$pp, model:$mn, context_pct:$cp, timestamp:$ts}' \
+      > "$_mon_tmp" 2>/dev/null && mv "$_mon_tmp" "$_mon_file" 2>/dev/null
+  fi
+fi || true
+
 # ---------- Output ----------
 printf '%s\n' "$line1"
 printf '%s\n' "$line2"
