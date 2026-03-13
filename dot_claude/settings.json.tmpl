@@ -16,7 +16,20 @@
       "Bash(eza:*)",
       "Bash(bat:*)",
       "Bash(fd:*)",
+      "Bash(find:*)",
+      "Bash(diff:*)",
+      "Bash(tree:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(tr:*)",
+      "Bash(cut:*)",
+      "Bash(awk:*)",
+      "Bash(sed:*)",
+      "Bash(basename:*)",
+      "Bash(dirname:*)",
+      "Bash(realpath:*)",
       "Bash(rg:*)",
+      "Bash(grep:*)",
       "Bash(fzf:*)",
       "Bash(jq:*)",
       "Bash(git status:*)",
@@ -45,6 +58,17 @@
           {
             "type": "command",
             "command": "{{ .chezmoi.homeDir }}/.claude/hooks/pipe-stage-permissions.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/notification-tracker.sh"
           }
         ]
       }
