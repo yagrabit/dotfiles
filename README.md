@@ -27,12 +27,13 @@ chezmoi init --apply <github-username>
 ### fish shell
 
 - エイリアス: ls→eza, cat→bat, find→fd, grep→rg, vim→nvim（tool-if-exists方式）
-- キーバインド: Ctrl+G Ctrl+G（ghqリポジトリ移動）、Ctrl+G Ctrl+R（ブランチ切替）、Ctrl+G Ctrl+M（リモートブランチ切替）
+- キーバインド: Ctrl+G Ctrl+G（ghqリポジトリ移動）、Ctrl+G Ctrl+R（ブランチ切替）、Ctrl+G Ctrl+M（リモートブランチ切替）、Ctrl+G Ctrl+S（stash管理）
 - プラグイン: fisher管理。fzf.fish, autopair.fish
 - tmux自動起動: インタラクティブかつtmux未起動時に自動アタッチ（macOSではGhosttyクイックターミナル除外）
 - zoxide, fzf, starship の初期化
 - cd後に自動でeza表示
 - ghq管理下リポジトリの一括pull関数（ghq_pull_all）
+- git stash管理: fzfでstash一覧を差分プレビュー付き表示し、apply/pop/drop/ファイル選択checkoutを操作（fstash）
 
 ### Neovim
 
