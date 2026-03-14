@@ -287,7 +287,7 @@ dot_gitconfig.tmpl     → ~/.gitconfig
 | run_onchange_before_02 | Brewfile変更時 | パッケージインストール |
 | run_onchange_after_01 | mise設定変更時 | miseツール一括インストール |
 | run_once_after_02 | 初回 | fishをデフォルトシェルに設定 |
-| run_once_after_04 | 初回 | gitフック設定、add-tmplエイリアス設定 |
+| run_once_after_04 | 初回 | gitフック設定 |
 
 ## Git hooks
 

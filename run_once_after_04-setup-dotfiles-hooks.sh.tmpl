@@ -1,5 +1,5 @@
 #!/bin/bash
-# dotfilesリポジトリのgitフックとエイリアスを設定
+# dotfilesリポジトリのgitフックを設定
 
 set -eufo pipefail
 
@@ -13,12 +13,4 @@ if [ -d "$DOTFILES_DIR/.git" ]; then
     git config core.hooksPath .hooks
     echo "gitフックを設定しました"
   fi
-
-  # テンプレートファイル追加用エイリアス（macOS/Linuxでsed構文が異なる）
-{{ if eq .chezmoi.os "darwin" }}
-  git config alias.add-tmpl '!f() { chezmoi add --template "$1" && src=$(chezmoi source-path "$1") && sed -i "" "s|'"$HOME"'|{{ .chezmoi.homeDir }}|g" "$src" && git add "$src"; }; f'
-{{ else }}
-  git config alias.add-tmpl '!f() { chezmoi add --template "$1" && src=$(chezmoi source-path "$1") && sed -i "s|'"$HOME"'|{{ .chezmoi.homeDir }}|g" "$src" && git add "$src"; }; f'
-{{ end }}
-  echo "gitエイリアス add-tmpl を設定しました"
 fi
