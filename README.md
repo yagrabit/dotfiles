@@ -159,7 +159,7 @@ viキーバインドで操作。
 | `Prefix g` | tig（差分確認・コミット） |
 | `Prefix t` | fzf（ファイル検索） |
 | `Prefix f` | tmux-fzf（ウィンドウ切り替え） |
-| `Prefix m` | Claude Code監視一覧 |
+| `Prefix a` | Claude Code監視一覧（ペインプレビュー付き、Shift+Rでリフレッシュ） |
 
 #### プラグイン
 
@@ -234,7 +234,7 @@ viキーバインドで操作。
 
 #### tmux監視システム
 
-複数ウィンドウで起動したClaude Codeの状態をステータスバーに集計表示。`Prefix+m` で一覧からウィンドウに移動可能。
+複数ウィンドウで起動したClaude Codeの状態をステータスバーに集計表示。`Prefix+a` で一覧表示し、ペイン内容のプレビュー付きでウィンドウに移動可能。Shift+Rで一覧をリフレッシュ。
 
 #### statusline
 
