@@ -9,9 +9,10 @@ chezmoi管理のdotfilesリポジトリ。macOS / Linux対応。
 | ターミナル | Ghostty |
 | マルチプレクサ | tmux |
 | シェル | fish + starship |
-| エディタ | Neovim |
+| エディタ | Neovim (lazy.nvim) |
 | リポジトリ管理 | ghq + fzf |
-| モダンCLI | eza, bat, fd, rg |
+| モダンCLI | eza, bat, fd, rg, zoxide |
+| ツールバージョン管理 | mise |
 | キーバインド | Karabiner-Elements |
 | AI | Claude Code |
 
@@ -22,120 +23,304 @@ sh -c "$(curl -fsLS get.chezmoi.io)"
 chezmoi init --apply <github-username>
 ```
 
-## 設定の概要
+chezmoi初期化スクリプトにより、Homebrew・mise・各ツールのインストールとシェル設定が自動で行われる。
+
+## 操作リファレンス
 
 ### fish shell
 
-- エイリアス: ls→eza, cat→bat, find→fd, grep→rg, vim→nvim（tool-if-exists方式）
-- キーバインド: Ctrl+G Ctrl+G（ghqリポジトリ移動）、Ctrl+G Ctrl+R（ブランチ切替）、Ctrl+G Ctrl+M（リモートブランチ切替）、Ctrl+G Ctrl+S（stash管理）
-- プラグイン: fisher管理。fzf.fish, autopair.fish
-- tmux自動起動: インタラクティブかつtmux未起動時に自動アタッチ（macOSではGhosttyクイックターミナル除外）
-- zoxide, fzf, starship の初期化
-- cd後に自動でeza表示
-- ghq管理下リポジトリの一括pull関数（ghq_pull_all）
-- git stash管理: fzfでstash一覧を差分プレビュー付き表示し、apply/pop/drop/ファイル選択checkoutを操作（fstash）
+#### エイリアス
+
+コマンドが存在する場合のみ置換する tool-if-exists 方式。
+
+| 入力 | 実行されるコマンド |
+|---|---|
+| `ls` | `eza --icons --git` |
+| `cat` | `bat --paging=never` |
+| `find` | `fd` |
+| `grep` | `rg` |
+| `vim` / `vi` | `nvim` |
+
+#### 省略展開 (abbr)
+
+| 入力 | 展開後 |
+|---|---|
+| `ll` | `eza --icons --git -l` |
+| `la` | `eza --icons --git -la` |
+| `tree` | `eza --icons --tree` |
+
+#### キーバインド
+
+Ctrl+G をプレフィックスとした2ストロークバインド。
+
+| キー | 動作 |
+|---|---|
+| `Ctrl+G Ctrl+G` | ghqリポジトリをfzfで選択して移動 |
+| `Ctrl+G Ctrl+R` | ローカルブランチをfzfで切り替え |
+| `Ctrl+G Ctrl+M` | リモートブランチをfzfで切り替え |
+| `Ctrl+G Ctrl+S` | git stashをfzfで管理 |
+
+#### 関数
+
+| 関数名 | 説明 |
+|---|---|
+| `ghq_fzf_repo` | ghqリポジトリをfzfで選択して移動（READMEプレビュー付き） |
+| `fbr` | ローカルブランチをfzfで切り替え（worktree対応） |
+| `fbrd` | ブランチをfzfで複数選択して削除（`-f`で強制削除） |
+| `fbrm` | リモートブランチをfzfで切り替え |
+| `fstash` | git stashをfzfで管理（下表参照） |
+| `ghq_pull_all` | ghq管理下の全リポジトリを `git pull --ff-only` |
+| `groot` | Gitリポジトリのルートディレクトリへ移動 |
+| `gwroot` | Git worktreeの親ディレクトリへ移動 |
+| `cd` | ディレクトリ移動後に自動で `eza -la` を表示 |
+
+fstash の操作:
+
+| キー | 動作 |
+|---|---|
+| `Enter` | 選択したstashをapply |
+| `Ctrl+P` | 選択したstashをpop |
+| `Ctrl+D` | 選択したstashをdrop |
+| `Ctrl+F` | stash内のファイルを選択してcheckout |
+
+#### その他
+
+- tmux自動起動: インタラクティブシェルかつtmux未起動時に自動アタッチ（macOSではGhosttyクイックターミナル除外）
+- cd後にeza自動表示
+- zoxide, fzf, mise, starship の初期化
 
 ### Neovim
 
-- プラグイン管理: lazy.nvim
-- リーダーキー: スペース
-- 主要プラグイン: nvim-tree（ファイルツリー）、telescope.nvim（ファジーファインダー）、tokyonight.nvim（カラースキーム）、oil.nvim（バッファ型ファイラー）、sidekick.nvim（Claude Code連携）
-- 基本操作: `<leader>w`保存、`<leader>q`終了、`<leader>e`ファイルツリー、`<leader>ff`ファイル検索、`<leader>fg`文字列検索
+リーダーキー: スペース
+
+#### キーマップ
+
+| キー | 動作 |
+|---|---|
+| `<leader>w` | 保存 |
+| `<leader>q` | 終了 |
+| `<leader>e` | ファイルツリー開閉 (nvim-tree) |
+| `<leader>ff` | ファイル検索 (telescope) |
+| `<leader>fg` | 文字列検索 (telescope) |
+| `<leader>sv` | 縦分割 |
+| `<leader>sh` | 横分割 |
+| `<leader>aa` | Claude Code Toggle (sidekick) |
+| `-` | 親ディレクトリを開く (oil.nvim) |
+| `Ctrl+h/j/k/l` | ウィンドウ移動 |
+| `Tab` / `Shift+Tab` | 次/前のバッファ |
+| `V` + `J/K` | 選択行を下/上に移動 |
+| `V` + `</>` | インデント減/増 |
+| `Esc` | 検索ハイライトクリア |
+
+#### プラグイン
+
+| プラグイン | 機能 |
+|---|---|
+| nvim-tree.lua | ファイルツリー |
+| telescope.nvim | ファジーファインダー |
+| tokyonight.nvim | カラースキーム |
+| oil.nvim | バッファ型ファイラー |
+| sidekick.nvim | Claude Code連携 |
 
 ### tmux
 
-- プレフィックス: Ctrl+q
-- ペイン移動: h/j/k/l（Vim風）
-- ウィンドウ分割: | （横）、- （縦）
-- テンプレート付きウィンドウ作成: Prefix+C（上下50%、左上70%右上30%の3ペインレイアウト）
-- コピーモード: viキーバインド
-- プラグイン: tpm, tmux-fzf（Ctrl+fで検索）、tmux-rename-window-project
-- ポップアップ: Prefix+g（tig）、Prefix+t（fzf）、Prefix+m（Claude Code監視）
+プレフィックスキー: `Ctrl+q`
+
+#### キーバインド
+
+| キー | 動作 |
+|---|---|
+| `Prefix r` | 設定リロード |
+| `Prefix \|` | 右に水平分割 |
+| `Prefix -` | 下に垂直分割 |
+| `Prefix c` | 新しいウィンドウ |
+| `Prefix C` | テンプレート付きウィンドウ（3ペイン） |
+| `Prefix h/j/k/l` | ペイン移動（Vim風） |
+| `Prefix H/J/K/L` | ペインリサイズ（5単位） |
+| `Prefix n` / `Prefix p` | 次/前のウィンドウ |
+
+テンプレート付きウィンドウ（Prefix C）の構成: 上下50%分割、上段を左70%右30%に分割した3ペインレイアウト。
+
+#### コピーモード
+
+viキーバインドで操作。
+
+| キー | 動作 |
+|---|---|
+| `Prefix [` | コピーモード開始 |
+| `v` | 選択開始 |
+| `Ctrl+v` | 矩形選択 |
+| `y` | コピーして終了 |
+
+#### ポップアップ
+
+| キー | 動作 |
+|---|---|
+| `Prefix g` | tig（差分確認・コミット） |
+| `Prefix t` | fzf（ファイル検索） |
+| `Prefix f` | tmux-fzf（ウィンドウ切り替え） |
+| `Prefix m` | Claude Code監視一覧 |
+
+#### プラグイン
+
+| プラグイン | 機能 |
+|---|---|
+| tpm | プラグインマネージャー |
+| tmux-fzf | fzfによるウィンドウ・セッション操作 |
+| tmux-rename-window-project | Gitリポジトリ名で自動ウィンドウ命名 |
 
 ### Git
 
-- エイリアス: st, co, br, cm, df, pl, ps, lg（グラフ付きログ）
+#### エイリアス
+
+| エイリアス | コマンド |
+|---|---|
+| `st` | `status` |
+| `co` | `checkout` |
+| `br` | `branch` |
+| `cm` | `commit` |
+| `df` | `diff` |
+| `pl` | `pull --rebase` |
+| `ps` | `push --set-upstream` |
+| `lg` | `log --graph`（グラフ付きログ） |
+
+#### 設定
+
 - pull時にrebaseを使用
 - push時に上流ブランチを自動設定
 - デフォルトブランチ: main
 
 ### Ghostty
 
-- テーマ: tokyonight
-- フォント: PlemolJP Console NF（14pt）
-- 背景透過: 85%、ブラー有効
+| 項目 | 値 |
+|---|---|
+| テーマ | tokyonight |
+| フォント | PlemolJP Console NF (14pt) |
+| 背景透過 | 85%、ブラー有効 |
+| ウィンドウ起動時 | 最大化 |
+| タイトルバー | tabs (macOS) |
 
 ### Karabiner-Elements
 
-- Ghostty内でCtrl+q押下時にIMEを英数モードへ自動切替
+- Ghostty内で `Ctrl+q` 押下時にIMEを英数モードへ自動切替
 - tmuxプレフィックスキーが日本語入力中でも確実に動作
+
+### starship
+
+| セグメント | 表示内容 |
+|---|---|
+| directory | カレントディレクトリ（深さ3まで） |
+| git_branch | ブランチ名 |
+| git_status | 変更状態 |
+| cmd_duration | 2秒以上の実行時間 |
+| character | 成功: 緑の❯ / エラー: 赤の❯ |
 
 ### Claude Code
 
-- ユーザーレベルのCLAUDE.md、settings.json、カスタムスキル、プラグイン設定をchezmoi管理
-- `/sync-claude-config` コマンドで設定変更をdotfilesに同期
-- tmux監視システム: 複数ウィンドウで起動したClaude Codeの状態（許可待ち・入力待ち・実行中）をステータスバーに集計表示し、Prefix+mで一覧から移動
+#### コマンド・スキル
+
+| 名前 | 種類 | 説明 |
+|---|---|---|
+| `/sync-claude-config` | コマンド | Claude設定変更をdotfilesに同期 |
+| `/blog-memo` | スキル | 会話内容をブログ記事形式のアウトラインに変換 |
+| `/commit` | スキル | 変更確認→セキュリティチェック→コミット実行 |
+
+#### hooks
+
+| フック | タイミング | 動作 |
+|---|---|---|
+| pipe-stage-permissions | PreToolUse | パイプ繋ぎコマンドを分割して各ステージを自動承認判定 |
+| notification-tracker | Notification | 状態（許可待ち・入力待ち等）をjsonに記録 |
+
+#### tmux監視システム
+
+複数ウィンドウで起動したClaude Codeの状態をステータスバーに集計表示。`Prefix+m` で一覧からウィンドウに移動可能。
+
+#### statusline
+
+3行表示: モデル名・コンテキスト使用率、5h/7dレートリミット進捗バー。
+
+#### インストール済みプラグイン
+
+| プラグイン | 機能 |
+|---|---|
+| coderabbit | コードレビュー |
+| frontend-design | UI/UXデザイン |
+| code-simplifier | コード簡素化 |
+| code-review | コードレビュー支援 |
 
 ## ディレクトリ構成
 
 ```
 dot_config/
-├── fish/           → ~/.config/fish/
+├── fish/             → ~/.config/fish/
 │   ├── config.fish.tmpl
 │   ├── fish_plugins
 │   └── functions/
-├── ghostty/        → ~/.config/ghostty/
-├── karabiner/      → ~/.config/karabiner/
-├── nvim/           → ~/.config/nvim/
+├── ghostty/          → ~/.config/ghostty/
+├── karabiner/        → ~/.config/karabiner/
+├── nvim/             → ~/.config/nvim/
 │   ├── init.lua
 │   └── lua/
-│       ├── config/
-│       └── plugins/
-├── mise/           → ~/.config/mise/
-├── tmux/           → ~/.config/tmux/ (Claude Code監視スクリプト)
-└── starship.toml   → ~/.config/starship.toml
-dot_claude/          → ~/.claude/
-├── commands/        カスタムコマンド
-├── hooks/           PreToolUse / Notification フック
-├── private_plugins/ プラグイン設定
-└── skills/          カスタムスキル
-dot_tmux.conf        → ~/.tmux.conf
+│       ├── config/   (keymaps, options, lazy)
+│       └── plugins/  (essentials, colorscheme, oil, sidekick)
+├── tmux/             → ~/.config/tmux/ (Claude Code監視スクリプト)
+├── mise/             → ~/.config/mise/
+└── starship.toml     → ~/.config/starship.toml
+dot_claude/            → ~/.claude/
+├── CLAUDE.md
+├── settings.json.tmpl
+├── commands/          カスタムコマンド
+├── hooks/             PreToolUse / Notification フック
+├── skills/            カスタムスキル
+└── private_plugins/   プラグイン設定
+dot_tmux.conf          → ~/.tmux.conf
+dot_gitconfig.tmpl     → ~/.gitconfig
 ```
 
 ## chezmoi初期化スクリプト
 
-chezmoiの `run_` スクリプトにより、初回適用時や設定変更時に自動セットアップが実行される。
+| スクリプト | タイミング | 内容 |
+|---|---|---|
+| run_once_before_01 | 初回 | Homebrewインストール |
+| run_once_before_03 | 初回 | miseインストール |
+| run_onchange_before_02 | Brewfile変更時 | パッケージインストール |
+| run_onchange_after_01 | mise設定変更時 | miseツール一括インストール |
+| run_once_after_02 | 初回 | fishをデフォルトシェルに設定 |
+| run_once_after_04 | 初回 | gitフック設定、add-tmplエイリアス設定 |
 
-| スクリプト | 内容 |
-|---|---|
-| run_once_before_01 | Homebrewインストール |
-| run_once_before_03 | miseインストール |
-| run_onchange_before_02 | Brewfileのパッケージインストール |
-| run_onchange_after_01 | miseツール一括インストール |
-| run_once_after_02 | fishをデフォルトシェルに設定 |
-| run_once_after_04 | git hooks設定、gitエイリアス設定 |
+## Git hooks
 
-## .hooks/
+- pre-commitフック: テンプレート内の絶対ホームパスを `{{ .chezmoi.homeDir }}` に自動置換
 
-- pre-commitフック: テンプレート内の絶対ホームパスを自動的に`{{ .chezmoi.homeDir }}`に置換
+## mise管理ツール
+
+| ツール |
+|---|
+| bat |
+| eza |
+| fd |
+| fzf |
+| ghq |
+| neovim |
+| ripgrep |
+| starship |
+| zoxide |
 
 ## Docker検証
 
-Ubuntu 24.04ベースのDockerコンテナでchezmoiの適用結果を検証できる。
-
-コンテナに含まれるツール: fish, git, fzf, eza, bat, fd, rg, tmux, neovim, chezmoi, starship
+Ubuntu 24.04ベースのコンテナでchezmoiの適用結果を検証できる。
 
 ```sh
 docker build -t dotfiles-test .
 docker run --rm -it dotfiles-test
 ```
 
-動作確認の例:
-
-- fishシェルが起動し、starshipプロンプトが表示される
+確認項目:
+- fishシェルが起動しstarshipプロンプトが表示される
 - `chezmoi diff` で差分がないことを確認
 - nvim が正常起動する
-- eza, bat, fd, rg 等のエイリアスが動作する
+- エイリアス（eza, bat, fd, rg）が動作する
 - tmux が起動しVim風キーバインドが使える
 
 ## macOS / Linux の差異
@@ -143,5 +328,5 @@ docker run --rm -it dotfiles-test
 | 項目 | macOS | Linux |
 |---|---|---|
 | PATH | /opt/homebrew/bin を追加 | 追加なし |
-| コマンド名 | bat, fd | batcat, fdfind（エイリアスで吸収済み） |
-| tmux自動起動 | Ghosttyクイックターミナル内で無効化 | 常に有効 |
+| コマンド名 | bat, fd | batcat, fdfind（エイリアスで吸収） |
+| tmux自動起動 | クイックターミナル内で無効化 | 常に有効 |
