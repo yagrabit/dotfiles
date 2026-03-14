@@ -62,10 +62,12 @@ end
 # Ctrl+G → Ctrl+G: ghqリポジトリ移動
 # Ctrl+G → Ctrl+R: ローカルブランチ切り替え
 # Ctrl+G → Ctrl+M: リモートブランチ切り替え
+# Ctrl+G → Ctrl+S: stash管理
 if type -q fzf
     bind \cg\cg ghq_fzf_repo
     bind \cg\cr fbr
     bind \cg\cm fbrm
+    bind \cg\cs fstash
 end
 
 # tmux自動起動（インタラクティブシェルかつtmux外の場合）
