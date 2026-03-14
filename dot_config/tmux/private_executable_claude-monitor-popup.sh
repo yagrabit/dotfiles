@@ -151,6 +151,8 @@ selected=$(
         --reverse \
         --delimiter=$'\t' \
         --with-nth=1 \
+        --preview "tmux capture-pane -t {2} -p -e | tail -n \$FZF_PREVIEW_LINES" \
+        --preview-window "right:50%:wrap" \
         --bind "R:reload($SCRIPT_PATH --list)"
 )
 
