@@ -5,6 +5,9 @@ set -gx EDITOR nvim
 set -gx LANG ja_JP.UTF-8
 set -gx GHQ_ROOT ~/ghq
 
+# ユーザーローカルバイナリのPATH追加（ネイティブインストーラー等）
+fish_add_path ~/.local/bin
+
 {{ if eq .chezmoi.os "darwin" }}
 # macOS固有設定
 set -gx PATH /opt/homebrew/bin /opt/homebrew/sbin $PATH
