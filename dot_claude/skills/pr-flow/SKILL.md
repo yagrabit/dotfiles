@@ -1,0 +1,143 @@
+---
+name: pr-flow
+description: ブランチ作成からコミット、レビュー、Draft PR作成までの一貫ワークフローを実行する
+disable-model-invocation: true
+user-invocable: true
+allowed-tools: Bash, Read, Edit, Write, Grep, Glob, AskUserQuestion, Agent
+---
+
+# PR Flow
+
+ブランチ作成 → コミット → レビュー → Draft PR作成の一貫ワークフロースキル。
+各ステップでユーザー承認を得ながら進める。
+
+## Instructions
+
+### ステップ1: ブランチ作成
+
+1. 現在の作業状態を確認する:
+   - `git status` で未コミットの変更がないか確認する
+   - `git branch --show-current` で現在のブランチを確認する
+   - 既にmain以外のブランチにいる場合は、AskUserQuestionで「現在のブランチを使うか、新しいブランチを作成するか」を確認する
+   - 現在のブランチを使う場合はステップ2に進む
+2. AskUserQuestionで関連チケットの有無を確認する:
+   - チケットがある場合: チケットIDを入力してもらい、`feature/{チケットID}` 形式でブランチ名を決定する（例: feature/PROJ-123, feature/ENG-456）
+   - チケットがない場合: 従来通りブランチの種別と説明を確認し、`{type}/{description}` 形式でブランチ名を決定する（例: feat/add-news-page, fix/header-responsive）
+     - type は Conventional Commits 準拠: feat, fix, docs, refactor, chore, test 等
+     - description はケバブケースで簡潔に記述する
+3. main ブランチから最新を取得する:
+   - `git fetch origin main`
+4. 新しいブランチを作成する:
+   - `git checkout -b {branch-name} origin/main`
+5. リモートにプッシュしてトラッキングを設定する:
+   - `git push -u origin {branch-name}`
+6. 結果を報告し、AskUserQuestionで次のステップに進むか確認する
+
+### ステップ2: コミット作成
+
+commit スキル（~/.claude/skills/commit/SKILL.md）の全手順に従う。
+
+### ステップ3: レビュー
+
+コミット完了後、PR作成前にレビューを実施する。
+
+1. `git diff HEAD~{コミット数}..HEAD` でコミットした変更の差分を取得する（コミット数はステップ2で作成したコミット数）
+2. 以下の4種類のレビューを実施する（可能なものは並列実行）:
+   - `/simplify`: コードの品質・再利用性・効率性をレビューし、問題があれば修正する
+   - `/security-review`: セキュリティ観点の専門レビューを実施する（結果は日本語で出力すること）
+   - CodeRabbit: Agentツールで `coderabbit:code-reviewer` サブエージェントを実行し結果を収集する（プラグイン未インストールの場合はスキップ）
+   - 汎用コードレビュー: 以下のチェック項目に沿ってレビューする
+
+#### 必須チェック項目
+
+- 型安全性: `any` 型や型アサーション（`as any`）の不適切な使用がないか
+- デバッグコード: `console.log`、`debugger`、`TODO/FIXME`（意図的でないもの）が残っていないか
+- エラーハンドリング: エラーが握りつぶされていないか、適切にハンドリングされているか
+- テスト: 新しい関数・コンポーネントに対応するテストがあるか（テストフレームワークがある場合）
+
+#### 推奨チェック項目
+
+- 命名: 変数名・関数名・ファイル名がプロジェクトの規約に沿っているか
+- コード重複: 既存のユーティリティやヘルパーで代替できるコードがないか
+- パフォーマンス: 明らかな N+1 問題や不要な再レンダリングがないか
+
+3. レビュー結果をユーザーに報告し、AskUserQuestionで以下の選択肢を提示する:
+   - PR作成に進む: 問題なし、またはレビュー指摘を承知の上でPR作成に進む
+   - 修正する: 指摘事項を修正してから再度レビューする（修正後はステップ3の最初に戻る）
+   - 中止する: ワークフローを中止する
+
+### ステップ4: Draft PR作成
+
+1. 前提条件を確認する:
+   - 現在のブランチが main 以外であること
+   - リモートにプッシュ済みであること（未プッシュのコミットがある場合は `git push` を実行）
+2. 変更内容を分析する:
+   - `git log main..HEAD --oneline` でコミット一覧を取得する
+   - `git diff main...HEAD --stat` で変更ファイルの統計を取得する
+3. PRテンプレートを読み込む:
+   - `.github/pull_request_template.md` が存在する場合はそれを使用する
+   - 存在しない場合は以下のデフォルトフォーマットを使用する:
+     ```
+     ## 概要
+     （変更の目的と背景）
+
+     ## 変更内容
+     （主な変更点を箇条書き）
+
+     ## テスト計画
+     （テスト項目のチェックリスト）
+     ```
+4. 変更内容に基づいてPRタイトルと本文を生成する:
+   - PRタイトル: Conventional Commits形式のPrefixを使用し、日本語で簡潔に記述する（70文字以内）
+   - PR本文: テンプレートの各セクションを変更内容に基づいて埋める
+5. AskUserQuestionでPRタイトルと本文を提示し、承認を得る
+6. 承認後、`gh pr create --draft --title "{title}" --body "{body}"` でDraft PRを作成する
+
+### ステップ5: 最終結果の報告
+
+以下の情報をまとめて報告する:
+- ブランチ名
+- コミット一覧（`git log main..HEAD --oneline`）
+- レビュー結果の要約
+- PR URL
+
+## Examples
+
+### 機能追加の一貫フロー
+
+ユーザー: 「ログインページを作ったのでPRまでやって」
+
+```
+ステップ1: ブランチ作成
+  ブランチ名: feat/add-login-page
+  ベース: origin/main (abc1234)
+
+ステップ2: コミット作成
+  コミット1: feat: ログインページを追加
+
+ステップ3: レビュー
+  [CodeRabbit] 指摘なし
+  [汎用レビュー] 指摘なし
+  → 「PR作成に進む」
+
+ステップ4: Draft PR作成
+  タイトル: feat: ログインページを追加
+  URL: https://github.com/org/repo/pull/42
+
+最終結果:
+  ブランチ: feat/add-login-page
+  コミット: 1件
+  PR: https://github.com/org/repo/pull/42 (Draft)
+```
+
+### 既存ブランチでのフロー
+
+ユーザー: 「コミットしてPRまで作って」（feat/update-header ブランチで作業中）
+
+```
+ステップ1: ブランチ確認
+  現在のブランチ: feat/update-header
+  → 「現在のブランチを使う」
+
+ステップ2〜5: 通常通り実行
+```
