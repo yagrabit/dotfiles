@@ -25,13 +25,22 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob, AskUserQuestion, Agent
    - チケットがない場合: 従来通りブランチの種別と説明を確認し、`{type}/{description}` 形式でブランチ名を決定する（例: feat/add-news-page, fix/header-responsive）
      - type は Conventional Commits 準拠: feat, fix, docs, refactor, chore, test 等
      - description はケバブケースで簡潔に記述する
-3. main ブランチから最新を取得する:
-   - `git fetch origin main`
-4. 新しいブランチを作成する:
-   - `git checkout -b {branch-name} origin/main`
-5. リモートにプッシュしてトラッキングを設定する:
+3. 親ブランチ（ベースブランチ）を確認する:
+   - デフォルトの親ブランチは `main` とする
+   - 親ブランチとリモートの最新状態をユーザーに表示する:
+     - `git log origin/{base-branch} -3 --oneline` で最新3件のコミットを表示する
+     - ローカルの `{base-branch}` と `origin/{base-branch}` に差分がある場合はその旨を表示する
+   - AskUserQuestionで以下の選択肢を提示する:
+     - このまま進む（`origin/{base-branch}` から分岐）
+     - 別のブランチを親にする（ブランチ名を入力）
+   - 別のブランチが選択された場合は、そのブランチを `{base-branch}` として以降の手順で使用する
+4. 親ブランチの最新を取得する:
+   - `git fetch origin {base-branch}`
+5. 新しいブランチを作成する:
+   - `git checkout -b {branch-name} origin/{base-branch}`
+6. リモートにプッシュしてトラッキングを設定する:
    - `git push -u origin {branch-name}`
-6. 結果を報告し、AskUserQuestionで次のステップに進むか確認する
+7. 結果を報告し、AskUserQuestionで次のステップに進むか確認する
 
 ### ステップ2: コミット作成
 
@@ -69,11 +78,11 @@ commit スキル（~/.claude/skills/commit/SKILL.md）の全手順に従う。
 ### ステップ4: Draft PR作成
 
 1. 前提条件を確認する:
-   - 現在のブランチが main 以外であること
+   - 現在のブランチが `{base-branch}` 以外であること
    - リモートにプッシュ済みであること（未プッシュのコミットがある場合は `git push` を実行）
 2. 変更内容を分析する:
-   - `git log main..HEAD --oneline` でコミット一覧を取得する
-   - `git diff main...HEAD --stat` で変更ファイルの統計を取得する
+   - `git log {base-branch}..HEAD --oneline` でコミット一覧を取得する
+   - `git diff {base-branch}...HEAD --stat` で変更ファイルの統計を取得する
 3. PRテンプレートを読み込む:
    - `.github/pull_request_template.md` が存在する場合はそれを使用する
    - 存在しない場合は以下のデフォルトフォーマットを使用する:
@@ -97,7 +106,7 @@ commit スキル（~/.claude/skills/commit/SKILL.md）の全手順に従う。
 
 以下の情報をまとめて報告する:
 - ブランチ名
-- コミット一覧（`git log main..HEAD --oneline`）
+- コミット一覧（`git log {base-branch}..HEAD --oneline`）
 - レビュー結果の要約
 - PR URL
 
@@ -110,6 +119,12 @@ commit スキル（~/.claude/skills/commit/SKILL.md）の全手順に従う。
 ```
 ステップ1: ブランチ作成
   ブランチ名: feat/add-login-page
+  親ブランチ確認:
+    origin/main の最新コミット:
+      abc1234 feat: ユーザー管理機能を追加
+      def5678 fix: ヘッダーのレスポンシブ対応
+      ghi9012 docs: READMEを更新
+    → 「このまま進む（origin/main から分岐）」
   ベース: origin/main (abc1234)
 
 ステップ2: コミット作成
@@ -140,4 +155,27 @@ commit スキル（~/.claude/skills/commit/SKILL.md）の全手順に従う。
   → 「現在のブランチを使う」
 
 ステップ2〜5: 通常通り実行
+```
+
+### 別の親ブランチを使うフロー
+
+ユーザー: 「developブランチから切って作業したい」
+
+```
+ステップ1: ブランチ作成
+  ブランチ名: feat/add-notification
+  親ブランチ確認:
+    origin/main の最新コミット:
+      abc1234 feat: v2リリース準備
+      def5678 fix: CI設定を修正
+      ghi9012 chore: 依存パッケージを更新
+    → 「別のブランチを親にする」→ develop を入力
+    origin/develop の最新コミット:
+      jkl3456 feat: 通知基盤を追加
+      mno7890 refactor: API層をリファクタ
+      pqr1234 fix: バリデーションを修正
+    → 「このまま進む（origin/develop から分岐）」
+  ベース: origin/develop (jkl3456)
+
+ステップ2〜5: 通常通り実行（{base-branch} = develop）
 ```
