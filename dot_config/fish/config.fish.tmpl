@@ -61,16 +61,26 @@ if type -q starship
     starship init fish | source
 end
 
-# Ctrl+G プレフィックスのキーバインド
+# キーバインド
 # Ctrl+G → Ctrl+G: ghqリポジトリ移動
 # Ctrl+G → Ctrl+R: ローカルブランチ切り替え
 # Ctrl+G → Ctrl+M: リモートブランチ切り替え
 # Ctrl+G → Ctrl+S: stash管理
+# /: スラッシュコマンド（空バッファ時のみ）
 if type -q fzf
+    # スラッシュコマンド対象の関数リスト
+    set -g SLASH_COMMANDS \
+        ghq_fzf_repo \
+        fbr fbrm fbrd \
+        fstash \
+        ghq_pull_all \
+        groot gwroot
+
     bind \cg\cg ghq_fzf_repo
     bind \cg\cr fbr
     bind \cg\cm fbrm
     bind \cg\cs fstash
+    bind / _slash_command_or_insert
 end
 
 # tmux自動起動（インタラクティブシェルかつtmux外の場合）
