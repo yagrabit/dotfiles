@@ -1,6 +1,21 @@
 #!/bin/bash
-# pre-commitフック: テンプレート内の絶対ホームパスをchezmoi変数に自動置換
+# pre-commitフック: secretlintによる秘密情報検出 + テンプレート内の絶対ホームパスをchezmoi変数に自動置換
 
+# --- secretlintによる秘密情報検出 ---
+if command -v secretlint &> /dev/null; then
+  staged_all=$(git diff --cached --name-only --diff-filter=ACM)
+  if [ -n "$staged_all" ]; then
+    echo "$staged_all" | xargs secretlint
+    if [ $? -ne 0 ]; then
+      echo "エラー: secretlintが秘密情報を検出しました。コミットを中止します。"
+      exit 1
+    fi
+  fi
+else
+  echo "警告: secretlintが見つかりません。mise install を実行してください。"
+fi
+
+# --- テンプレート内の絶対ホームパス置換 ---
 HOME_PATH="$HOME"
 TEMPLATE_VAR='{{ .chezmoi.homeDir }}'
 
