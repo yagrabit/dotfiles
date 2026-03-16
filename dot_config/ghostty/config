@@ -7,6 +7,7 @@ theme = tokyonight
 font-family = PlemolJP Console NF
 font-size = 14
 font-thicken = true
+adjust-cell-height = 2
 
 # 背景透過
 background-opacity = 0.85
@@ -18,6 +19,8 @@ macos-titlebar-style = tabs
 window-padding-x = 12
 window-padding-y = 8
 window-padding-balance = true
+window-inherit-working-directory = true
+window-new-tab-position = current
 
 # マウス
 copy-on-select = clipboard
@@ -25,3 +28,8 @@ mouse-hide-while-typing = true
 
 # シェル統合
 shell-integration = fish
+command = /opt/homebrew/bin/fish
+
+# クリップボード
+clipboard-write = allow
+clipboard-trim-trailing-spaces = true
