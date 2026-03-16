@@ -6,6 +6,7 @@ theme = tokyonight
 # フォント
 font-family = PlemolJP Console NF
 font-size = 14
+font-thicken = true
 
 # 背景透過
 background-opacity = 0.85
@@ -14,6 +15,13 @@ background-blur = true
 # ウィンドウ
 maximize = true
 macos-titlebar-style = tabs
+window-padding-x = 12
+window-padding-y = 8
+window-padding-balance = true
+
+# マウス
+copy-on-select = clipboard
+mouse-hide-while-typing = true
 
 # シェル統合
 shell-integration = fish
