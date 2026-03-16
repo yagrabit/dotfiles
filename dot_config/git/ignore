@@ -1,0 +1,34 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# エディタ・IDE
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Claude Code
+**/.claude/settings.local.json
+
+# 環境変数・秘密情報
+.env
+.env.local
+.env.*.local
+
+# ローカル設定
+.local/
+mise.local.toml
+
+# Node.js
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
