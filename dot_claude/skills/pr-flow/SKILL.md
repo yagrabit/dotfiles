@@ -76,9 +76,9 @@ commit スキル（~/.claude/skills/commit/SKILL.md）の全手順に従う。
 
    レビュー実行チェックリスト:
    - [ ] simplify: Skillツールで `/simplify` を実行する
-   - [ ] security-review: Skillツールで `/security-review` を実行する（結果は日本語で出力すること）
+   - [ ] security-review: Agentツールで security-reviewer エージェント（~/.claude/agents/security-reviewer.md）を起動する（結果は日本語で出力すること）
    - [ ] CodeRabbit: Agentツールで `coderabbit:code-reviewer` サブエージェントを起動する（プラグイン未インストールの場合はスキップし、チェック済みとする）
-   - [ ] 汎用コードレビュー: Agentツールで汎用レビューサブエージェントを起動する
+   - [ ] code-review: Agentツールで code-reviewer エージェント（~/.claude/agents/code-reviewer.md）を起動する
 
    並列実行の手順:
    a. 上記4つのレビューを1回のレスポンスで同時に起動する
@@ -89,20 +89,7 @@ commit スキル（~/.claude/skills/commit/SKILL.md）の全手順に従う。
    - 4つ全てのレビュー結果が手元に揃っていることを確認する
    - 揃っていない場合は、未完了のレビューの完了を待つ
 
-   汎用コードレビューは以下のチェック項目に沿って実施する:
-
-#### 必須チェック項目
-
-- 型安全性: `any` 型や型アサーション（`as any`）の不適切な使用がないか
-- デバッグコード: `console.log`、`debugger`、`TODO/FIXME`（意図的でないもの）が残っていないか
-- エラーハンドリング: エラーが握りつぶされていないか、適切にハンドリングされているか
-- テスト: 新しい関数・コンポーネントに対応するテストがあるか（テストフレームワークがある場合）
-
-#### 推奨チェック項目
-
-- 命名: 変数名・関数名・ファイル名がプロジェクトの規約に沿っているか
-- コード重複: 既存のユーティリティやヘルパーで代替できるコードがないか
-- パフォーマンス: 明らかな N+1 問題や不要な再レンダリングがないか
+   code-reviewer エージェントがチェック項目に基づいてレビューを実施する（チェック項目はエージェント定義内に記載）。
 
 3. レビュー結果をユーザーに報告し、AskUserQuestionで以下の選択肢を提示する:
    - PR作成に進む: 問題なし、またはレビュー指摘を承知の上でPR作成に進む
@@ -181,7 +168,7 @@ commit スキル（~/.claude/skills/commit/SKILL.md）の全手順に従う。
 
 ステップ3: レビュー
   [CodeRabbit] 指摘なし
-  [汎用レビュー] 指摘なし
+  [code-review] 指摘なし
   → 「PR作成に進む」
 
 ステップ4: Draft PR作成
