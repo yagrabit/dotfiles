@@ -95,8 +95,9 @@ fi
 # 最大10行に制限
 FILTERED=$(echo "$FILTERED" | head -n 10)
 
-# stderrにエラー出力
-echo "型エラー:" >&2
-echo "$FILTERED" >&2
+# additionalContext JSON を出力
+CONTEXT=$(printf "型エラー:\n%s" "$FILTERED")
+jq -Rn --arg ctx "$CONTEXT" \
+  '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":$ctx}}'
 
 exit 0
