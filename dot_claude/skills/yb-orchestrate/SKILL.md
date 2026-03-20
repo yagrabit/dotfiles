@@ -1,5 +1,5 @@
 ---
-name: orchestrate
+name: yb-orchestrate
 description: マルチエージェント連携ワークフロー。計画→実装→code-reviewer→security-reviewerのチェーンを管理する
 user-invocable: true
 allowed-tools: Bash, Read, Edit, Write, Grep, Glob, Agent, AskUserQuestion
@@ -13,7 +13,7 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob, Agent, AskUserQuestion
 2. タスクの規模を判定する:
    - 小規模（1-3ファイル変更）: 直接実装
    - 中規模（4-10ファイル変更）: サブエージェントに委譲
-   - 大規模（10+ファイル変更、またはブランチが必要）: worktreeスキルを活用
+   - 大規模（10+ファイル変更、またはブランチが必要）: yb-worktreeスキルを活用
 3. AskUserQuestionで計画を提示し承認を得る
 
 ## 2. 実装

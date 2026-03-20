@@ -1,5 +1,5 @@
 ---
-name: verification-loop
+name: yb-verification-loop
 description: 変更後の品質検証を自動ループ実行する。ビルド→テスト→lint→型チェック→セキュリティスキャンを実施し、失敗があれば修正して再検証する
 user-invocable: true
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write, Agent
