@@ -5,3 +5,6 @@
 
 # スキルの評価用ファイル（skill-creatorが自動生成、機密パスを含む可能性あり）
 **/evals/
+
+# Claude Code worktree（agentが自動作成する一時作業領域）
+.claude/worktrees/
