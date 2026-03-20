@@ -1,5 +1,5 @@
 ---
-name: worktree
+name: yb-worktree
 description: PRレビュー用worktreeの作成や、新機能追加・大規模リファクタなどブランチを切るべき大規模な実装作業で使用する。小規模な修正や設定変更では使用不要。
 user-invocable: true
 ---

@@ -10,8 +10,8 @@
   4. テスト計画 → `/wf-4-test-plan`（Phase 2で追加予定）
   5. タスク分解 → `/wf-5-task-breakdown`（ゲート2）
   6. TDD実装 → `/wf-6-tdd-cycle`（Phase 2で追加予定）
-  7. レビュー → `/pr-flow-review`, CodeRabbit
-  8. PR → `/pr-flow`
+  7. レビュー → `/yb-pr-flow-review`, CodeRabbit
+  8. PR → `/yb-pr-flow`
 - フェーズ間の情報伝達は `.claude/artifacts/` の成果物ファイル経由で行う
 - セッションが長くなったら /compact で積極的にコンパクションする（FIC: Frequent Intentional Compaction）
 

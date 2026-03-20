@@ -1,5 +1,5 @@
 ---
-name: quality-gate
+name: yb-quality-gate
 description: コミットやPR前の品質チェック統合。プロジェクトのツーリングを自動検出し、lint/型チェック/テスト/セキュリティスキャンを一括実行する
 user-invocable: true
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write, AskUserQuestion
