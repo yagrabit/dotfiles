@@ -69,14 +69,27 @@ else
   exit 0
 fi
 
+# フォーマット前のハッシュを記録（変更検出用）
+HASH_BEFORE=$(md5 -q "$FILE_PATH" 2>/dev/null || md5sum "$FILE_PATH" 2>/dev/null | cut -d' ' -f1 || true)
+
 # フォーマット実行（15秒タイムアウト）
 timeout 15 ${FORMATTER_CMD} "$FILE_PATH" 2>/dev/null || true
 
-# 成功時に相対パスでstderrに通知
-# macOS互換: realpath --relative-to は coreutils 版が必要なため python3 でフォールバック
-REL_PATH=$(realpath --relative-to="$GIT_ROOT" "$FILE_PATH" 2>/dev/null \
-  || python3 -c "import os; print(os.path.relpath('$FILE_PATH', '$GIT_ROOT'))" 2>/dev/null \
-  || echo "$FILE_PATH")
-echo "フォーマット済み: ${REL_PATH}" >&2
+# フォーマット後のハッシュを取得
+HASH_AFTER=$(md5 -q "$FILE_PATH" 2>/dev/null || md5sum "$FILE_PATH" 2>/dev/null | cut -d' ' -f1 || true)
+
+# 変更があった場合のみ additionalContext JSON を出力
+if [ -n "$HASH_BEFORE" ] && [ -n "$HASH_AFTER" ] && [ "$HASH_BEFORE" != "$HASH_AFTER" ]; then
+  # macOS互換: realpath --relative-to は coreutils 版が必要なため python3 でフォールバック
+  REL_PATH=$(realpath --relative-to="$GIT_ROOT" "$FILE_PATH" 2>/dev/null \
+    || python3 -c "import os; print(os.path.relpath('$FILE_PATH', '$GIT_ROOT'))" 2>/dev/null \
+    || echo "$FILE_PATH")
+
+  MSG="自動フォーマット適用済み: ${REL_PATH} (${FORMATTER})"
+
+  # jqで安全にJSONエスケープして出力
+  jq -Rn --arg msg "$MSG" \
+    '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":$msg}}'
+fi
 
 exit 0
