@@ -1,5 +1,5 @@
 ---
-name: coderabbit-fix
+name: yb-coderabbit-fix
 description: PRのCodeRabbitレビューコメントを取得・分析し、このPRで導入された問題のみを特定して修正する。「CodeRabbitの指摘を直して」「PRのレビューコメントを確認して」「CRの指摘を対応して」「コードレビューの修正をして」など、CodeRabbitやPRレビューへの対応が求められたときに使用する。PRのURLや番号が指定された場合もこのスキルを使う。
 user-invocable: true
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write, Agent, AskUserQuestion
