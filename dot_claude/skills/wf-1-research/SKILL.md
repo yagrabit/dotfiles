@@ -1,6 +1,6 @@
 ---
-name: research
-description: 既存プロジェクトのコードベースを調査し、技術スタック・パターン・依存関係をレポートにまとめる。機能追加や設計の前段階で使用する。「コードベースを調査して」「プロジェクト構成を把握して」「既存コードを分析して」などで起動。
+name: wf-1-research
+description: ステップ1/6: 既存プロジェクトのコードベースを調査し、技術スタック・パターン・依存関係をレポートにまとめる。機能追加や設計の前段階で使用する。「コードベースを調査して」「プロジェクト構成を把握して」「既存コードを分析して」などで起動。
 user-invocable: true
 allowed-tools: Bash, Read, Grep, Glob, Agent, Write, AskUserQuestion
 ---

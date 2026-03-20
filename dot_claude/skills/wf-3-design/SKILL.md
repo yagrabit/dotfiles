@@ -1,6 +1,6 @@
 ---
-name: design
-description: 要件とコードベース調査をもとに設計ドキュメントとADRを作成する。既存プロジェクトでは差分設計、新規ではフル設計を行う。「設計して」「設計ドキュメントを作って」「アーキテクチャを決めたい」などで起動。
+name: wf-3-design
+description: ステップ3/6: 要件とコードベース調査をもとに設計ドキュメントとADRを作成する。既存プロジェクトでは差分設計、新規ではフル設計を行う。「設計して」「設計ドキュメントを作って」「アーキテクチャを決めたい」などで起動。
 user-invocable: true
 allowed-tools: Bash, Read, Write, Grep, Glob, Agent, AskUserQuestion
 ---

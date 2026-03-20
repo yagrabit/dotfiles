@@ -1,6 +1,6 @@
 ---
-name: task-breakdown
-description: 設計をもとにタスクを分解し、依存関係・並列可否・着手順を整理する。各タスクにTDDサイクルを組み込む。「タスクに分解して」「実装計画を作って」「タスク一覧を作って」などで起動。
+name: wf-5-task-breakdown
+description: ステップ5/6: 設計をもとにタスクを分解し、依存関係・並列可否・着手順を整理する。各タスクにTDDサイクルを組み込む。「タスクに分解して」「実装計画を作って」「タスク一覧を作って」などで起動。
 user-invocable: true
 allowed-tools: Bash, Read, Write, AskUserQuestion
 ---

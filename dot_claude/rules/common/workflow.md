@@ -3,7 +3,15 @@
 ## セッション分離の原則
 
 - 1フェーズ1セッションを原則とする
-- フェーズ: Research → 要件明確化 → 設計 → テスト計画 → タスク分解 → TDD実装 → レビュー → PR
+- フェーズとスキルの対応:
+  1. Research → `/wf-1-research`
+  2. 要件明確化 → `/wf-2-clarify-requirements`
+  3. 設計 → `/wf-3-design`（ゲート1）
+  4. テスト計画 → `/wf-4-test-plan`（Phase 2で追加予定）
+  5. タスク分解 → `/wf-5-task-breakdown`（ゲート2）
+  6. TDD実装 → `/wf-6-tdd-cycle`（Phase 2で追加予定）
+  7. レビュー → `/pr-flow-review`, CodeRabbit
+  8. PR → `/pr-flow`
 - フェーズ間の情報伝達は `.claude/artifacts/` の成果物ファイル経由で行う
 - セッションが長くなったら /compact で積極的にコンパクションする（FIC: Frequent Intentional Compaction）
 
