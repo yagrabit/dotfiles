@@ -87,17 +87,21 @@ def fmt(label: str, pct: float, reset_str: str = "") -> str:
     return result
 
 
-def time_until(resets_at: str) -> str:
-    """ISO8601のリセット時刻から残り時間を人間が読みやすい形式で返す
+def time_until(resets_at) -> str:
+    """リセット時刻から残り時間を人間が読みやすい形式で返す
 
+    resets_at はUnixエポック秒（int/float）またはISO8601文字列。
     例: "3h12m", "2d8h", "45m", "0m"
     """
     try:
-        reset_dt = datetime.fromisoformat(resets_at.replace("Z", "+00:00"))
         now = datetime.now(timezone.utc)
+        if isinstance(resets_at, (int, float)):
+            reset_dt = datetime.fromtimestamp(resets_at, tz=timezone.utc)
+        else:
+            reset_dt = datetime.fromisoformat(str(resets_at).replace("Z", "+00:00"))
         diff = reset_dt - now
         total_seconds = max(0, int(diff.total_seconds()))
-    except (ValueError, AttributeError):
+    except (ValueError, AttributeError, OSError, OverflowError):
         return ""
 
     days = total_seconds // 86400
@@ -247,27 +251,23 @@ def main():
     # コンテキスト使用率（常に表示）
     sections.append(fmt("ctx", ctx_pct))
 
-    # 5時間レートリミット（rate_limitsがある場合のみ）
-    if rl_5h_pct is not None:
-        reset_str = ""
-        if rl_5h_pct >= 80 and rl_5h_resets:
-            reset_str = time_until(rl_5h_resets)
-        sections.append(fmt("5h", float(rl_5h_pct), reset_str))
+    # 5時間レートリミット（常に表示）
+    reset_str = ""
+    if rl_5h_resets:
+        reset_str = time_until(rl_5h_resets)
+    sections.append(fmt("5h", float(rl_5h_pct or 0), reset_str))
 
-    # 7日間レートリミット（rate_limitsがある場合のみ）
-    if rl_7d_pct is not None:
-        reset_str = ""
-        if rl_7d_pct >= 80 and rl_7d_resets:
-            reset_str = time_until(rl_7d_resets)
-        sections.append(fmt("7d", float(rl_7d_pct), reset_str))
+    # 7日間レートリミット（常に表示）
+    reset_str = ""
+    if rl_7d_resets:
+        reset_str = time_until(rl_7d_resets)
+    sections.append(fmt("7d", float(rl_7d_pct or 0), reset_str))
 
-    # 行数変更（変更がある場合のみ）
-    if lines_added > 0 or lines_removed > 0:
-        sections.append(f"{DIM}±{RESET} +{lines_added}/-{lines_removed}")
+    # 行数変更（常に表示）
+    sections.append(f"{DIM}±{RESET} +{lines_added}/-{lines_removed}")
 
-    # gitブランチ（取得できた場合のみ）
-    if git_branch:
-        sections.append(f"{DIM}⎇{RESET} {git_branch}")
+    # gitブランチ（常に表示）
+    sections.append(f"{DIM}⎇{RESET} {git_branch or '-'}")
 
     # ---------- tmux監視JSON書き出し ----------
     tmux_pane = os.environ.get("TMUX_PANE")
