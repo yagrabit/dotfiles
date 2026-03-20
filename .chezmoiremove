@@ -1,0 +1,23 @@
+# リネーム・統合で不要になった古いスキルの削除指定
+# chezmoi apply 時にデプロイ先（~/）からこれらのエントリが削除される
+# パスはホームディレクトリからの相対パス
+
+# yb-プレフィックス追加前の旧名スキル（2026-03-20 リネーム）
+.claude/skills/blog-memo
+.claude/skills/coderabbit-fix
+.claude/skills/commit
+.claude/skills/drawio
+.claude/skills/next-analyze
+.claude/skills/next-analyze-workspace
+.claude/skills/pr-flow
+.claude/skills/pr-flow-review
+.claude/skills/typescript-practice
+.claude/skills/worktree
+
+# 統合により廃止されたスキル（2026-03-20 yb-quality-checkに統合）
+.claude/skills/yb-orchestrate
+.claude/skills/yb-quality-gate
+.claude/skills/yb-verification-loop
+
+# 残骸
+.claude/skills/yb-next-analyze-workspace
