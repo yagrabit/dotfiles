@@ -1,6 +1,6 @@
 ---
-name: clarify-requirements
-description: Confluenceや口頭の要件を取得し、曖昧な点を洗い出してユーザーとの対話で明確化する。「要件を整理して」「Confluenceの要件を読んで」「要件の疑問点を詰めたい」などで起動。
+name: wf-2-clarify-requirements
+description: ステップ2/6: Confluenceや口頭の要件を取得し、曖昧な点を洗い出してユーザーとの対話で明確化する。「要件を整理して」「Confluenceの要件を読んで」「要件の疑問点を詰めたい」などで起動。
 user-invocable: true
 allowed-tools: Bash, Read, Write, AskUserQuestion, Agent
 ---
