@@ -254,8 +254,8 @@ def main():
             reset_str = time_until(rl_5h_resets)
         sections.append(fmt("5h", float(rl_5h_pct), reset_str))
 
-    # 7日間レートリミット（50%以上のときのみ表示）
-    if rl_7d_pct is not None and rl_7d_pct >= 50:
+    # 7日間レートリミット（rate_limitsがある場合のみ）
+    if rl_7d_pct is not None:
         reset_str = ""
         if rl_7d_pct >= 80 and rl_7d_resets:
             reset_str = time_until(rl_7d_resets)
