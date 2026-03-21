@@ -83,6 +83,15 @@
             "command": "{{ .chezmoi.homeDir }}/.claude/hooks/typecheck.sh"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/doc-update-reminder.sh"
+          }
+        ]
       }
     ],
     "PreCompact": [
@@ -135,11 +144,6 @@
     "context7@claude-plugins-official": true,
     "atlassian@claude-plugins-official": true
   },
-  "mcpServers": {
-    "open-pencil": {
-      "command": "bunx",
-      "args": ["@open-pencil/mcp"]
-    }
-  },
+  "mcpServers": {},
   "effortLevel": "high"
 }
