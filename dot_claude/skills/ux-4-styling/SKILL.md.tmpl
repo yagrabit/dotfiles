@@ -1,0 +1,39 @@
+---
+name: ux-4-styling
+description: "shadcn/ui + Tailwind CSSによるUIスタイリング。コンポーネントの追加・カスタマイズ・Tailwind設定生成"
+user-invocable: true
+allowed-tools: Bash, Read, Write
+---
+
+## 言語
+
+- ユーザーとのやりとりは日本語で行うこと
+- 検索クエリやスクリプト実行時のキーワードは英語を使用すること（CSVデータが英語のため）
+- 検索結果の説明・提案は日本語に翻訳して伝えること
+
+以下のファイルを読み込み、その指示に従って動作してください:
+
+{{ .chezmoi.homeDir }}/ghq/github.com/yagrabit/ui-ux-pro-max-skill/.claude/skills/ui-styling/SKILL.md
+
+## 補足: スキル名のマッピング
+
+参照先ドキュメント内のスキル名は以下のように読み替えてください:
+
+- `ckm:ui-styling` → このスキル自身（ux-4-styling）
+- `ui-ux-pro-max` → `/ux-3-core`
+- `ckm:design` → `/ux-5-design`
+- `ckm:design-system` → `/ux-2-tokens`
+- `ckm:brand` → `/ux-1-brand`
+- `ckm:slides` → `/ux-7-slides`
+- `ckm:banner-design` → `/ux-6-banner`
+
+## 補足: スクリプトパス
+
+スクリプトの実行時は、以下のベースパスを使用してください:
+
+{{ .chezmoi.homeDir }}/ghq/github.com/yagrabit/ui-ux-pro-max-skill/.claude/skills/ui-styling/scripts/
+
+## 補足: canvas-fonts について
+
+参照先で canvas-fonts/ ディレクトリが言及されている場合、このセットアップではフォントファイルは含まれていません。
+canvas描画機能は利用不可です。shadcn/ui + Tailwind の機能のみ使用してください。
