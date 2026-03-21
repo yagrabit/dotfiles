@@ -2,6 +2,7 @@
 node = "latest"
 "npm:secretlint" = "latest"
 "npm:@secretlint/secretlint-rule-preset-recommend" = "latest"
+"npm:@antfu/ni" = "latest"
 bat = "latest"
 eza = "latest"
 fd = "latest"
