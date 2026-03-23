@@ -103,6 +103,11 @@ fstash の操作:
 | `<leader>ff` | ファイル検索 (telescope) |
 | `<leader>fg` | 文字列検索 (telescope) |
 | `<leader>mp` | Markdownプレビュー (glow) |
+| `<leader>cp` | 絶対パスをクリップボードにコピー |
+| `<leader>cr` | 相対パスをクリップボードにコピー |
+| `<leader>cf` | ファイル名をクリップボードにコピー |
+| `<leader>o` / `<leader>O` | 下/上に空行を挿入（インサートモードに入らない） |
+| `Ctrl+a` | 全選択 |
 | `<leader>sv` | 縦分割 |
 | `<leader>sh` | 横分割 |
 | `-` | 親ディレクトリを開く (oil.nvim) |
