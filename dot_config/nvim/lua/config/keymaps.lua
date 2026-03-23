@@ -34,3 +34,29 @@ keymap("v", ">", ">gv", { desc = "インデント増" })
 
 -- 検索ハイライトクリア
 keymap("n", "<Esc>", "<cmd>nohlsearch<cr>", { desc = "ハイライトクリア" })
+
+-- ファイルパスをクリップボードにコピー
+keymap("n", "<leader>cp", function()
+  local path = vim.fn.expand("%:p")
+  vim.fn.setreg("+", path)
+  vim.notify("Copied: " .. path)
+end, { desc = "絶対パスをコピー" })
+
+keymap("n", "<leader>cr", function()
+  local path = vim.fn.expand("%")
+  vim.fn.setreg("+", path)
+  vim.notify("Copied: " .. path)
+end, { desc = "相対パスをコピー" })
+
+keymap("n", "<leader>cf", function()
+  local name = vim.fn.expand("%:t")
+  vim.fn.setreg("+", name)
+  vim.notify("Copied: " .. name)
+end, { desc = "ファイル名をコピー" })
+
+-- 空行の挿入（インサートモードに入らない）
+keymap("n", "<leader>o", "o<Esc>", { desc = "下に空行を挿入" })
+keymap("n", "<leader>O", "O<Esc>", { desc = "上に空行を挿入" })
+
+-- 全選択
+keymap("n", "<C-a>", "ggVG", { desc = "全選択" })
