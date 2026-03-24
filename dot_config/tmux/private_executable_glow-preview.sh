@@ -43,9 +43,9 @@ selected=$(echo "$FILE_LIST" | fzf \
   --ansi \
   --header="Enter: 全画面表示 / Ctrl-Y: パスコピー / ESC: 閉じる" \
   --reverse \
-  --preview 'f="{}"; f="${f#\[Claude\] }"; glow -s dark -w $FZF_PREVIEW_COLUMNS "$f"' \
+  --preview 'bash -c '\''f="{}"; f="${f#\[Claude\] }"; glow -s dark -w $FZF_PREVIEW_COLUMNS "$f"'\''' \
   --preview-window "right:60%:wrap" \
-  --bind "ctrl-y:execute-silent(f='{}'; f=\"\${f#\\[Claude\\] }\"; printf '%s' \"\$f\" | pbcopy)+abort" \
+  --bind "ctrl-y:execute-silent(bash -c 'f=\"{}\"; f=\"\${f#\\[Claude\\] }\"; printf \"%s\" \"\$f\" | pbcopy')+abort" \
 ) || exit 0
 
 [[ -z "$selected" ]] && exit 0
