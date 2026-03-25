@@ -46,11 +46,18 @@ CHECK_RUNS_JSON=$(gh api "repos/${OWNER}/${REPO}/commits/${HEAD_SHA}/check-runs"
   exit 0
 }
 
-# CI状態集計
-CI_TOTAL=$(echo "$CHECK_RUNS_JSON" | jq 'length' 2>/dev/null) || CI_TOTAL=0
-CI_PASSED=$(echo "$CHECK_RUNS_JSON" | jq '[.[] | select(.status == "completed" and (.conclusion == "success" or .conclusion == "neutral" or .conclusion == "skipped"))] | length' 2>/dev/null) || CI_PASSED=0
-CI_FAILED=$(echo "$CHECK_RUNS_JSON" | jq '[.[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out"))] | length' 2>/dev/null) || CI_FAILED=0
-CI_PENDING=$(echo "$CHECK_RUNS_JSON" | jq '[.[] | select(.status == "queued" or .status == "in_progress")] | length' 2>/dev/null) || CI_PENDING=0
+# CI状態集計（jq 1回で全カウントを一括取得）
+CI_COUNTS=$(echo "$CHECK_RUNS_JSON" | jq '{
+  total: length,
+  passed: [.[] | select(.status == "completed" and (.conclusion == "success" or .conclusion == "neutral" or .conclusion == "skipped"))] | length,
+  failed: [.[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out"))] | length,
+  pending: [.[] | select(.status == "queued" or .status == "in_progress")] | length
+}' 2>/dev/null) || CI_COUNTS='{"total":0,"passed":0,"failed":0,"pending":0}'
+
+CI_TOTAL=$(echo "$CI_COUNTS" | jq '.total' 2>/dev/null) || CI_TOTAL=0
+CI_PASSED=$(echo "$CI_COUNTS" | jq '.passed' 2>/dev/null) || CI_PASSED=0
+CI_FAILED=$(echo "$CI_COUNTS" | jq '.failed' 2>/dev/null) || CI_FAILED=0
+CI_PENDING=$(echo "$CI_COUNTS" | jq '.pending' 2>/dev/null) || CI_PENDING=0
 
 # CI全体ステータス判定
 CI_STATUS="pending"

@@ -29,68 +29,16 @@ case "$file_path" in
 esac
 
 # ガード対象パターンのチェック（case文でパターンマッチング）
+# パターン追加時はこのcase文にパターンを追加するだけでよい
 case "$file_path" in
   # Claude Code hooks/設定
-  */.claude/hooks/*)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
-  */.claude/settings.json*)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
-  */.claude/settings.local.json*)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
+  */.claude/hooks/* | */.claude/settings.json* | */.claude/settings.local.json* | \
   # lint/format設定
-  */biome.json)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
-  */.eslintrc*)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
-  */eslint.config.*)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
-  */.prettierrc*)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
-  */prettier.config.*)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
-  */.stylelintrc*)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
+  */biome.json | */.eslintrc* | */eslint.config.* | */.prettierrc* | */prettier.config.* | */.stylelintrc* | \
   # CI/CD設定
-  */.github/workflows/*)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
-  */.gitlab-ci.yml)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
+  */.github/workflows/* | */.gitlab-ci.yml | \
   # git hooks
-  */.hooks/*)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
-  */.husky/*)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
-  */.lefthook.yml)
-    echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
-    exit 2
-    ;;
-  */lefthook.yml)
+  */.hooks/* | */.husky/* | */.lefthook.yml | */lefthook.yml)
     echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
     exit 2
     ;;
