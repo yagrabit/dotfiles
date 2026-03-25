@@ -49,6 +49,11 @@ code-reviewer エージェントがチェック項目に基づいてレビュー
    - 完了する: 問題なし、またはレビュー指摘を承知の上で完了する
    - 修正する: 指摘事項を修正してから再度レビューする（修正後はステップ2に戻る）
    - 中止する: レビューを中止する
+3. 「完了する」が選択された場合、レビュー完了フラグを作成する:
+   - ブランチ名を取得: `git branch --show-current`
+   - ブランチ名の `/` を `-` に置換して安全なファイル名を作る
+   - フラグファイル作成: `mkdir -p /tmp/claude-sessions && date +%s > /tmp/claude-sessions/review-passed-{safe-branch-name}`
+   - このフラグがないと `git push` がブロックされる（pre-push-review-gate hook）
 
 ## Examples
 

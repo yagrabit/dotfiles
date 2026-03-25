@@ -57,7 +57,7 @@ TOOLS_MSG="${TOOLS_MSG}"$'\n'"✓ jq: ${JQ_VER}"
 # 2. gh認証状態確認
 # ---------------------------------------------------------------------------
 if [ -n "$GH_VER" ]; then
-  GH_AUTH_OUTPUT=$(_timeout 5 gh auth status 2>&1) && GH_AUTH_RC=0 || GH_AUTH_RC=$?
+  _timeout 5 gh auth status &>/dev/null && GH_AUTH_RC=0 || GH_AUTH_RC=$?
 
   if [ "$GH_AUTH_RC" -eq 0 ]; then
     TOOLS_MSG="${TOOLS_MSG}"$'\n'"✓ gh: ${GH_VER} (認証済み)"

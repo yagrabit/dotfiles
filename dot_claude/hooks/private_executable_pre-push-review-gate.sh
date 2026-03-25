@@ -20,7 +20,8 @@ if [[ -z "$command" ]]; then
 fi
 
 # "git push" が含まれなければスキップ
-if ! echo "$command" | grep -qE '^\s*git\s+push\b'; then
+# チェインコマンド（git add . && git push）にも対応するため行頭アンカーなし
+if ! echo "$command" | grep -qE '\bgit\s+push\b'; then
   exit 0
 fi
 
