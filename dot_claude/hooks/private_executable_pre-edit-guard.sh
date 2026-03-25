@@ -30,14 +30,11 @@ esac
 
 # ガード対象パターンのチェック（case文でパターンマッチング）
 # パターン追加時はこのcase文にパターンを追加するだけでよい
+# 対象: Claude Code hooks/設定, lint/format設定, CI/CD設定, git hooks
 case "$file_path" in
-  # Claude Code hooks/設定
   */.claude/hooks/* | */.claude/settings.json* | */.claude/settings.local.json* | \
-  # lint/format設定
   */biome.json | */.eslintrc* | */eslint.config.* | */.prettierrc* | */prettier.config.* | */.stylelintrc* | \
-  # CI/CD設定
   */.github/workflows/* | */.gitlab-ci.yml | \
-  # git hooks
   */.hooks/* | */.husky/* | */.lefthook.yml | */lefthook.yml)
     echo "ブロック: ${file_path} はガード対象ファイルです。この変更が本当に必要な場合はユーザーに確認してください。" >&2
     exit 2
