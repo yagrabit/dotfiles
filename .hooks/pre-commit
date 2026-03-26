@@ -1,5 +1,8 @@
 #!/bin/bash
-# pre-commitフック: secretlintによる秘密情報検出 + テンプレート内の絶対ホームパスをchezmoi変数に自動置換
+# pre-commitフック:
+#   1. secretlintによる秘密情報検出
+#   2. テンプレート内の絶対ホームパスをchezmoi変数に自動置換
+#   3. chezmoi管理ファイルの削除・リネームを.chezmoiremoveに自動追記
 
 # --- secretlintによる秘密情報検出 ---
 if command -v secretlint &> /dev/null; then
@@ -19,31 +22,79 @@ fi
 HOME_PATH="$HOME"
 TEMPLATE_VAR='{{ .chezmoi.homeDir }}'
 
-# ステージング中の.tmplファイルを取得
-staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.tmpl$')
+staged_tmpl=$(git diff --cached --name-only --diff-filter=ACM | grep '\.tmpl$' || true)
 
-if [ -z "$staged_files" ]; then
-  exit 0
+if [ -n "$staged_tmpl" ]; then
+  modified=false
+
+  for file in $staged_tmpl; do
+    if grep -q "$HOME_PATH" "$file" 2>/dev/null; then
+      if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s|$HOME_PATH|$TEMPLATE_VAR|g" "$file"
+      else
+        sed -i "s|$HOME_PATH|$TEMPLATE_VAR|g" "$file"
+      fi
+      git add "$file"
+      modified=true
+      echo "絶対パスを置換しました: $file"
+    fi
+  done
+
+  if [ "$modified" = true ]; then
+    echo "ホームパスを {{ .chezmoi.homeDir }} に置換しました"
+  fi
 fi
 
-modified=false
+# --- chezmoi管理ファイルの削除・リネームを.chezmoiremoveに自動追記 ---
+# dot_プレフィックスのディレクトリ配下でファイルが削除またはリネーム（旧パス側）された場合、
+# デプロイ先のパスを.chezmoiremoveに追記して、他のマシンでもchezmoi applyで旧ファイルが消えるようにする。
 
-for file in $staged_files; do
-  if grep -q "$HOME_PATH" "$file" 2>/dev/null; then
-    # macOS/Linuxでsed -iの構文が異なる
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-      sed -i '' "s|$HOME_PATH|$TEMPLATE_VAR|g" "$file"
-    else
-      sed -i "s|$HOME_PATH|$TEMPLATE_VAR|g" "$file"
-    fi
-    git add "$file"
-    modified=true
-    echo "絶対パスを置換しました: $file"
+deleted_files=$(git diff --cached --name-only --diff-filter=D | grep '^dot_' || true)
+renamed_old=$(git diff --cached -M --name-only --diff-filter=R | grep '^dot_' || true)
+
+remove_targets=""
+if [ -n "$deleted_files" ]; then
+  remove_targets="$deleted_files"
+fi
+if [ -n "$renamed_old" ]; then
+  if [ -n "$remove_targets" ]; then
+    remove_targets="$remove_targets"$'\n'"$renamed_old"
+  else
+    remove_targets="$renamed_old"
   fi
-done
+fi
 
-if [ "$modified" = true ]; then
-  echo "ホームパスを {{ .chezmoi.homeDir }} に置換しました"
+if [ -n "$remove_targets" ]; then
+  chezmoiremove=".chezmoiremove"
+  added=false
+
+  while IFS= read -r src_path; do
+    # dot_プレフィックスをドットに変換してデプロイ先パスを得る
+    # 例: dot_claude/skills/yb-foo/SKILL.md → .claude/skills/yb-foo/SKILL.md
+    # private_プレフィックスはchezmoiのパーミッション指定なので除去する
+    target_path=$(echo "$src_path" | sed 's|^dot_|.|; s|/dot_|/.|g; s|/private_|/|g')
+
+    # ファイル単位ではなくディレクトリ単位で登録する
+    # ソースディレクトリが存在しなければディレクトリごと削除された
+    src_parent=$(dirname "$src_path")
+    if [ ! -d "$src_parent" ]; then
+      target_entry=$(dirname "$target_path")
+    else
+      target_entry="$target_path"
+    fi
+
+    # 既に登録済みならスキップ
+    if ! grep -qxF "$target_entry" "$chezmoiremove" 2>/dev/null; then
+      echo "$target_entry" >> "$chezmoiremove"
+      added=true
+      echo ".chezmoiremoveに追記: $target_entry"
+    fi
+  done <<< "$remove_targets"
+
+  if [ "$added" = true ]; then
+    git add "$chezmoiremove"
+    echo ".chezmoiremoveを自動更新しました"
+  fi
 fi
 
 exit 0
