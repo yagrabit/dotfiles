@@ -1,5 +1,5 @@
 ---
-name: yb-next-analyze
+name: qa-next-analyze
 description: Next.jsプロジェクトのバンドルサイズを分析し、改善提案を出力する。ビルド出力・チャンクファイルサイズ・マニフェスト・ソースコードを総合的に分析する。Next.js 16.1以上ではTURBOPACK_STATSやexperimental-analyzeも活用する。「バンドル分析して」「ビルドサイズ確認して」「パフォーマンス改善したい」「next analyze」「First Load JS大きい」などバンドルやビルドサイズ、パフォーマンスに関する話題が出たときに使用する。
 user-invocable: true
 allowed-tools: ""

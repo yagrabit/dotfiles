@@ -1,5 +1,5 @@
 ---
-name: yb-pr-flow
+name: pr-4-create
 description: ブランチ作成からコミット、レビュー、Draft PR作成までの一貫ワークフローを実行する
 disable-model-invocation: true
 user-invocable: true
@@ -57,7 +57,7 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob, AskUserQuestion, Agent
 
 ### ステップ2: コミット作成
 
-yb-commit スキル（~/.claude/skills/yb-commit/SKILL.md）の全手順に従う。
+pr-2-commit スキル（~/.claude/skills/pr-2-commit/SKILL.md）の全手順に従う。
 
 #### 完了チェックポイント（ステップ2）
 

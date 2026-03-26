@@ -1,5 +1,5 @@
 ---
-name: yb-doc-interview
+name: doc-interview
 description: Confluenceの未完成ドキュメントページをヒアリングベースで完成させるスキル。ConfluenceページのURLを受け取り、既存内容を分析し、ユーザーに対話形式で質問して情報を収集し、整形されたドキュメントを生成する。「ドキュメント作って」「ドキュメント補完して」「Confluenceページを埋めて」「このページ書いて」など、Confluenceドキュメントの作成・補完・執筆に関する依頼があったときに使用する。ConfluenceのURLが会話に含まれている場合も積極的にこのスキルを使うこと。
 user-invocable: true
 ---

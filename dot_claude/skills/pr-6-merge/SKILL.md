@@ -1,5 +1,5 @@
 ---
-name: yb-merge-cleanup
+name: pr-6-merge
 description: PRをマージし、mainブランチを最新化、作業ブランチを削除、フラグファイルをクリーンアップする
 disable-model-invocation: true
 user-invocable: true
@@ -78,7 +78,7 @@ PRマージからローカルクリーンアップまでを一括処理するス
 
 ### 基本的な使い方（現在のブランチのPRをマージ）
 
-ユーザー: 「/yb-merge-cleanup」
+ユーザー: 「/pr-6-merge」
 
 ```
 ステップ1: PR特定と状態確認
@@ -113,7 +113,7 @@ PRマージからローカルクリーンアップまでを一括処理するス
 
 ### PRに問題がある場合
 
-ユーザー: 「/yb-merge-cleanup 58」
+ユーザー: 「/pr-6-merge 58」
 
 ```
 ステップ1: PR特定と状態確認
@@ -133,7 +133,7 @@ PRマージからローカルクリーンアップまでを一括処理するス
   → 「問題を修正する」を選択
   → スキルを中断、ユーザーが問題を修正
 
-（修正後、再度 /yb-merge-cleanup 58 を実行）
+（修正後、再度 /pr-6-merge 58 を実行）
 
 ステップ1: PR特定と状態確認
   PR #58: 通知機能を実装 (https://github.com/org/repo/pull/58)
