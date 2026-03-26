@@ -1,5 +1,5 @@
 ---
-name: yb-commit
+name: pr-2-commit
 description: 変更を適切な粒度でグループ化し、承認後にコミットする
 disable-model-invocation: true
 user-invocable: true

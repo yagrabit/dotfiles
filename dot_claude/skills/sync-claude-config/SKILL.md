@@ -1,5 +1,5 @@
 ---
-name: yb-sync-claude-config
+name: sync-claude-config
 description: Claude Code関連の設定ファイルをchezmoiのテンプレートとしてdotfilesに同期してください。
 user-invocable: true
 allowed-tools: Bash, Read, Edit, Glob, Grep, Write

@@ -1,5 +1,5 @@
 ---
-name: yb-drawio
+name: doc-drawio
 description: Generate draw.io diagrams as .drawio files, optionally export to PNG/SVG/PDF with embedded XML
 user-invocable: true
 ---

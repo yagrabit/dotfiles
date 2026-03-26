@@ -1,5 +1,5 @@
 ---
-name: yb-harness-audit
+name: qa-harness-audit
 description: リポジトリのClaude Code設定品質をスコアリングし、改善提案を出力する
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash

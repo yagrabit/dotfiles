@@ -1,5 +1,5 @@
 ---
-name: yb-quality-check
+name: qa-quality-check
 description: プロジェクトの品質チェックを実行する。lint/型チェック/テスト/セキュリティスキャンを一括実行し、--fixで自動修正ループも可能。「品質チェックして」「lint通して」「テスト回して」などで起動。
 user-invocable: true
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write, Agent, AskUserQuestion

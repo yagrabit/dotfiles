@@ -1,5 +1,5 @@
 ---
-name: yb-pr-flow-review
+name: pr-3-review
 description: ベースブランチとの差分に対して複数観点のコードレビューを実施し、問題を検出・修正する
 disable-model-invocation: true
 user-invocable: true
