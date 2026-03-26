@@ -21,3 +21,22 @@
 
 # 残骸
 .claude/skills/yb-next-analyze-workspace
+
+# yb-プレフィックスからカテゴリ別プレフィックスへリネーム（2026-03-27）
+.claude/skills/yb-blog-memo
+.claude/skills/yb-coderabbit-fix
+.claude/skills/yb-commit
+.claude/skills/yb-doc-interview
+.claude/skills/yb-drawio
+.claude/skills/yb-harness-audit
+.claude/skills/yb-merge-cleanup
+.claude/skills/yb-next-analyze
+.claude/skills/yb-pr-flow
+.claude/skills/yb-pr-flow-review
+.claude/skills/yb-quality-check
+.claude/skills/yb-sync-claude-config
+.claude/skills/yb-worktree
+
+# 不要スキルの削除（2026-03-27）
+.claude/skills/yb-lefthook-init
+.claude/skills/yb-typescript-practice
