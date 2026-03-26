@@ -45,6 +45,6 @@ echo "$FILE_LIST" | fzf \
   --reverse \
   --preview 'bash -c '\''f="{}"; f="${f#\[Claude\] }"; glow -s dark -w $FZF_PREVIEW_COLUMNS "$f"'\''' \
   --preview-window "right:60%:wrap" \
-  --bind "enter:execute(bash -c 'f=\"{}\"; f=\"\${f#\\[Claude\\] }\"; glow -p \"\$f\"')" \
+  --bind "enter:execute(bash -c 'f=\"{}\"; f=\"\${f#\\[Claude\\] }\"; glow -p -w 0 \"\$f\"')" \
   --bind "ctrl-y:execute-silent(bash -c 'f=\"{}\"; f=\"\${f#\\[Claude\\] }\"; printf \"%s\" \"\$f\" | pbcopy')+abort" \
   || exit 0
