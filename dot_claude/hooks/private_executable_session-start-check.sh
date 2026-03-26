@@ -81,6 +81,14 @@ if command -v uv &>/dev/null && ! command -v yb-memory &>/dev/null; then
   fi
 fi
 
+# yb-memory daemonの自動起動
+if command -v yb-memory &>/dev/null; then
+  if ! yb-memory ping &>/dev/null; then
+    yb-memory serve --daemon 2>/dev/null || true
+    MSG="${MSG}"$'\n'"✓ yb-memory: daemon起動"
+  fi
+fi
+
 # ---------------------------------------------------------------------------
 # 3. gitリポジトリ内の場合のみリポジトリ情報を収集
 # ---------------------------------------------------------------------------

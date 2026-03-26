@@ -1,6 +1,6 @@
 """argparseベースのCLIエントリポイント。
 
-yb-memoryコマンドのサブコマンド（ingest, search, status）を定義し、
+yb-memoryコマンドのサブコマンド（ingest, search, status, reindex, serve, stop, ping, gc）を定義し、
 各モジュールへのディスパッチを行う。
 """
 
@@ -247,12 +247,16 @@ def _cmd_status(args: argparse.Namespace) -> None:
             print(json.dumps(stats, ensure_ascii=False, indent=2))
         else:
             # 人間向け形式で出力
+            from yb_memory.server import is_server_running
+
+            daemon_status = "稼働中" if is_server_running() else "停止中"
             print("yb-memory 状態:")
             print(f"  スキーマバージョン: {stats['schema_version']}")
             print(f"  セッション数: {stats['session_count']}")
             print(f"  チャンク数: {stats['chunk_count']}")
             print(f"  DBサイズ: {_format_size(stats['db_size_bytes'])}")
             print(f"  DBパス: {DEFAULT_DB_PATH}")
+            print(f"  daemon: {daemon_status}")
 
     except Exception as e:
         print(f"エラー: {e}", file=sys.stderr)
@@ -280,6 +284,93 @@ def _cmd_reindex(args: argparse.Namespace) -> None:
     except Exception as e:
         print(f"エラー: {e}", file=sys.stderr)
         sys.exit(1)
+    finally:
+        conn.close()
+
+
+def _cmd_serve(args: argparse.Namespace) -> None:
+    """serveサブコマンドの実行。
+
+    検索サーバーを起動する。--daemonでバックグラウンド起動が可能。
+    """
+    from yb_memory.server import start_server
+
+    start_server(daemonize=args.daemon)
+
+
+def _cmd_stop(args: argparse.Namespace) -> None:
+    """stopサブコマンドの実行。
+
+    検索サーバーを停止する。
+    """
+    from yb_memory.server import stop_server
+
+    if not stop_server():
+        sys.exit(1)
+
+
+def _cmd_ping(args: argparse.Namespace) -> None:
+    """pingサブコマンドの実行。
+
+    検索サーバーの稼働状態を確認する。
+    """
+    from yb_memory.server import is_server_running, send_request
+
+    if not is_server_running():
+        print("サーバーは起動していません")
+        sys.exit(1)
+
+    response = send_request({"action": "ping"}, timeout=3.0)
+    if response and response.get("status") == "ok":
+        model_status = "ロード済み" if response.get("model_loaded") else "未ロード"
+        print(f"サーバー稼働中 (モデル: {model_status})")
+    else:
+        print("サーバーから応答がありません")
+        sys.exit(1)
+
+
+def _cmd_gc(args: argparse.Namespace) -> None:
+    """gcサブコマンドの実行。
+
+    指定日数より古いチャンクを削除する。
+    関連するセッション情報も整合性を保って更新する。
+    """
+    from datetime import datetime, timedelta, timezone
+
+    conn = get_connection()
+    try:
+        cutoff = datetime.now(timezone.utc) - timedelta(days=args.older_than)
+        cutoff_str = cutoff.isoformat()
+
+        # 削除対象のカウント
+        count = conn.execute(
+            "SELECT COUNT(*) FROM chunks WHERE created_at < ?",
+            (cutoff_str,),
+        ).fetchone()[0]
+
+        if count == 0:
+            print(f"{args.older_than}日以上前のチャンクはありません")
+            return
+
+        if args.dry_run:
+            print(f"[dry-run] 削除対象: {count}件（{args.older_than}日以上前）")
+            return
+
+        # 削除実行（chunks_vecとchunks_ftsはトリガーで連動削除）
+        conn.execute("DELETE FROM chunks WHERE created_at < ?", (cutoff_str,))
+        # セッションのchunk_countを更新
+        conn.execute(
+            """
+            UPDATE sessions SET chunk_count = (
+                SELECT COUNT(*) FROM chunks WHERE chunks.session_id = sessions.session_id
+            )
+        """
+        )
+        # chunk_count=0のセッションも削除
+        conn.execute("DELETE FROM sessions WHERE chunk_count = 0")
+        conn.commit()
+
+        print(f"削除完了: {count}件（{args.older_than}日以上前）")
     finally:
         conn.close()
 
@@ -387,6 +478,35 @@ def main() -> None:
         help="対象件数のみ表示",
     )
 
+    # --- serve サブコマンド ---
+    serve_parser = subparsers.add_parser("serve", help="検索サーバーを起動する")
+    serve_parser.add_argument(
+        "--daemon",
+        "-d",
+        action="store_true",
+        help="バックグラウンドで起動",
+    )
+
+    # --- stop サブコマンド ---
+    subparsers.add_parser("stop", help="検索サーバーを停止する")
+
+    # --- ping サブコマンド ---
+    subparsers.add_parser("ping", help="検索サーバーの稼働を確認する")
+
+    # --- gc サブコマンド ---
+    gc_parser = subparsers.add_parser("gc", help="古いチャンクを削除する")
+    gc_parser.add_argument(
+        "--older-than",
+        type=int,
+        default=180,
+        help="指定日数より古いチャンクを削除（デフォルト: 180）",
+    )
+    gc_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="削除対象を表示するのみ",
+    )
+
     args = parser.parse_args()
 
     # サブコマンドへのディスパッチ
@@ -398,6 +518,14 @@ def main() -> None:
         _cmd_status(args)
     elif args.command == "reindex":
         _cmd_reindex(args)
+    elif args.command == "serve":
+        _cmd_serve(args)
+    elif args.command == "stop":
+        _cmd_stop(args)
+    elif args.command == "ping":
+        _cmd_ping(args)
+    elif args.command == "gc":
+        _cmd_gc(args)
 
 
 if __name__ == "__main__":
