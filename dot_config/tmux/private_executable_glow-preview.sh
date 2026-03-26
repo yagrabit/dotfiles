@@ -1,6 +1,6 @@
 #!/bin/bash
 # glow-preview.sh — fzf + fd + glow によるMarkdownプレビューア
-# tmuxポップアップから呼び出し。ファイル選択→プレビュー→全画面表示を1画面で完結
+# tmuxポップアップから呼び出し。fzfプレビューペイン内でスクロール閲覧まで完結
 
 set -euo pipefail
 
@@ -39,19 +39,12 @@ if [[ -z "$FILE_LIST" ]]; then
   exit 0
 fi
 
-selected=$(echo "$FILE_LIST" | fzf \
+echo "$FILE_LIST" | fzf \
   --ansi \
-  --header="Enter: 全画面表示 / Ctrl-Y: パスコピー / ESC: 閉じる" \
+  --header="Enter: glowプレビュー(q→戻る) / Ctrl-Y: パスコピー / ESC: 閉じる" \
   --reverse \
   --preview 'bash -c '\''f="{}"; f="${f#\[Claude\] }"; glow -s dark -w $FZF_PREVIEW_COLUMNS "$f"'\''' \
   --preview-window "right:60%:wrap" \
+  --bind "enter:execute(bash -c 'f=\"{}\"; f=\"\${f#\\[Claude\\] }\"; glow -p \"\$f\"')" \
   --bind "ctrl-y:execute-silent(bash -c 'f=\"{}\"; f=\"\${f#\\[Claude\\] }\"; printf \"%s\" \"\$f\" | pbcopy')+abort" \
-) || exit 0
-
-[[ -z "$selected" ]] && exit 0
-
-# [Claude]プレフィックスを除去して実パスを取得
-file_path="${selected#\[Claude\] }"
-
-# 全画面glowプレビュー（ページャモード）
-glow -p "$file_path"
+  || exit 0
