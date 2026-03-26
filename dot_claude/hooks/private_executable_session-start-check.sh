@@ -73,6 +73,14 @@ fi
 
 MSG="${TOOLS_MSG}"
 
+# yb-memoryの自動インストール
+if command -v uv &>/dev/null && ! command -v yb-memory &>/dev/null; then
+  if [ -d "$HOME/.claude/tools/yb-memory" ]; then
+    uv tool install --from "$HOME/.claude/tools/yb-memory" yb-memory 2>/dev/null || true
+    MSG="${MSG}"$'\n'"✓ yb-memory: 自動インストール実行"
+  fi
+fi
+
 # ---------------------------------------------------------------------------
 # 3. gitリポジトリ内の場合のみリポジトリ情報を収集
 # ---------------------------------------------------------------------------

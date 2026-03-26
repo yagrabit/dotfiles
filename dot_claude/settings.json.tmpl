@@ -45,12 +45,24 @@
       "Bash(chezmoi diff:*)",
       "Bash(chezmoi data:*)",
       "Bash(mise:*)",
+      "Bash(yb-memory:*)",
       "Bash(docker ps:*)",
       "Bash(docker images:*)",
       "Bash(docker inspect:*)"
     ]
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/prompt-recall-memory.sh"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -148,6 +160,17 @@
           {
             "type": "command",
             "command": "{{ .chezmoi.homeDir }}/.claude/hooks/notification-tracker.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/memory-ingest.sh"
           }
         ]
       }
