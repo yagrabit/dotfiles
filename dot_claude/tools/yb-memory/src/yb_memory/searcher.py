@@ -211,12 +211,59 @@ def rrf_merge(
     return merged
 
 
+def _try_daemon_search(
+    query: str,
+    project_path: str | None,
+    limit: int,
+    mode: str,
+) -> list[SearchResult] | None:
+    """daemon経由の検索を試みる。daemon未起動や通信エラー時はNoneを返す。"""
+    try:
+        from yb_memory.server import SOCKET_PATH, send_request
+
+        if not SOCKET_PATH.exists():
+            return None
+
+        response = send_request(
+            {
+                "action": "search",
+                "query": query,
+                "project_path": project_path,
+                "limit": limit,
+                "mode": mode,
+            },
+            timeout=30.0,
+        )
+
+        if response is None or response.get("status") != "ok":
+            return None
+
+        results = []
+        for r in response.get("results", []):
+            results.append(
+                SearchResult(
+                    chunk_id=r["chunk_id"],
+                    score=r["score"],
+                    question=r["question"],
+                    answer=r["answer"],
+                    tool_summary=r.get("tool_summary"),
+                    project_path=r["project_path"],
+                    created_at=r["created_at"],
+                    session_id=r["session_id"],
+                )
+            )
+        return results
+    except Exception:
+        return None
+
+
 def search(
     conn: sqlite3.Connection,
     query: str,
     project_path: str | None = None,
     limit: int = 5,
     mode: str = "hybrid",
+    use_daemon: bool = True,
 ) -> list[SearchResult]:
     """検索を実行し、時間減衰を適用した結果を返す。
 
@@ -226,10 +273,19 @@ def search(
         project_path: プロジェクトパスでフィルタ（Noneなら全プロジェクト）
         limit: 返す結果数
         mode: 検索モード（"fts", "vector", "hybrid"）
+        use_daemon: daemon経由の検索を試みるか（サーバー内部からはFalseにする）
 
     Returns:
         スコア降順のSearchResultリスト
     """
+    # daemon経由の検索を試みる（mode=hybridまたはvectorの場合のみ）
+    # FTSは十分高速なのでdaemonを経由する必要がない
+    # use_daemon=Falseの場合はスキップ（サーバー内部からの呼び出し時、デッドロック防止）
+    if use_daemon and mode in ("hybrid", "vector"):
+        daemon_results = _try_daemon_search(query, project_path, limit, mode)
+        if daemon_results is not None:
+            return daemon_results
+
     if mode == "fts":
         # FTS5のみ検索（既存動作と同等）
         fts_results = fts_search(conn, query, project_path, _FETCH_LIMIT)
