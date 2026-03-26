@@ -1,7 +1,7 @@
 ---
 name: yb-typescript-practice
 description: TypeScript/React/Next.jsプロジェクトのコーディングベストプラクティスとツールチェーン設定。新規プロジェクトのセットアップやコード生成時に参照する。
-user_invocable: false
+user-invocable: false
 ---
 
 # TypeScript ベストプラクティス
