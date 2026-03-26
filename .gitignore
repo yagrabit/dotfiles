@@ -8,3 +8,15 @@
 
 # Claude Code worktree（agentが自動作成する一時作業領域）
 .claude/worktrees/
+
+# Claude Code成果物（セッション間の中間ファイル）
+.claude/artifacts/
+
+# Python
+__pycache__/
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# uv lock（ローカルで生成、依存解決はpyproject.tomlから）
+uv.lock
