@@ -11,6 +11,14 @@ TDD実装スキル。odin司令塔のdoフェーズで使用する。
 実装計画（plan-*.md）を入力として、タスクをTDDサイクル（Red→Green→Refactor）で実装する。
 タスクの特性に応じて単一実行・並列実行・逐次実行を使い分ける。
 
+## ガードレール（安全制御）
+
+このスキルは以下の安全制御を遵守する:
+
+- git push / git commit は実行しない（それぞれodin-do-pr / odin-do-commitスキルの責務）
+- `git reset --hard` / `git checkout .` / `git clean -f` 等の破壊的操作を実行しない
+- 実装中にファイルを元に戻す必要がある場合は、Editツールで手動修正するか、AskUserQuestionでユーザーに確認する
+
 ## Instructions
 
 ### 完了チェックポイントの原則
