@@ -10,6 +10,14 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob, Agent, AskUserQuestion
 テスト計画・実装・実行スキル。odin司令塔のdoフェーズで使用する。
 設計ドキュメント・要件定義書・既存のテスト計画を入力として、テストシナリオの洗い出し・テスト実装・実行・結果レポートまでを担う。
 
+## ガードレール（安全制御）
+
+このスキルは以下の安全制御を遵守する:
+
+- git push / git commit は実行しない（それぞれodin-do-pr / odin-do-commitスキルの責務）
+- `git reset --hard` / `git checkout .` / `git clean -f` 等の破壊的操作を実行しない
+- テストファイルの削除や大幅な変更が必要な場合は、Editツールで明示的に修正する
+
 ## Instructions
 
 ### 完了チェックポイントの原則

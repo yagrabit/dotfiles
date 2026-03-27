@@ -23,6 +23,15 @@ Conventional Commitsコミットスキル。odin司令塔のdoフェーズで使
 - ステップ1（変更の確認）から通常通り開始する
 - コミットメッセージはステップ4でユーザーに確認する
 
+## ガードレール（安全制御）
+
+このスキルは以下の安全制御を遵守する:
+
+- このスキルはコミットのみを行い、pushは実行しない（pushはodin-do-prスキルの責務）
+- `git add -A` / `git add .` を使わず、ファイルを明示的に指定する（既存ルール）
+- `git reset --hard` / `git checkout .` / `git clean -f` 等の破壊的操作を実行しない
+- コミットの取り消し（`git reset HEAD~` 等）が必要な場合はAskUserQuestionでユーザーの承認を得る
+
 ## Instructions
 
 ### 完了チェックポイントの原則

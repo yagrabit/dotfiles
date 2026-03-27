@@ -10,6 +10,15 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob, Agent, AskUserQuestion
 PR作成スキル。odin司令塔のdoフェーズで使用する。
 ブランチの確認・作成からリモートへのpush、セルフレビュー、Draft PR作成まで一括で実行する。
 
+## ガードレール（安全制御）
+
+このスキルは以下の安全制御を遵守する:
+
+- mainブランチへの直接pushを禁止する。push前に必ず `git branch --show-current` で確認し、mainの場合は即座に中断する
+- `git push --force` / `git push --force-with-lease` を全ブランチで禁止する。通常の `git push -u origin ブランチ名` のみ使用する
+- PRは必ず `--draft` フラグ付きで作成する。`--draft` なしの `gh pr create` を実行しない
+- `git reset --hard` / `git checkout .` / `git clean -f` 等の破壊的操作を実行しない
+
 ## Instructions
 
 ### 完了チェックポイントの原則
@@ -45,16 +54,23 @@ PR作成スキル。odin司令塔のdoフェーズで使用する。
    - コミットがない場合はodin-do-commitスキルを先に実行するよう案内する
 
 5. リモートにpushする:
+   - push前にブランチ名を再確認する（mainでないことを必ず検証する）
+   - `--force` / `--force-with-lease` フラグは絶対に使用しない
    ```bash
-   git push -u origin ブランチ名
+   # ガードチェック: mainブランチでないことを確認
+   CURRENT_BRANCH=$(git branch --show-current)
+   if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ]; then
+     echo "ERROR: mainブランチへの直接pushは禁止されています" && exit 1
+   fi
+   git push -u origin "$CURRENT_BRANCH"
    ```
 
 #### 完了チェックポイント（ステップ1）
 
 - ブランチが `{type}/{description}` 形式であること
-- mainブランチでないこと
+- mainブランチでないこと（ガードチェック通過済み）
 - コミットが1つ以上存在すること
-- リモートへのpushが成功していること
+- リモートへのpushが成功していること（--forceフラグなし）
 
 ### ステップ2: セルフレビューの実施
 
