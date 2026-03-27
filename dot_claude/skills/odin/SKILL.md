@@ -199,6 +199,18 @@ Phase 1で不足情報が0件の場合、このPhaseをスキップしてPhase 3
 - 「通知機能を追加して」→ 複数スキル必要、Phase 3で確認
 - 「バグを直して」→ 調査+実装が必要、Phase 3で確認
 
+### Phase 4 ゲートスキップ判定
+
+Phase 3がスキップされた場合（上記3条件全て満たす場合）、Phase 4のユーザー承認ゲートもスキップし、直接Phase 5に進む。
+
+Phase 4ゲートスキップの条件:
+1. Phase 3がスキップされていること
+2. 使用するスキルが1個のみであること
+3. そのスキルがdo系またはauto系であること（think/talk系は確認が望ましい）
+
+例: 「品質チェックして」→ Phase 3スキップ → Phase 4ゲートスキップ → 直接auto-quality実行
+例: 「コミットして」→ Phase 3スキップ → Phase 4ゲートスキップ → 直接do-commit実行
+
 ---
 
 ## Phase 3: 理解確認
@@ -384,6 +396,7 @@ do系スキル完了後:
 
 全実装完了後（最後のdo-implement/do-refactor/do-test完了後）:
 - Skillツールで `odin-auto-review` を実行する
+- ただし、次のWaveでodin-do-prを実行する場合は、auto-reviewをスキップする（do-pr内部でセルフレビューが実行されるため、2重実行を防ぐ）
 
 各タスク完了宣言前:
 - Skillツールで `odin-auto-verify` を実行する

@@ -48,7 +48,7 @@ odin司令塔から呼び出される他、単体でも使用可能。
    - 変更差分を渡し、OWASP Top 10ベースでセキュリティレビューを依頼する
 3. Skillツールで `simplify` を実行
    - 変更コードの再利用性・効率性をチェックする
-4. Agentツールで `coderabbit:code-reviewer` サブエージェントを起動
+4. Agentツールで subagent_type に "coderabbit:code-reviewer" を指定して起動する
    - プラグイン未インストールの場合はスキップする
 
 全レビューの完了を待つ。

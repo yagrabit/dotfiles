@@ -10,6 +10,19 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob, Agent, AskUserQuestion
 PR作成スキル。odin司令塔のdoフェーズで使用する。
 ブランチの確認・作成からリモートへのpush、セルフレビュー、Draft PR作成まで一括で実行する。
 
+## コンテキスト検出
+
+### odinコンテキストがある場合（$ARGUMENTSにodin_contextが含まれる場合）
+- odinから自動呼び出しされている
+- ブランチ名・PR説明文はコンテキストから自動生成する
+- セルフレビューの結果はコンテキストの成果物から参照する
+- 未コミット変更がある場合はodin-do-commitスキルを自動的に呼び出してからPR作成に進む
+
+### odinコンテキストがない場合（ユーザー直接呼び出し）
+- git logとdiffから変更内容を分析してPR説明文を生成する
+- セルフレビューを実行する
+- 未コミット変更がある場合はAskUserQuestionで「未コミットの変更があります。先にコミットしますか？」と確認する
+
 ## ガードレール（安全制御）
 
 このスキルは以下の安全制御を遵守する:
@@ -28,32 +41,37 @@ PR作成スキル。odin司令塔のdoフェーズで使用する。
 
 ### ステップ1: ブランチの確認と作成
 
-1. 現在のブランチを確認する:
+1. 現在のブランチと未コミット変更を確認する:
    ```bash
    git branch --show-current
-   git status
+   git status --short
    ```
 
-2. ブランチ名の形式を確認する:
+2. 未コミット変更がある場合:
+   - odinコンテキストがある場合: odin-do-commitスキルを自動的に呼び出してコミットしてからPR作成に進む
+   - ユーザー直接呼び出しの場合: AskUserQuestionで「未コミットの変更があります。先にコミットしますか？」と確認する
+   - コミットが完了したら次の手順に進む
+
+3. ブランチ名の形式を確認する:
    - 推奨形式: `{type}/{description}`
    - type: `feat`, `fix`, `refactor`, `docs`, `chore` など
    - description: 機能内容を英語で短縮（kebab-case）
    - 例: `feat/notification-badge`, `fix/login-redirect`
 
-3. ブランチが適切でない場合（mainブランチ、または命名規則に合わない場合）:
+4. ブランチが適切でない場合（mainブランチ、または命名規則に合わない場合）:
    - AskUserQuestionでブランチ名を確認する
    - 新しいブランチを作成する:
      ```bash
      git checkout -b feat/機能名
      ```
 
-4. コミットが存在することを確認する:
+5. コミットが存在することを確認する:
    ```bash
    git log --oneline main..HEAD
    ```
    - コミットがない場合はodin-do-commitスキルを先に実行するよう案内する
 
-5. リモートにpushする:
+6. リモートにpushする:
    - push前にブランチ名を再確認する（mainでないことを必ず検証する）
    - `--force` / `--force-with-lease` フラグは絶対に使用しない
    ```bash

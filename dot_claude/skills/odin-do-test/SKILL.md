@@ -155,9 +155,30 @@ odinコンテキストJSONの例:
 - `test-plan-*.md` が出力されていること
 - 全シナリオに前提条件・操作・期待結果が記載されていること
 
+### テストコマンドの自動検出
+
+テスト実装・実行の前に、プロジェクトのテストコマンドを自動検出する:
+
+1. package.jsonの "scripts.test" を確認 → あればそのコマンドを使用
+2. vitest.config.* の存在確認 → あれば `pnpm vitest run`
+3. jest.config.* の存在確認 → あれば `pnpm jest`
+4. Cargo.toml の存在確認 → あれば `cargo test`
+5. pytest.ini / pyproject.toml の [tool.pytest] 確認 → あれば `pytest`
+6. 上記いずれにも該当しない場合はAskUserQuestionでテストコマンドを確認する
+
+E2Eテストコマンドの自動検出:
+
+1. playwright.config.* の存在確認 → あれば `pnpm playwright test`
+2. cypress.config.* の存在確認 → あれば `pnpm cypress run`
+3. 上記いずれにも該当しない場合はE2Eテストをスキップする
+
+以降のステップでは、検出したテストコマンドを使用する。
+
 ### ステップ3: テストの実装
 
 superpowers:test-driven-development のパターンに従い実装する。
+
+> 注: superpowersプラグインが未インストールの場合は、TDDサイクル（Red→Green→Refactor）を手動で実行する。テストを先に書き、失敗を確認してから実装する。
 
 Arrange-Act-Assert パターンに従う:
 
@@ -197,12 +218,12 @@ expect(result.userId).toBe(userId);
 
    ユニット・統合テスト:
    ```bash
-   pnpm vitest run --coverage
+   # 自動検出したテストコマンドに --coverage オプションを付けて実行する
    ```
 
-   E2Eテスト（Playwrightの場合）:
+   E2Eテスト:
    ```bash
-   pnpm playwright test
+   # 自動検出したE2Eテストコマンドを実行する（未検出の場合はスキップ）
    ```
 
 2. 結果を集計する:
@@ -272,6 +293,6 @@ expect(result.userId).toBe(userId);
   各シナリオをAAA形式で実装
 
 ステップ4: 実行・レポート
-  pnpm vitest run --coverage
+  自動検出したテストコマンド --coverage で実行
   全10件合格、カバレッジ92%
 ```

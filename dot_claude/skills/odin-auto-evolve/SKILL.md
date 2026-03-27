@@ -50,13 +50,18 @@ odin司令塔のPhase 4（タスク分解）で対応スキルがマッピング
 
 ### ステップ2: スキル生成
 
-1. Skillツールで `skill-creator:skill-creator` を実行する
-   - 要件を引数で渡す
-2. skill-creatorがスキルファイルを生成する
+1. skill-creatorプラグインの存在を確認する
+   - Skillツールで `skill-creator:skill-creator` の実行を試みる
+2. skill-creatorが利用可能な場合:
+   - 要件を引数で渡してスキルファイルを生成する
+3. skill-creatorプラグインが未インストールの場合（フォールバック）:
+   - 「skill-creator:skill-creatorプラグインが未インストールのため、手動でスキルファイルを作成します」とログに記録する
+   - ステップ1で定義した要件をもとに、odinスキルの標準構造（frontmatter + Instructions + Examples）に従ってSKILL.mdの内容を組み立てる
+   - Writeツールで `.claude/skills/{スキル名}/SKILL.md` に直接書き出す
 
 #### 完了チェックポイント（ステップ2）
 
-- skill-creatorがスキルファイルを生成していること
+- skill-creatorまたはフォールバック手順でスキルファイルが生成されていること
 
 ### ステップ3: プロジェクトローカルに配置
 
