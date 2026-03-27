@@ -2,7 +2,7 @@
 name: odin
 description: 最強の開発ワークフロー司令塔。ユーザーの要望を分析し、配下20スキルから最適な組み合わせを選んでオーケストレーションする。あらゆる開発シーンに対応し、自己進化する。「/odin」で起動。
 user-invocable: true
-allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Agent, AskUserQuestion
+allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Agent, AskUserQuestion, WebSearch
 ---
 
 # odin -- 願いを叶える装置
@@ -122,6 +122,14 @@ superpowersプラグインが必須。以下のスキルと連携する:
 - `git log --oneline -10` で直近の作業を推測する
 - `git branch --show-current` で現在のブランチを確認する
 - `git status --short` で未コミットの変更を確認する
+
+収集4: ベストプラクティス調査（WebSearch）
+- ユーザーの要望に関連する技術領域のベストプラクティスをWebSearchで調査する
+- 例: 「通知機能」→ リアルタイム通知のベストプラクティス、UIパターン
+- 例: 「認証」→ 最新の認証ベストプラクティス、OAuthフロー
+- 例: 「パフォーマンス改善」→ 該当フレームワークの最新最適化手法
+- 調査結果はPhase 4のタスク分解で活用する
+- 調査不要な場合（品質チェック等の定型作業）はスキップする
 
 ### 完了チェックポイント（Phase 1）
 
@@ -294,6 +302,9 @@ AskUserQuestionで以下の選択肢を提示する:
 各タスクについて以下を実行する:
 
 1. タスク開始: TaskUpdateツールでステータスを `in_progress` に更新する
+   a-2. think系スキルの場合、タスク内容に関連するベストプラクティスをWebSearchで追加調査する
+       - 調査結果はodinコンテキストの一部としてスキルに渡す
+       - 定型作業（commit, merge等）ではスキップする
 2. odinコンテキストJSON の構築:
 
 ```json
