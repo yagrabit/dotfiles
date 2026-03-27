@@ -14,7 +14,7 @@ model: sonnet
 ## 役割
 
 コードベースの構造を分析し、後続の設計フェーズに必要な情報を抽出する。
-wf-1-researchスキルやwf-3-designスキルから委譲されて動作する。
+odin-think-researchスキルやodin-think-designスキルから委譲されて動作する。
 
 ## 分析項目
 
