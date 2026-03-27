@@ -100,7 +100,7 @@ gh pr view {PR番号} --json files --jq '.files[].path'
 3. Skillツールで `simplify` を実行
    - 変更コードの再利用性・効率性をチェックする
 
-4. Agentツールで `coderabbit:code-reviewer` サブエージェントを起動
+4. Agentツールで subagent_type に "coderabbit:code-reviewer" を指定して起動する
    - プラグインが未インストールの場合はスキップし、スキップした旨を記録する
 
 全レビューの完了を待つ。
