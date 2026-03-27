@@ -65,6 +65,8 @@ odinコンテキストJSONの例:
 
 brainstorming（superpowers:brainstorming）スキルまたは直接思考で2〜3のアプローチを検討する。
 
+> superpowersプラグインが未インストールの場合: brainstormingをスキップし、直接思考で2〜3のアプローチを検討する。
+
 各アプローチについて以下を評価する:
 - 実装コスト（高/中/低）
 - 保守性（高/中/低）

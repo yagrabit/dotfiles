@@ -78,6 +78,8 @@ odinコンテキストJSONの例:
 - タスクをWave順に1つずつ実行する
 - 各タスク完了後にテストが通ることを確認してから次へ進む
 
+> superpowersプラグインが未インストールの場合: Agentツールで直接サブエージェントを起動し、同等の並列/逐次実行を手動で行う。
+
 #### 完了チェックポイント（ステップ2）
 
 - 実行方式（直接TDD / 並列 / 逐次）が決定されていること
@@ -86,6 +88,8 @@ odinコンテキストJSONの例:
 ### ステップ3: TDDサイクルの実行
 
 superpowers:test-driven-development のパターンに従い実行する。
+
+> superpowersプラグインが未インストールの場合: 以下のRed→Green→Refactorサイクルを直接実行する。
 
 #### Red フェーズ（失敗するテストを書く）
 
@@ -132,6 +136,8 @@ pnpm vitest run
 ### ステップ4: タスク完了の検証
 
 superpowers:verification-before-completion のパターンに従い検証する。
+
+> superpowersプラグインが未インストールの場合: 以下の検証手順を直接実行する。
 
 1. 全テストの通過確認:
    ```bash

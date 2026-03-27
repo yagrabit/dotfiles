@@ -1,6 +1,6 @@
 ---
 name: odin-talk-review
-description: 多角的コードレビュー（品質/セキュリティ/パフォーマンス）。code-reviewer + security-reviewer + simplify + coderabbit:code-reviewerを並列実行し、結果を重大/改善/情報の3段階で統合する。superpowers:receiving-code-review原則に従い技術的に正確なフィードバックを提供する。「レビューして」「PRをレビューして」「コードを見て」などで起動。odinから自動起動される場合もある。
+description: code-reviewer・security-reviewer・simplify・coderabbit:code-reviewerを並列実行し、品質/セキュリティ/パフォーマンスの多角的コードレビュー結果を重大/改善/情報の3段階で統合して報告する。PR差分・ブランチ差分・指定ファイルを対象にできる。「レビューして」「PRをレビューして」「コードを見て」で起動。odinから自動起動される場合もある。
 user-invocable: true
 allowed-tools: Bash, Read, Grep, Glob, Agent, AskUserQuestion
 ---
@@ -131,6 +131,8 @@ gh pr view {PR番号} --json files --jq '.files[].path'
 ### ステップ4: フィードバックの提示
 
 superpowers:receiving-code-review の原則に従い、技術的に正確なフィードバックを提供する。
+
+> superpowersプラグインが未インストールの場合: 以下のフィードバック原則を直接適用する。
 
 フィードバックの原則:
 - 根拠のない賛辞は禁止（「良いコードですね」等）
