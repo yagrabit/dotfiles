@@ -35,6 +35,11 @@ $ARGUMENTSで以下のフラグを受け付ける:
 
 git rootで以下のツーリングを検出する:
 
+コード生成:
+- src/lib/graphql/queries/ + codegen.ts の存在確認 → pnpm codegen
+- prisma/schema.prisma の存在確認 → pnpm prisma generate
+- 上記いずれにも該当しない場合はskip
+
 ビルド:
 - package.json(build script) → pnpm run build / npm run build
 - tsconfig.json → tsc --noEmit
@@ -65,17 +70,18 @@ lint:
 
 #### 完了チェックポイント（ステップ1）
 
-- 5カテゴリ（ビルド/lint/型チェック/テスト/セキュリティ）の検出が完了していること
+- 6カテゴリ（コード生成/ビルド/lint/型チェック/テスト/セキュリティ）の検出が完了していること
 - 各カテゴリの検出結果（ツール名またはskip）が一覧表示されていること
 
 ### ステップ2: 検証パイプライン実行
 
 検出したツールを以下の順序で実行する:
-1. ビルド
-2. lint
-3. 型チェック
-4. テスト
-5. セキュリティスキャン
+1. コード生成（codegen等。型チェック・テストの前提条件）
+2. ビルド
+3. lint
+4. 型チェック
+5. テスト
+6. セキュリティスキャン
 
 各ステップの結果をpass/fail/skipで記録する。
 --strict指定時はwarningもfail扱いにする。
@@ -111,6 +117,7 @@ lint:
 一覧形式で結果を表示する:
 
 ```
+コード生成:    pass (pnpm codegen)
 ビルド:        pass (tsc --noEmit)
 lint:          fail (biome) - 3 errors
 型チェック:    pass (tsc --noEmit)
