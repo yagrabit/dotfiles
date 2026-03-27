@@ -14,7 +14,7 @@ model: sonnet
 ## 役割
 
 要件テキストを受け取り、曖昧な点・不足項目・矛盾を検出して構造化された分析結果を返す。
-wf-2-clarify-requirementsスキルから委譲されて動作する。
+odin-talk-clarifyスキルやodin-think-requirementsスキルから委譲されて動作する。
 
 ## 分析観点
 

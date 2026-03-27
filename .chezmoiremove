@@ -40,3 +40,11 @@
 # 不要スキルの削除（2026-03-27）
 .claude/skills/yb-lefthook-init
 .claude/skills/yb-typescript-practice
+
+# wf系スキル廃止（odinに統合済み、2026-03-27）
+.claude/skills/wf-1-research
+.claude/skills/wf-2-clarify-requirements
+.claude/skills/wf-3-design
+.claude/skills/wf-4-test-plan
+.claude/skills/wf-5-task-breakdown
+.claude/skills/wf-6-tdd-cycle

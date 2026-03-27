@@ -3,15 +3,15 @@
 ## セッション分離の原則
 
 - 1フェーズ1セッションを原則とする
-- フェーズとスキルの対応:
-  1. Research → `/wf-1-research`
-  2. 要件明確化 → `/wf-2-clarify-requirements`
-  3. 設計 → `/wf-3-design`（ゲート1）
-  4. テスト計画 → `/wf-4-test-plan`（Phase 2で追加予定）
-  5. タスク分解 → `/wf-5-task-breakdown`（ゲート2）
-  6. TDD実装 → `/wf-6-tdd-cycle`（Phase 2で追加予定）
-  7. レビュー → `/pr-3-review`, CodeRabbit
-  8. PR → `/pr-4-create`
+- フェーズとスキルの対応（全て `/odin` 経由で実行可能）:
+  1. Research → `/odin-think-research`
+  2. 要件明確化 → `/odin-talk-clarify` + `/odin-think-requirements`
+  3. 設計 → `/odin-think-design`（ゲート1）
+  4. テスト計画 → `/odin-do-test`
+  5. タスク分解 → `/odin-think-plan`（ゲート2）
+  6. TDD実装 → `/odin-do-implement`
+  7. レビュー → `/odin-talk-review`, CodeRabbit
+  8. PR → `/odin-do-pr`
 - フェーズ間の情報伝達は `.claude/artifacts/` の成果物ファイル経由で行う
 - セッションが長くなったら /compact で積極的にコンパクションする（FIC: Frequent Intentional Compaction）
 
