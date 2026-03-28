@@ -225,15 +225,30 @@ graph LR
 
 ## チケット作成
 
-環境: {GitHub Issues / Jira}（自動検出）
+環境設定の取得:
+- CLAUDE.local.md の「プロジェクト管理」セクションを読み込む
+- 設定がない場合はデフォルト（github-issues + artifacts）を適用
 
-| チケットID | タスクID群 | タイトル | 推定行数 | PRサイズ区分 |
-|-----------|-----------|---------|---------|-------------|
-| (作成後記入) | T-001, T-002 | {チケットタイトル} | {N}行 | {理想/良好/許容} |
+環境: {GitHub Issues / Jira}（CLAUDE.local.mdから取得）
+親チケット: {CLAUDE.local.mdの親チケット値}
 
-チケット作成コマンド:
-- GitHub Issues: `gh issue create --title "タイトル" --body "本文"`
-- Jira: `mcp__plugin_atlassian_atlassian__createJiraIssue`
+| チケットID | タスクID群 | タイトル | 推定行数 | PRサイズ区分 | 親チケット |
+|-----------|-----------|---------|---------|-------------|-----------|
+| (作成後記入) | T-001, T-002 | {チケットタイトル} | {N}行 | {理想/良好/許容} | {親チケットID} |
+
+チケット作成手順:
+
+GitHub Issues環境:
+1. `gh issue create --title "タイトル" --body "本文"` でIssue作成
+2. 親Issueが指定されている場合、Sub-issuesとしてリンク
+
+Jira環境:
+1. `mcp__plugin_atlassian_atlassian__createJiraIssue` でチケット作成（プロジェクトキーはCLAUDE.local.mdから取得）
+2. `mcp__plugin_atlassian_atlassian__createIssueLink` で親チケットにリンク
+
+ドキュメント出力（CLAUDE.local.mdの「ドキュメント」設定に従う）:
+- artifacts: `.claude/artifacts/` に出力（デフォルト）
+- confluence: Confluenceページに出力し、artifactsにはURLを記録
 ```
 
 4. 実装計画の概要をユーザーに提示する
