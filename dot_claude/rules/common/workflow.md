@@ -58,7 +58,7 @@
 ```
 ## プロジェクト管理
 
-- ツール: jira | github-issues
+- ツール: jira | github-issues | local
 - プロジェクトキー: VIV（Jira環境のみ）
 - 親チケット: VIV-100（現在のEpic/Story。スプリントごとに更新）
 - ドキュメント: confluence | artifacts
@@ -67,10 +67,29 @@
 
 検出の優先順:
 1. CLAUDE.local.md に「プロジェクト管理」セクションがあればその設定を使う
-2. CLAUDE.local.md がない、または設定がない場合はデフォルト（github-issues + artifacts）を適用
+2. CLAUDE.local.md がない、または設定がない場合はデフォルト（local + artifacts）を適用
+   - local: チケット作成なし、タスク管理は `.claude/artifacts/plan-*.md` のみで完結
+   - 外部サービスへのアクセスは行わない
 
 Atlassianプラグインはユーザーレベルで有効化されているため全プロジェクトで利用可能だが、
-Jira/Confluenceを使うかどうかはプロジェクト単位で判断する。個人プロジェクトではgithub-issuesを使う。
+Jira/Confluenceを使うかどうかはプロジェクト単位で判断する。
+設定がないプロジェクトではlocalモード（外部サービスへのアクセスなし）で動作する。
+
+### ローカル環境（ツール: local、デフォルト）
+
+CLAUDE.local.mdにプロジェクト管理設定がない場合のデフォルト動作。
+
+チケット管理:
+- チケット作成しない。タスクは `.claude/artifacts/plan-*.md` 内のWave形式で管理
+- 進捗はTaskCreate/TaskUpdateツールで追跡
+
+ドキュメント:
+- 全て `.claude/artifacts/` に出力
+- 外部サービスへのアクセスは行わない
+
+ブランチ・PR:
+- ブランチ命名: `{type}/{description}`（例: `feat/notification-list`）
+- PRはgit push + `gh pr create` で作成（ghコマンドの利用はローカルCLI操作として許容）
 
 ### Jira/Confluence環境（ツール: jira）
 

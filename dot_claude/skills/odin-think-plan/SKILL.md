@@ -227,7 +227,7 @@ graph LR
 
 環境設定の取得:
 - CLAUDE.local.md の「プロジェクト管理」セクションを読み込む
-- 設定がない場合はデフォルト（github-issues + artifacts）を適用
+- 設定がない場合はデフォルト（local + artifacts）を適用（チケット作成なし、plan-*.md内で管理）
 
 環境: {GitHub Issues / Jira}（CLAUDE.local.mdから取得）
 親チケット: {CLAUDE.local.mdの親チケット値}
