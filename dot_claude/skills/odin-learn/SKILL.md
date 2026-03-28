@@ -94,9 +94,18 @@ $ARGUMENTS から実行モードを判定する:
 
 ---
 
+### 保存場所に関する注意
+
+skillmap-latest.md と flashcards-latest.md はプロジェクト横断の個人学習データである。
+必ずユーザーレベルの `~/.claude/artifacts/` に保存すること。
+プロジェクトの `.claude/artifacts/` に保存してはならない（他のリポジトリからアクセスできなくなる）。
+
+`~/.claude/artifacts/` ディレクトリが存在しない場合は作成する。
+
 ### ステップ A: スキルマップ初期化
 
 A-1. `~/.claude/artifacts/skillmap-latest.md` が既に存在するか確認する。
+   注意: `~` はホームディレクトリ（例: /Users/username）であり、カレントプロジェクトの相対パスではない。
    - 存在する場合: 「既にスキルマップがあります。リセットしますか？」とAskUserQuestionで確認
    - 存在しない場合: 新規作成
 
