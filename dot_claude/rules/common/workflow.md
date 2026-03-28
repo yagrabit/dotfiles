@@ -50,24 +50,57 @@
 5. 並列レビュー対応: CodeRabbit + 人間レビューの指摘を各PR並列で対応
 6. マージ: 依存順序に従ったマージ + odin-auto-verify最終検証
 
-### 環境自動検出
+### プロジェクト管理設定（CLAUDE.local.md）
 
-チケット管理ツールはMCPツールの有無で自動判定する:
-- mcp__plugin_atlassian が利用可能 → Jira/Confluence環境
-- mcp__plugin_atlassian が利用不可 → GitHub Issues環境（デフォルト）
+チケット管理ツール・ドキュメント出力先はプロジェクトごとに異なる。
+各プロジェクトの `CLAUDE.local.md`（.gitignore対象）に以下の形式で設定する。
 
-### Jira/Confluence環境
+```
+## プロジェクト管理
 
+- ツール: jira | github-issues
+- プロジェクトキー: VIV（Jira環境のみ）
+- 親チケット: VIV-100（現在のEpic/Story。スプリントごとに更新）
+- ドキュメント: confluence | artifacts
+- Confluenceスペース: VIV（Confluence使用時のみ）
+```
+
+検出の優先順:
+1. CLAUDE.local.md に「プロジェクト管理」セクションがあればその設定を使う
+2. CLAUDE.local.md がない、または設定がない場合はデフォルト（github-issues + artifacts）を適用
+
+Atlassianプラグインはユーザーレベルで有効化されているため全プロジェクトで利用可能だが、
+Jira/Confluenceを使うかどうかはプロジェクト単位で判断する。個人プロジェクトではgithub-issuesを使う。
+
+### Jira/Confluence環境（ツール: jira）
+
+チケット管理:
 - チケット作成: mcp__plugin_atlassian_atlassian__createJiraIssue
-- 調査レポート: Confluenceページに出力（artifactsにはURLを記録）
-- ブランチ命名: `{type}/{JIRA-KEY}-{description}`
+- 親チケットへのリンク: mcp__plugin_atlassian_atlassian__createIssueLink（親チケットIDはCLAUDE.local.mdから取得）
+- ステータス遷移: mcp__plugin_atlassian_atlassian__transitionJiraIssue
+
+ドキュメント（ドキュメント: confluence の場合）:
+- 調査レポート: Confluenceページに出力（mcp__plugin_atlassian_atlassian__createConfluencePage）
+- スペースキー: CLAUDE.local.md の Confluenceスペース設定を使用
+- artifactsにはConfluenceページURLを記録（ローカルにもコピーは残す）
+
+ブランチ・PR:
+- ブランチ命名: `{type}/{JIRA-KEY}-{description}`（例: `feat/VIV-123-notification-list`）
 - PRタイトルにJiraキーを含める
 
-### GitHub Issues環境
+### GitHub Issues環境（ツール: github-issues）
 
-- チケット作成: `gh issue create`（Sub-issues機能で親Issueに紐づけ）
+チケット管理:
+- チケット作成: `gh issue create`
+- 親Issueへのリンク: Sub-issues機能（`gh issue develop` または本文にリンク記載）
+- 親Issue番号はCLAUDE.local.mdの親チケットから取得（例: `- 親チケット: #42`）
+
+ドキュメント:
 - 調査レポート: `.claude/artifacts/research-*.md` に出力
-- ブランチ命名: `{type}/GH-{issue-number}-{description}`
+- 設計ドキュメント: `.claude/artifacts/design-*.md` に出力
+
+ブランチ・PR:
+- ブランチ命名: `{type}/GH-{issue-number}-{description}`（例: `feat/GH-42-notification-list`）
 - PR本文に `Closes #{issue-number}` を記載
 
 ### 並列実装の前提条件
