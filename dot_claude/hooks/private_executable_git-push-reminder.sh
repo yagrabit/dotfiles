@@ -1,9 +1,8 @@
 #!/bin/bash
 # git-push-reminder.sh — PreToolUse hook (Bash matcher)
 #
-# git pushコマンドを検出してstderrに警告を表示する。
-# force pushの場合は特に強い警告を出す。
-# ブロックはしない（permissionDecisionは出力しない）。
+# git pushコマンドを検出し、force push時のみstderrに警告を表示する。
+# 通常のpushは警告なし。ブロックはしない（permissionDecisionは出力しない）。
 
 set -euo pipefail
 
@@ -33,8 +32,6 @@ if echo "$COMMAND" | grep -qE '(^|[[:space:]])(--force-with-lease|--force|-f)([[
   echo "  リモートの履歴が上書きされる可能性があります。" >&2
   echo "  共有ブランチへのforce pushは特に注意してください。" >&2
   echo "============================================" >&2
-else
-  echo "[注意] git push を実行します。プッシュ先のブランチを確認してください。" >&2
 fi
 
 exit 0
