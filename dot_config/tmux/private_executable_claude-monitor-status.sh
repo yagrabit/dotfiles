@@ -4,6 +4,12 @@
 
 SESSION_DIR="/tmp/claude-sessions"
 
+# Nerd Font / Powerline アイコン（UTF-8バイトシーケンス、bash 3.2互換）
+PL_LEFT=$'\xee\x82\xb2'    # Powerline左矢印 (U+E0B2)
+PL_RIGHT=$'\xee\x82\xb0'   # Powerline右矢印 (U+E0B0)
+ICON_TERM=$'\xef\x84\xa0'   # ターミナルアイコン (U+F120)
+ICON_BELL=$'\xef\x83\xb3'   # ベルアイコン (U+F0F3)
+
 # セッションディレクトリが無ければ何も出力せず終了
 [[ -d "$SESSION_DIR" ]] || exit 0
 
@@ -48,9 +54,11 @@ if (( total == 0 )); then
   # Claudeが1つも無い場合は空文字列
   exit 0
 elif (( attention > 0 )); then
-  # 注意が必要なものがある（赤色）
-  printf '#[fg=colour196,bold]🤖%d⚠%d#[default] ' "$total" "$attention"
+  # 青セグメント(total) → 赤セグメント(attention)
+  printf '#[fg=colour31,bg=colour235]%s#[fg=colour255,bg=colour31] %s %d #[fg=colour31,bg=colour196]%s#[fg=colour255,bg=colour196,bold] %s %d #[fg=colour196,bg=colour235]%s#[default] ' \
+    "$PL_LEFT" "$ICON_TERM" "$total" "$PL_RIGHT" "$ICON_BELL" "$attention" "$PL_RIGHT"
 else
-  # 全部active（緑色）
-  printf '#[fg=colour82]🤖%d#[default] ' "$total"
+  # 青セグメントのみ
+  printf '#[fg=colour31,bg=colour235]%s#[fg=colour255,bg=colour31,bold] %s %d #[fg=colour31,bg=colour235]%s#[default] ' \
+    "$PL_LEFT" "$ICON_TERM" "$total" "$PL_RIGHT"
 fi
