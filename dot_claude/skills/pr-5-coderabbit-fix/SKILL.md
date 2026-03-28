@@ -101,3 +101,20 @@ fix: CodeRabbitレビュー指摘への対応
 - 修正1の説明
 - 修正2の説明
 ```
+
+## 8. 対応済みコメントへの返信
+
+修正・コミットが完了した指摘に対して、CodeRabbitのレビューコメントに「修正しました」と返信する。
+
+```bash
+# インラインレビューコメントへの返信
+gh api repos/{owner}/{repo}/pulls/{number}/comments/{comment_id}/replies \
+  -f body="修正しました"
+
+# issueコメントへの返信（PR全体コメントの場合）
+gh api repos/{owner}/{repo}/issues/{number}/comments \
+  -f body="修正しました"
+```
+
+対応しなかった指摘（diff範囲外・スコープ外と判定したもの）には返信しない。
+返信対象は、ステップ6で実際に修正を行ったコメントのみに限定する。
