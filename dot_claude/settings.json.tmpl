@@ -117,21 +117,17 @@
           },
           {
             "type": "command",
-            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/md-preview-tracker.sh"
+            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/quality-gate.sh"
           },
           {
             "type": "command",
-            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/quality-gate.sh"
+            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/md-preview-tracker.sh"
           }
         ]
       },
       {
         "matcher": "Bash",
         "hooks": [
-          {
-            "type": "command",
-            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/doc-update-reminder.sh"
-          },
           {
             "type": "command",
             "command": "{{ .chezmoi.homeDir }}/.claude/hooks/post-push-monitor.sh"
@@ -146,28 +142,6 @@
           {
             "type": "command",
             "command": "{{ .chezmoi.homeDir }}/.claude/hooks/session-start-check.sh"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/pre-compact-log.sh"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/notification-tracker.sh"
           }
         ]
       }

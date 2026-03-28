@@ -55,3 +55,6 @@
 .claude/skills/pr-4-create
 .claude/skills/pr-6-merge
 .claude/skills/qa-quality-check
+.claude/hooks/executable_doc-update-reminder.sh
+.claude/hooks/executable_notification-tracker.sh
+.claude/hooks/executable_pre-compact-log.sh

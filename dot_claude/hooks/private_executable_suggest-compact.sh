@@ -1,7 +1,7 @@
 #!/bin/bash
 # suggest-compact.sh — UserPromptSubmitフック
 #
-# セッション内のプロンプト回数をカウントし、15回ごとに /compact の実行を提案する。
+# セッション内のプロンプト回数をカウントし、30回ごとに /compact の実行を提案する。
 # カウンターファイルは /tmp に保存され、OSの自動クリーンアップに任せる。
 
 set -euo pipefail
@@ -28,8 +28,8 @@ fi
 COUNT=$(( COUNT + 1 ))
 echo "$COUNT" > "$COUNTER_FILE"
 
-# 15回ごとにコンパクション提案を出力
-if [ $(( COUNT % 15 )) -eq 0 ]; then
+# 30回ごとにコンパクション提案を出力
+if [ $(( COUNT % 30 )) -eq 0 ]; then
   MSG="FIC: ${COUNT}回目のプロンプトです。コンテキストが大きくなっています。/compact の実行を検討してください。"
   jq -Rn --arg msg "$MSG" \
     '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":$msg}}'
