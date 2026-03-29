@@ -71,24 +71,11 @@ PR作成スキル。odin司令塔のdoフェーズで使用する。
    ```
    - コミットがない場合はodin-do-commitスキルを先に実行するよう案内する
 
-6. リモートにpushする:
-   - push前にブランチ名を再確認する（mainでないことを必ず検証する）
-   - `--force` / `--force-with-lease` フラグは絶対に使用しない
-   ```bash
-   # ガードチェック: mainブランチでないことを確認
-   CURRENT_BRANCH=$(git branch --show-current)
-   if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ]; then
-     echo "ERROR: mainブランチへの直接pushは禁止されています" && exit 1
-   fi
-   git push -u origin "$CURRENT_BRANCH"
-   ```
-
 #### 完了チェックポイント（ステップ1）
 
 - ブランチが `{type}/{description}` 形式であること
 - mainブランチでないこと（ガードチェック通過済み）
 - コミットが1つ以上存在すること
-- リモートへのpushが成功していること（--forceフラグなし）
 
 ### ステップ1.5: PRサイズチェック
 
@@ -152,10 +139,25 @@ superpowers:requesting-code-review のパターンに従い、セルフレビュ
    - 修正する場合はodin-do-refactorまたは直接修正してからodin-do-commitを実行する
    - 修正しない場合はPR本文に既知の問題として記載する
 
+5. レビュー完了フラグを作成し、リモートにpushする:
+   ```bash
+   # レビュー完了フラグを作成（pre-push-review-gateフック用）
+   mkdir -p /tmp/claude-sessions
+   date +%s > "/tmp/claude-sessions/review-passed-$(git branch --show-current | tr '/' '-')"
+
+   # ガードチェック: mainブランチでないことを確認
+   CURRENT_BRANCH=$(git branch --show-current)
+   if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ]; then
+     echo "ERROR: mainブランチへの直接pushは禁止されています" && exit 1
+   fi
+   git push -u origin "$CURRENT_BRANCH"
+   ```
+
 #### 完了チェックポイント（ステップ2）
 
 - code-reviewer と security-reviewer のレビューが完了していること
 - 重大な問題がない（または対応方針が決まっていること）
+- リモートへのpushが成功していること（--forceフラグなし）
 
 ### ステップ3: Draft PRの作成
 
@@ -239,12 +241,12 @@ superpowers:requesting-code-review のパターンに従い、セルフレビュ
 ステップ1: ブランチ確認
   現在: feat/notification-badge ✓
   コミット: 3件確認
-  git push -u origin feat/notification-badge → 成功
 
 ステップ2: セルフレビュー
   並列起動: code-reviewer + security-reviewer
   結果: 改善提案1件（関数の命名）、重大問題なし
   → PR本文にレビュー観点として記載
+  レビュー完了フラグ作成 + git push -u origin feat/notification-badge → 成功
 
 ステップ3: Draft PR作成
   タイトル: feat: 通知バッジコンポーネントを追加

@@ -92,6 +92,19 @@ Anthropic公式: "separating the agent doing the work from the agent judging it 
 - 改善: コード品質、保守性、パフォーマンス
 - 情報: スタイル、ベストプラクティス
 
+### レビュー完了フラグの記録
+
+pre-push-review-gateフックと連携するため、レビュー完了フラグを作成する。
+フィーチャーブランチ上でレビューを実施した場合のみ実行する。
+
+```bash
+# レビュー完了フラグを作成（push前のゲートチェック用）
+mkdir -p /tmp/claude-sessions
+date +%s > "/tmp/claude-sessions/review-passed-$(git branch --show-current | tr '/' '-')"
+```
+
+mainブランチの場合はスキップする。
+
 #### 完了チェックポイント（ステップ3）
 
 - レビュー結果が重大/改善/情報の3段階で分類されていること
