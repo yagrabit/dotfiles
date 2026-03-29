@@ -25,6 +25,14 @@ odin司令塔から呼び出される他、単体でも使用可能。
 ### odinコンテキストがない場合（ユーザー直接呼び出し）
 - ステップ1からレビュー対象を自動検出する
 
+## 独立評価の原則
+
+Anthropic公式: "separating the agent doing the work from the agent judging it proves to be a strong lever"
+
+- code-reviewerとsecurity-reviewerは必ず新しいAgentツールで起動する（同一コンテキストで実行しない）
+- レビューエージェントには変更差分のみを渡し、実装時の意図や経緯を渡さない（肯定バイアス防止）
+- レビュー結果は「実装者の意図」ではなく「コードの品質」のみで判断する
+
 ## ステップ1: レビュー対象の特定
 
 1. git diffでレビュー対象の変更を取得する:
