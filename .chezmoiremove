@@ -57,3 +57,8 @@
 .claude/skills/qa-quality-check
 .claude/hooks/executable_doc-update-reminder.sh
 .claude/hooks/executable_pre-compact-log.sh
+.claude/hooks/executable_check-ci-coderabbit.sh
+.claude/hooks/executable_typecheck.sh
+.claude/rules/common/agents.md
+.claude/rules/common/pr-sizing.md
+.claude/rules/common/typescript-practice.md
