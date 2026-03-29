@@ -90,6 +90,10 @@
           {
             "type": "command",
             "command": "{{ .chezmoi.homeDir }}/.claude/hooks/pre-push-review-gate.sh"
+          },
+          {
+            "type": "command",
+            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/block-test-deletion.sh"
           }
         ]
       },
@@ -99,6 +103,10 @@
           {
             "type": "command",
             "command": "{{ .chezmoi.homeDir }}/.claude/hooks/pre-edit-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/block-test-deletion.sh"
           }
         ]
       }
