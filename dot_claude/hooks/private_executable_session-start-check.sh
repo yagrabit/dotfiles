@@ -141,7 +141,23 @@ if [ "$CLEANUP_COUNT" -gt 0 ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 5. additionalContext形式のJSON出力
+# 5. 成果物の鮮度チェック
+# ---------------------------------------------------------------------------
+ARTIFACTS_DIR=""
+if git rev-parse --is-inside-work-tree &>/dev/null; then
+  GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+  ARTIFACTS_DIR="${GIT_ROOT}/.claude/artifacts"
+fi
+
+if [ -n "$ARTIFACTS_DIR" ] && [ -d "$ARTIFACTS_DIR" ]; then
+  STALE_COUNT=$(find "$ARTIFACTS_DIR" -maxdepth 1 -type f -mtime +14 2>/dev/null | wc -l | tr -d ' ') || STALE_COUNT=0
+  if [ "$STALE_COUNT" -gt 0 ]; then
+    MSG="${MSG}"$'\n'"---"$'\n'"ガーデニング提案: ${STALE_COUNT}個の成果物が14日以上更新されていません。不要な成果物の整理を検討してください。"
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# 6. additionalContext形式のJSON出力
 # ---------------------------------------------------------------------------
 jq -Rn --arg msg "$MSG" \
   '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":$msg}}'
