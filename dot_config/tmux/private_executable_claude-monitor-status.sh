@@ -1,6 +1,9 @@
 #!/bin/bash
 # tmuxステータスバー用 Claude Code監視状態集計スクリプト
 # status-rightから呼ばれ、セッションの状態を短い文字列で返す
+#
+# 検出方式: プロセスベース（pane_current_commandがSemVerパターンにマッチ）
+# ポップアップスクリプト（claude-monitor-popup.sh）と同一のロジック
 
 SESSION_DIR="/tmp/claude-sessions"
 
@@ -10,44 +13,54 @@ PL_RIGHT=$'\xee\x82\xb0'   # Powerline右矢印 (U+E0B0)
 ICON_TERM=$'\xef\x84\xa0'   # ターミナルアイコン (U+F120)
 ICON_BELL=$'\xef\x83\xb3'   # ベルアイコン (U+F0F3)
 
-# セッションディレクトリが無ければ何も出力せず終了
-[[ -d "$SESSION_DIR" ]] || exit 0
-
 total=0
 attention=0
-now=$(date +%s)
 
-for f in "$SESSION_DIR"/*.json; do
-  # globがマッチしなかった場合（ファイルが1つも無い）
-  [[ -e "$f" ]] || break
+# プロセス検出で見つかったペインIDを記録（孤児JSON削除用）
+active_pane_ids=""
 
-  # JSONからフィールドを一括読み取り（jq呼び出しを1回に抑える）
-  read -r pane_id timestamp state < <(jq -r '[.pane_id, .timestamp, .state] | @tsv' "$f" 2>/dev/null)
-
-  # jq失敗時はファイルを削除してスキップ
-  if [[ -z "$pane_id" ]]; then
-    rm -f "$f"
+# 全ペインをスキャンしてClaude Codeインスタンスを検出
+# Claude CodeのNode.jsバイナリはSemVer名（例: 1.0.33）で実行される
+while IFS='|' read -r pane_id _ pane_cmd; do
+  # pane_current_commandがSemVerパターンでなければスキップ
+  if ! [[ "$pane_cmd" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     continue
   fi
 
-  # ペインが存在しなければファイル削除
-  if ! tmux display-message -t "$pane_id" -p '' 2>/dev/null; then
-    rm -f "$f"
-    continue
-  fi
-
-  # タイムスタンプが5分以上前ならファイル削除
-  if [[ -n "$timestamp" ]] && (( now - timestamp > 300 )); then
-    rm -f "$f"
-    continue
-  fi
-
-  # 集計
   total=$((total + 1))
+
+  # safe_pane_id: %をpctに置換（statusline-command.pyと同じ規則）
+  safe_pane_id="${pane_id//%/pct}"
+  active_pane_ids="${active_pane_ids} ${safe_pane_id}"
+  json_file="$SESSION_DIR/${safe_pane_id}.json"
+
+  # JSONがあればstateを読み取り、なければactiveとみなす
+  state="active"
+  if [[ -f "$json_file" ]]; then
+    json_state=$(jq -r '.state // "active"' "$json_file" 2>/dev/null)
+    if [[ -n "$json_state" ]]; then
+      state="$json_state"
+    fi
+  fi
+
   if [[ "$state" == "waiting" || "$state" == "idle" ]]; then
     attention=$((attention + 1))
   fi
-done
+done < <(tmux list-panes -a -F '#{pane_id}||#{pane_current_command}' 2>/dev/null)
+
+# 孤児JSONファイルの削除: プロセス検出で見つからなかったセッションファイルを削除
+# review-passed-* 等の非セッションファイルは除外
+if [[ -d "$SESSION_DIR" ]]; then
+  for f in "$SESSION_DIR"/pct*.json; do
+    [[ -e "$f" ]] || break
+    fname=$(basename "$f" .json)
+    # active_pane_idsに含まれなければ孤児として削除
+    case " $active_pane_ids " in
+      *" $fname "*) ;;  # 検出済み: 何もしない
+      *) rm -f "$f" ;;  # 孤児: 削除
+    esac
+  done
+fi
 
 # 出力
 if (( total == 0 )); then

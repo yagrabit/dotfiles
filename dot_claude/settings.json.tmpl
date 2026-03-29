@@ -154,6 +154,17 @@
         ]
       }
     ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/notification-tracker.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
