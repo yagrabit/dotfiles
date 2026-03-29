@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # PreToolUseフック: レビュー未完了のブランチからのpushをブロックする
-# /pr-3-review が完了していないブランチのpushを物理的に防止する
+# /odin-talk-review が完了していないブランチのpushを物理的に防止する
 set -euo pipefail
 
 # jqが未インストールの場合はスキップ（安全側に倒す）
@@ -55,7 +55,7 @@ fi
 
 # フラグファイルの存在を確認
 if [[ ! -f "$flag_file" ]]; then
-  echo "ブロック: レビューが未完了です。/pr-3-review を実施してからpushしてください。" >&2
+  echo "ブロック: レビューが未完了です。/odin-talk-review を実施してからpushしてください。" >&2
   exit 2
 fi
 
@@ -65,14 +65,14 @@ current_timestamp="$(date +%s)"
 
 # タイムスタンプが数値でない場合はブロック（不正なフラグファイル）
 if ! [[ "$review_timestamp" =~ ^[0-9]+$ ]]; then
-  echo "ブロック: レビューが未完了です。/pr-3-review を実施してからpushしてください。" >&2
+  echo "ブロック: レビューが未完了です。/odin-talk-review を実施してからpushしてください。" >&2
   exit 2
 fi
 
 # 現在時刻との差が3600秒（1時間）以内か確認
 elapsed=$(( current_timestamp - review_timestamp ))
 if (( elapsed > 3600 )); then
-  echo "ブロック: レビュー結果が期限切れです（1時間超過）。/pr-3-review を再実施してください。" >&2
+  echo "ブロック: レビュー結果が期限切れです（1時間超過）。/odin-talk-review を再実施してください。" >&2
   exit 2
 fi
 
