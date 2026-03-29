@@ -1,7 +1,7 @@
 ---
 name: odin-auto-improve
 description: 自己改善。Reflexionエピソディックメモリで過去の改善サイクルを記憶し、WebSearch+メタ認知でodinスキル群を客観評価して改善する。同じ改善を繰り返さず積み上げる。「自己改善して」「スキルを改善して」「odinを進化させて」で起動。
-user-invocable: true
+user-invocable: false
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Agent, AskUserQuestion, WebSearch, WebFetch
 ---
 

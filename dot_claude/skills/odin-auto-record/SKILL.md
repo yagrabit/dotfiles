@@ -1,7 +1,7 @@
 ---
 name: odin-auto-record
 description: 開発中に気づいた改善点・学びをinsightsファイルに記録する。odin-auto-improveが次回実行時に参照し、フィードバックループを確立する。「記録して」「メモして」「insightを残して」で起動。
-user-invocable: true
+user-invocable: false
 allowed-tools: Bash, Read, Write, Edit, Glob, AskUserQuestion
 ---
 

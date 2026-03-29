@@ -1,7 +1,7 @@
 ---
 name: odin-auto-evolve
 description: odinのタスク分解で対応スキルが見つからない時に、skill-creatorスキルを使って新スキルをプロジェクトローカルに生成する自己進化スキル。生成後は昇格フローでdotfilesへの移動も案内する。「スキルを作って」「新しいスキルが必要」で起動。
-user-invocable: true
+user-invocable: false
 allowed-tools: Bash, Read, Write, Grep, Glob, Agent, AskUserQuestion
 ---
 
