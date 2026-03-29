@@ -156,7 +156,9 @@ superpowers:test-driven-development のパターンに従い実行する。
 
 TDDサイクルの各Green/Refactorフェーズ完了時に、以下の品質チェックを実施する。これらはClaudeがコード生成時に繰り返しやすい問題パターンである:
 
-Next.js/React固有:
+#### フレームワーク固有ルール（該当する場合のみ適用）
+
+以下はプロジェクトのpackage.jsonにNext.js/React依存が含まれる場合のみ適用する:
 - ページコンポーネントのメタデータは `generateMetadata` 関数で辞書から取得しているか（静的 `metadata` 定数のハードコードは禁止）
 - ユーザー表示テキストが辞書ファイル経由になっているか（ハードコード文字列の禁止）
 - 複数の独立したデータ取得がある場合、各クエリの loading/error 状態を独立管理しているか（`loading = aLoading || bLoading` の合成は禁止）
