@@ -120,7 +120,7 @@ def write_tmux_session(
     pane_id: str,
     cwd: str,
     model_name: str,
-    ctx_pct: int,
+    ctx_pct: float,
     rl_5h: Optional[float] = None,
     rl_7d: Optional[float] = None,
 ) -> None:
@@ -128,6 +128,8 @@ def write_tmux_session(
 
     TMUX_PANE環境変数がある場合のみ動作し、
     /tmp/claude-sessions/{safe_pane_id}.json に書き出す。
+    notification-tracker.shが書き込むidle/waiting状態を尊重し、
+    コンテキスト使用率に変化がない場合はstateを上書きしない。
     """
     safe_id = pane_id.replace("%", "pct")
     mon_dir = "/tmp/claude-sessions"
@@ -161,15 +163,33 @@ def write_tmux_session(
 
     win_name, win_idx, sess_name = parts
 
+    # 既存のstate判定: idle/waitingはコンテキスト変化がなければ保持する
+    state = "active"
+    try:
+        with open(mon_file, "r") as f:
+            existing = json.load(f)
+        existing_state = existing.get("state", "active")
+        if existing_state in ("idle", "waiting"):
+            # コンテキスト使用率の変化で処理再開を検出する
+            prev_ctx = existing.get("context_pct_raw", -1)
+            if abs(ctx_pct - prev_ctx) < 0.01:
+                # 変化なし → idle/waitingを保持
+                state = existing_state
+            # 変化あり → activeにリセット（デフォルト値のまま）
+    except (OSError, json.JSONDecodeError, TypeError, KeyError):
+        # ファイル不在・破損時はactiveにフォールバック
+        pass
+
     data = {
         "pane_id": pane_id,
-        "state": "active",
+        "state": state,
         "window_name": win_name,
         "window_index": win_idx,
         "session_name": sess_name,
         "pane_path": cwd,
         "model": model_name,
-        "context_pct": ctx_pct,
+        "context_pct": int(round(ctx_pct)),
+        "context_pct_raw": ctx_pct,
         "timestamp": int(time.time()),
     }
 
@@ -277,7 +297,7 @@ def main():
                 pane_id=tmux_pane,
                 cwd=cwd,
                 model_name=model_name,
-                ctx_pct=int(round(ctx_pct)),
+                ctx_pct=ctx_pct,
                 rl_5h=rl_5h_pct,
                 rl_7d=rl_7d_pct,
             )
