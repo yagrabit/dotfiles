@@ -2,6 +2,9 @@
 # glow-preview.sh — fzf + fd + glow によるMarkdownプレビューア
 # tmuxポップアップから呼び出し。fzfプレビューペイン内でスクロール閲覧まで完結
 # お気に入り機能: Ctrl-Fでトグル、★付きでリスト上部にピン留め
+#
+# リスト形式: タブ区切り2カラム（生パス\t表示テキスト）
+# fzfの --with-nth 2 で表示テキストのみ表示し、{1} で生パスを参照する
 
 set -euo pipefail
 
@@ -25,21 +28,21 @@ if [[ "${1:-}" == "--toggle" ]]; then
   exit 0
 fi
 
-# --- ファイルリスト生成 ---
+# --- ファイルリスト生成（タブ区切り: 生パス\t表示テキスト） ---
 generate_list() {
   local search_dir="$1"
 
   # (0) お気に入り（★プレフィックス付き、リスト最上部に表示）
   if [[ -s "$FAVORITES_FILE" ]]; then
     while IFS= read -r fp; do
-      [[ -n "$fp" && -f "$fp" ]] && echo "★ $fp" || true
+      [[ -n "$fp" && -f "$fp" ]] && printf '%s\t★ %s\n' "$fp" "$fp" || true
     done < "$FAVORITES_FILE"
   fi
 
   # (1) Claude編集履歴を新しい順に出力（存在するファイルのみ）
   if [[ -f "$HISTORY_FILE" ]]; then
     tail -r "$HISTORY_FILE" | cut -f2 | while IFS= read -r fp; do
-      [[ -n "$fp" && -f "$fp" ]] && echo "[Claude] $fp" || true
+      [[ -n "$fp" && -f "$fp" ]] && printf '%s\t[Claude] %s\n' "$fp" "$fp" || true
     done
   fi
 
@@ -47,18 +50,14 @@ generate_list() {
   (fd --type f --extension md --no-ignore --hidden \
     --exclude node_modules --exclude .git \
     . "$search_dir" 2>/dev/null || true) | while IFS= read -r fp; do
-    realpath "$fp" 2>/dev/null || echo "$fp"
+    rp=$(realpath "$fp" 2>/dev/null || echo "$fp")
+    printf '%s\t%s\n' "$rp" "$rp"
   done
 }
 
 # 重複排除（お気に入り → Claude履歴 → fdスキャンの順で優先）
 dedup_list() {
-  awk '{
-    path = $0
-    sub(/^★ /, "", path)
-    sub(/^\[Claude\] /, "", path)
-    if (!seen[path]++) print $0
-  }'
+  awk -F'\t' '!seen[$1]++'
 }
 
 # --- リスト出力モード（fzfのreloadから呼ばれる） ---
@@ -83,11 +82,13 @@ SELF="$(realpath "$0")"
 
 echo "$FILE_LIST" | fzf \
   --ansi \
+  --delimiter '\t' \
+  --with-nth 2 \
   --header="Enter: プレビュー(q→戻る) / Ctrl-F: ★お気に入り / Ctrl-Y: パスコピー / ESC: 閉じる" \
   --reverse \
-  --preview 'bash -c '\''f="{}"; f="${f#★ }"; f="${f#\[Claude\] }"; glow -s dark -w $FZF_PREVIEW_COLUMNS "$f"'\''' \
+  --preview 'glow -s dark -w $FZF_PREVIEW_COLUMNS {1}' \
   --preview-window "right:60%:wrap" \
-  --bind "enter:execute(bash -c 'f=\"{}\"; f=\"\${f#★ }\"; f=\"\${f#\\[Claude\\] }\"; glow -p -w 0 \"\$f\"')" \
-  --bind "ctrl-f:execute-silent(bash -c 'f=\"{}\"; f=\"\${f#★ }\"; f=\"\${f#\\[Claude\\] }\"; \"$SELF\" --toggle \"\$f\"')+reload(\"$SELF\" --list \"$SEARCH_DIR\")+first" \
-  --bind "ctrl-y:execute-silent(bash -c 'f=\"{}\"; f=\"\${f#★ }\"; f=\"\${f#\\[Claude\\] }\"; printf \"%s\" \"\$f\" | pbcopy')+abort" \
+  --bind "enter:execute(glow -p -w 0 {1})" \
+  --bind "ctrl-f:execute-silent(\"$SELF\" --toggle {1})+reload(\"$SELF\" --list \"$SEARCH_DIR\")+first" \
+  --bind "ctrl-y:execute-silent(printf '%s' {1} | pbcopy)+abort" \
   || exit 0
