@@ -9,6 +9,7 @@ from yb_memory.indexer import ingest_session
 from yb_memory.searcher import (
     cosine_similarity,
     escape_fts5_query,
+    normalize_rrf_scores,
     rrf_merge,
     search,
     time_decay,
@@ -237,6 +238,43 @@ class TestRrfMerge:
         assert scores == sorted(scores, reverse=True)
 
 
+class TestNormalizeRrfScores:
+    """normalize_rrf_scores関数のテスト"""
+
+    def test_両方に出現するトップ結果が1_0になる(self):
+        """FTSとベクトル両方のrank0に出現した結果が1.0に正規化されること"""
+        k = 60
+        # rank0 in both: 1/(60+0) + 1/(60+0) = 2/60
+        # rank1 in fts only: 1/(60+1)
+        merged = [(1, 2.0 / k), (2, 1.0 / (k + 1))]
+        normalized = normalize_rrf_scores(merged, k=k)
+        scores = dict(normalized)
+
+        assert scores[1] == pytest.approx(1.0)
+        assert 0.0 < scores[2] < 1.0
+
+    def test_片方のみ出現のトップ結果が0_5になる(self):
+        """片方のみのrank0に出現した結果が0.5に正規化されること"""
+        k = 60
+        merged = [(1, 1.0 / k)]
+        normalized = normalize_rrf_scores(merged, k=k)
+        scores = dict(normalized)
+
+        assert scores[1] == pytest.approx(0.5)
+
+    def test_空リストで空が返る(self):
+        """空リストが入力された場合に空リストが返ること"""
+        assert normalize_rrf_scores([], k=60) == []
+
+    def test_順序が維持される(self):
+        """正規化後も降順の順序が維持されること"""
+        k = 60
+        merged = [(1, 2.0 / k), (2, 1.5 / k), (3, 1.0 / k)]
+        normalized = normalize_rrf_scores(merged, k=k)
+        scores = [s for _, s in normalized]
+        assert scores == sorted(scores, reverse=True)
+
+
 class TestSearchMode:
     """search関数のmode引数のテスト"""
 
@@ -277,5 +315,17 @@ class TestSearchMode:
             self._setup_test_data(conn, sample_session_path)
             with pytest.raises(ValueError, match="不正な検索モード"):
                 search(conn, "fish", mode="invalid")
+        finally:
+            conn.close()
+
+    def test_tool_summaryでFTS検索できる(self, db_path, sample_session_path):
+        """tool_summaryに含まれるツール名でFTS5検索がヒットすること"""
+        conn = get_connection(db_path)
+        try:
+            self._setup_test_data(conn, sample_session_path)
+
+            # "Read"はtool_summaryに含まれるはず
+            results = search(conn, "Read", mode="fts", limit=10)
+            assert len(results) > 0
         finally:
             conn.close()

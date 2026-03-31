@@ -7,8 +7,10 @@ from pathlib import Path
 import pytest
 
 from yb_memory.chunker import (
+    MAX_TOTAL_LENGTH,
     extract_assistant_text,
     extract_tool_names,
+    extract_tool_use_details,
     extract_user_text,
     parse_session,
 )
@@ -59,12 +61,21 @@ class TestParseSession:
         """tool_useブロックのname属性がtool_summaryに記録されること"""
         chunks, _ = parse_session(sample_session_path)
 
-        # チャンク0: a2にtool_use(Read)が含まれる
+        # チャンク0: a2にtool_use(Read, Edit)が含まれる
         assert chunks[0].tool_summary is not None
         assert "Read" in chunks[0].tool_summary
+        assert "Edit" in chunks[0].tool_summary
 
         # チャンク1: a3にはtool_useがない
         assert chunks[1].tool_summary is None
+
+    def test_ツール詳細が回答に含まれる(self, sample_session_path):
+        """tool_useブロックの主要パラメータが回答テキストに含まれること"""
+        chunks, _ = parse_session(sample_session_path)
+
+        # チャンク0: Read(/etc/fish/config.fish) と Edit(/etc/fish/config.fish) が含まれる
+        assert "[Read: /etc/fish/config.fish]" in chunks[0].answer
+        assert "[Edit: /etc/fish/config.fish]" in chunks[0].answer
 
     def test_tool_resultのみのユーザーメッセージがQA区切りにならない(self, sample_session_path):
         """tool_resultのみのuserメッセージが新しいQ&Aペアの開始にならないこと"""
@@ -184,3 +195,96 @@ class TestExtractToolNames:
         """contentがリスト以外の場合に空リストが返ること"""
         message = {"content": "文字列"}
         assert extract_tool_names(message) == []
+
+
+class TestExtractToolUseDetails:
+    """extract_tool_use_detailsのテスト"""
+
+    def test_Read_tool_からファイルパスが抽出される(self):
+        """Readツールのfile_pathが[Read: パス]形式で抽出されること"""
+        message = {
+            "content": [
+                {"type": "tool_use", "id": "t1", "name": "Read",
+                 "input": {"file_path": "/path/to/file.ts"}},
+            ]
+        }
+        details = extract_tool_use_details(message)
+        assert details == ["[Read: /path/to/file.ts]"]
+
+    def test_Bash_toolからコマンドが抽出される(self):
+        """Bashツールのcommandが[Bash: コマンド]形式で抽出されること"""
+        message = {
+            "content": [
+                {"type": "tool_use", "id": "t1", "name": "Bash",
+                 "input": {"command": "npm test"}},
+            ]
+        }
+        details = extract_tool_use_details(message)
+        assert details == ["[Bash: npm test]"]
+
+    def test_未知のツールでも最初のstring入力が抽出される(self):
+        """未知のツールでも最初のstring型入力パラメータが抽出されること"""
+        message = {
+            "content": [
+                {"type": "tool_use", "id": "t1", "name": "mcp__getPage",
+                 "input": {"pageId": "12345", "spaceKey": "DEV"}},
+            ]
+        }
+        details = extract_tool_use_details(message)
+        assert len(details) == 1
+        assert "mcp__getPage" in details[0]
+        assert "pageId=12345" in details[0]
+
+    def test_入力パラメータがない場合はツール名のみ(self):
+        """入力パラメータがない場合に[ツール名]のみが返ること"""
+        message = {
+            "content": [
+                {"type": "tool_use", "id": "t1", "name": "SomeTool",
+                 "input": {}},
+            ]
+        }
+        details = extract_tool_use_details(message)
+        assert details == ["[SomeTool]"]
+
+    def test_長い入力パラメータが切り詰められる(self):
+        """100文字を超える入力パラメータが切り詰められること"""
+        long_path = "/very/long/" + "a" * 200 + "/path.ts"
+        message = {
+            "content": [
+                {"type": "tool_use", "id": "t1", "name": "Read",
+                 "input": {"file_path": long_path}},
+            ]
+        }
+        details = extract_tool_use_details(message)
+        assert len(details) == 1
+        # 100文字 + [Read: ] + ] の分
+        assert len(details[0]) <= 120
+
+    def test_複数のtool_useが全て抽出される(self):
+        """複数のtool_useブロックから全てのツール詳細が抽出されること"""
+        message = {
+            "content": [
+                {"type": "tool_use", "id": "t1", "name": "Read",
+                 "input": {"file_path": "/a.ts"}},
+                {"type": "text", "text": "テキスト"},
+                {"type": "tool_use", "id": "t2", "name": "Bash",
+                 "input": {"command": "npm test"}},
+            ]
+        }
+        details = extract_tool_use_details(message)
+        assert len(details) == 2
+        assert "[Read: /a.ts]" in details
+        assert "[Bash: npm test]" in details
+
+    def test_contentがリストでない場合は空リスト(self):
+        """contentがリスト以外の場合に空リストが返ること"""
+        message = {"content": "文字列"}
+        assert extract_tool_use_details(message) == []
+
+
+class TestMaxTotalLength:
+    """MAX_TOTAL_LENGTHの設定値テスト"""
+
+    def test_上限が16000に拡大されている(self):
+        """Q+A合計の文字数上限が16000であること"""
+        assert MAX_TOTAL_LENGTH == 16_000

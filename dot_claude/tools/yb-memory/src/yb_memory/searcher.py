@@ -65,7 +65,7 @@ def fts_search(
         sql = """
             SELECT c.id, c.session_id, c.question, c.answer, c.tool_summary,
                    c.project_path, c.created_at,
-                   bm25(chunks_fts, 1.0, 1.0) AS bm25_score
+                   bm25(chunks_fts, 1.0, 1.0, 0.5) AS bm25_score
             FROM chunks_fts f
             JOIN chunks c ON c.id = f.rowid
             WHERE chunks_fts MATCH ?
@@ -78,7 +78,7 @@ def fts_search(
         sql = """
             SELECT c.id, c.session_id, c.question, c.answer, c.tool_summary,
                    c.project_path, c.created_at,
-                   bm25(chunks_fts, 1.0, 1.0) AS bm25_score
+                   bm25(chunks_fts, 1.0, 1.0, 0.5) AS bm25_score
             FROM chunks_fts f
             JOIN chunks c ON c.id = f.rowid
             WHERE chunks_fts MATCH ?
@@ -209,6 +209,29 @@ def rrf_merge(
     # RRFスコア降順でソート
     merged = sorted(scores.items(), key=lambda x: x[1], reverse=True)
     return merged
+
+
+def normalize_rrf_scores(
+    merged: list[tuple[int, float]],
+    k: int = 60,
+) -> list[tuple[int, float]]:
+    """RRFスコアを0-1範囲に正規化する。
+
+    理論上の最大スコア（2/k: 両方の検索でrank0に出現した場合）で割ることで
+    スコアを0-1の範囲に変換する。
+
+    Args:
+        merged: (chunk_id, rrf_score)のリスト
+        k: RRFパラメータ
+
+    Returns:
+        (chunk_id, normalized_score)のリスト（元の順序を維持）
+    """
+    if not merged:
+        return []
+
+    max_possible = 2.0 / k
+    return [(chunk_id, score / max_possible) for chunk_id, score in merged]
 
 
 def _try_daemon_search(
@@ -353,12 +376,13 @@ def search(
             if chunk_id not in row_by_id:
                 row_by_id[chunk_id] = row_dict
 
-        # RRF統合
+        # RRF統合 + スコア正規化
         fts_ids = [r[0] for r in fts_results]
         vec_ids = [r[0] for r in vec_results]
         merged = rrf_merge(fts_ids, vec_ids)
+        merged = normalize_rrf_scores(merged)
 
-        # RRFスコアにtime_decayを適用してSearchResultを構築
+        # 正規化スコアにtime_decayを適用してSearchResultを構築
         scored_results = []
         for chunk_id, rrf_score in merged:
             row_dict = row_by_id[chunk_id]

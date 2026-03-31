@@ -36,7 +36,7 @@ class TestGetConnection:
             version = conn.execute(
                 "SELECT version FROM schema_version"
             ).fetchone()
-            assert version["version"] == 2
+            assert version["version"] == 3
         finally:
             conn.close()
 
@@ -64,8 +64,10 @@ class TestInitSchema:
             versions = conn.execute(
                 "SELECT version FROM schema_version"
             ).fetchall()
-            assert len(versions) == 1
-            assert versions[0]["version"] == 2
+            # v2とv3の両方が存在する場合がある（マイグレーション経由）
+            # 最新バージョンが3であること
+            max_version = max(v["version"] for v in versions)
+            assert max_version == 3
         finally:
             conn.close()
 
@@ -107,7 +109,7 @@ class TestGetStats:
 
             assert stats["session_count"] == 0
             assert stats["chunk_count"] == 0
-            assert stats["schema_version"] == 2
+            assert stats["schema_version"] == 3
             assert isinstance(stats["db_size_bytes"], int)
             assert stats["db_size_bytes"] >= 0
         finally:
@@ -137,12 +139,41 @@ class TestGetStats:
             conn.close()
 
 
-class TestSchemaV2:
-    """スキーマv2（ベクトル関連）のテスト"""
+class TestSchemaV3:
+    """スキーマv3（FTS5にtool_summary追加）のテスト"""
 
-    def test_SCHEMA_VERSIONが2である(self):
-        """SCHEMA_VERSION定数が2であること"""
-        assert SCHEMA_VERSION == 2
+    def test_SCHEMA_VERSIONが3である(self):
+        """SCHEMA_VERSION定数が3であること"""
+        assert SCHEMA_VERSION == 3
+
+    def test_FTS5インデックスにtool_summaryが含まれる(self, db_path):
+        """chunks_ftsテーブルにtool_summaryカラムが含まれていること"""
+        conn = get_connection(db_path)
+        try:
+            # チャンクを挿入してFTSトリガーが動作することを確認
+            conn.execute(
+                "INSERT INTO sessions (session_id, project_path, chunk_count) VALUES (?, ?, ?)",
+                ("s1", "/test", 1),
+            )
+            conn.execute(
+                """INSERT INTO chunks
+                   (session_id, chunk_index, question, answer, tool_summary, created_at, project_path)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                ("s1", 0, "質問", "回答", "Read, Edit, Bash", "2026-03-20T10:00:00Z", "/test"),
+            )
+            conn.commit()
+
+            # FTS5でtool_summary内のツール名を検索できること
+            results = conn.execute(
+                "SELECT rowid FROM chunks_fts WHERE chunks_fts MATCH '\"Bash\"'"
+            ).fetchall()
+            assert len(results) == 1
+        finally:
+            conn.close()
+
+
+class TestSchemaV2:
+    """スキーマv2（ベクトル関連）のテスト（後方互換性）"""
 
     def test_chunks_vecテーブルが存在する(self, db_path):
         """chunks_vecテーブルがスキーマ作成時に生成されること"""

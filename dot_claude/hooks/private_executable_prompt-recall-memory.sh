@@ -38,7 +38,7 @@ CONTEXT="[yb-memory] 関連する過去の会話:"
 CONTEXT="$CONTEXT"$'\n'
 
 # jqで各結果を整形
-FORMATTED=$(echo "$RESULTS" | jq -r '.[] | "---\nQ: \(.question[0:300])\nA: \(.answer[0:500])\n(project: \(.project_path), date: \(.created_at[0:10]))"' 2>/dev/null) || true
+FORMATTED=$(echo "$RESULTS" | jq -r '.[] | "---\nQ: \(.question[0:300])\nA: \(.answer[0:1500])\n\(if .tool_summary and .tool_summary != "" then "tools: \(.tool_summary)\n" else "" end)(project: \(.project_path), date: \(.created_at[0:10]), score: \(.score | tostring[0:4]))"' 2>/dev/null) || true
 
 if [ -z "$FORMATTED" ]; then
   exit 0

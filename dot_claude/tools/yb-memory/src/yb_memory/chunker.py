@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 # チャンクサイズ制限
 MAX_QUESTION_LENGTH: int = 2_000
-MAX_TOTAL_LENGTH: int = 8_000
+MAX_TOTAL_LENGTH: int = 16_000
 TRUNCATION_MARKER: str = "[truncated]"
 
 # メインチェーンから除外するメッセージタイプ
@@ -119,6 +119,64 @@ def extract_tool_names(message: dict) -> list[str]:
     return names
 
 
+# 主要ツールの代表的な入力パラメータ名
+_TOOL_INPUT_KEYS: dict[str, str] = {
+    "Read": "file_path",
+    "Edit": "file_path",
+    "Write": "file_path",
+    "Bash": "command",
+    "Grep": "pattern",
+    "Glob": "pattern",
+    "Agent": "description",
+    "WebSearch": "query",
+    "WebFetch": "url",
+}
+
+
+def extract_tool_use_details(message: dict) -> list[str]:
+    """アシスタントメッセージからtool_use名と主要パラメータを抽出する。
+
+    既知のツールは代表的な入力パラメータ（file_path, command等）を、
+    未知のツールは最初のstring型パラメータを含めて返す。
+
+    Args:
+        message: メッセージ辞書（message.content を含む）
+
+    Returns:
+        "[ツール名: パラメータ値]" 形式の文字列リスト。
+    """
+    content = message.get("content")
+    if not isinstance(content, list):
+        return []
+
+    details: list[str] = []
+    for block in content:
+        if not isinstance(block, dict) or block.get("type") != "tool_use":
+            continue
+        name = block.get("name", "")
+        if not name:
+            continue
+        input_data = block.get("input", {})
+
+        # 既知のツールは代表パラメータを取得
+        key = _TOOL_INPUT_KEYS.get(name)
+        if key and key in input_data:
+            value = str(input_data[key])[:100]
+            details.append(f"[{name}: {value}]")
+        else:
+            # 未知のツール: 最初のstring型入力を使用
+            found = False
+            for k, v in input_data.items():
+                if isinstance(v, str) and v.strip():
+                    details.append(f"[{name}: {k}={str(v)[:80]}]")
+                    found = True
+                    break
+            if not found:
+                details.append(f"[{name}]")
+
+    return details
+
+
 def _truncate(text: str, max_length: int) -> str:
     """テキストを指定文字数で切り詰める。
 
@@ -218,16 +276,26 @@ def parse_session(jsonl_path: Path) -> tuple[list[Chunk], str | None]:
     current_question: str | None = None
     current_answer_parts: list[str] = []
     current_tool_names: list[str] = []
+    current_tool_details: list[str] = []
 
     def _finalize_chunk() -> None:
         """蓄積されたQ&Aデータからチャンクを確定してリストに追加する。"""
         nonlocal current_question, current_answer_parts, current_tool_names
+        nonlocal current_tool_details
 
         if current_question is None:
             return
 
         answer = "\n".join(current_answer_parts).strip()
         question = current_question.strip()
+
+        # ツール詳細を回答末尾に追加（「何をやったか」の記録）
+        if current_tool_details:
+            details_text = " ".join(current_tool_details)
+            if answer:
+                answer = f"{answer}\n{details_text}"
+            else:
+                answer = details_text
 
         # 空のチャンクは生成しない
         if not question and not answer:
@@ -272,6 +340,7 @@ def parse_session(jsonl_path: Path) -> tuple[list[Chunk], str | None]:
         current_question = None
         current_answer_parts = []
         current_tool_names = []
+        current_tool_details = []
 
     for record in records:
         record_type = record.get("type", "")
@@ -294,6 +363,9 @@ def parse_session(jsonl_path: Path) -> tuple[list[Chunk], str | None]:
 
             tool_names = extract_tool_names(message)
             current_tool_names.extend(tool_names)
+
+            tool_details = extract_tool_use_details(message)
+            current_tool_details.extend(tool_details)
 
     # 最後のチャンクを確定
     _finalize_chunk()

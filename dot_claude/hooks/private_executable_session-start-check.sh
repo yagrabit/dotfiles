@@ -73,11 +73,24 @@ fi
 
 MSG="${TOOLS_MSG}"
 
-# yb-memoryの自動インストール
-if command -v uv &>/dev/null && ! command -v yb-memory &>/dev/null; then
-  if [ -d "$HOME/.claude/tools/yb-memory" ]; then
+# yb-memoryの自動インストール・自動更新
+if command -v uv &>/dev/null && [ -d "$HOME/.claude/tools/yb-memory" ]; then
+  YBM_STAMP="$HOME/.local/share/yb-memory/installed-version.txt"
+  YBM_SRC_VER=$(grep '^version' "$HOME/.claude/tools/yb-memory/pyproject.toml" 2>/dev/null | sed 's/.*"\(.*\)".*/\1/' || echo "")
+  YBM_INST_VER=$(cat "$YBM_STAMP" 2>/dev/null || echo "")
+
+  if ! command -v yb-memory &>/dev/null; then
+    # 未インストール: 新規インストール
     uv tool install --from "$HOME/.claude/tools/yb-memory" yb-memory 2>/dev/null || true
-    MSG="${MSG}"$'\n'"✓ yb-memory: 自動インストール実行"
+    mkdir -p "$(dirname "$YBM_STAMP")"
+    echo "$YBM_SRC_VER" > "$YBM_STAMP"
+    MSG="${MSG}"$'\n'"✓ yb-memory: 自動インストール実行 (v${YBM_SRC_VER})"
+  elif [ -n "$YBM_SRC_VER" ] && [ "$YBM_SRC_VER" != "$YBM_INST_VER" ]; then
+    # バージョン不一致: 自動更新
+    uv tool install --reinstall --force --from "$HOME/.claude/tools/yb-memory" yb-memory 2>/dev/null || true
+    mkdir -p "$(dirname "$YBM_STAMP")"
+    echo "$YBM_SRC_VER" > "$YBM_STAMP"
+    MSG="${MSG}"$'\n'"✓ yb-memory: 自動更新 v${YBM_INST_VER} → v${YBM_SRC_VER}"
   fi
 fi
 

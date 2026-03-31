@@ -9,7 +9,7 @@ import sqlite3
 from pathlib import Path
 
 DEFAULT_DB_PATH: Path = Path.home() / ".local" / "share" / "yb-memory" / "memories.db"
-SCHEMA_VERSION: int = 2
+SCHEMA_VERSION: int = 3
 
 # スキーマ定義SQL（冪等）
 _SCHEMA_SQL: str = """
@@ -43,29 +43,29 @@ CREATE INDEX IF NOT EXISTS idx_chunks_project ON chunks(project_path);
 CREATE INDEX IF NOT EXISTS idx_chunks_created ON chunks(created_at);
 
 CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(
-  question, answer,
+  question, answer, tool_summary,
   content='chunks', content_rowid='id',
   tokenize='trigram'
 );
 
 -- FTS5同期トリガー: INSERT
 CREATE TRIGGER IF NOT EXISTS chunks_ai AFTER INSERT ON chunks BEGIN
-  INSERT INTO chunks_fts(rowid, question, answer)
-  VALUES (new.id, new.question, new.answer);
+  INSERT INTO chunks_fts(rowid, question, answer, tool_summary)
+  VALUES (new.id, new.question, new.answer, COALESCE(new.tool_summary, ''));
 END;
 
 -- FTS5同期トリガー: DELETE
 CREATE TRIGGER IF NOT EXISTS chunks_ad AFTER DELETE ON chunks BEGIN
-  INSERT INTO chunks_fts(chunks_fts, rowid, question, answer)
-  VALUES ('delete', old.id, old.question, old.answer);
+  INSERT INTO chunks_fts(chunks_fts, rowid, question, answer, tool_summary)
+  VALUES ('delete', old.id, old.question, old.answer, COALESCE(old.tool_summary, ''));
 END;
 
 -- FTS5同期トリガー: UPDATE
 CREATE TRIGGER IF NOT EXISTS chunks_au AFTER UPDATE ON chunks BEGIN
-  INSERT INTO chunks_fts(chunks_fts, rowid, question, answer)
-  VALUES ('delete', old.id, old.question, old.answer);
-  INSERT INTO chunks_fts(rowid, question, answer)
-  VALUES (new.id, new.question, new.answer);
+  INSERT INTO chunks_fts(chunks_fts, rowid, question, answer, tool_summary)
+  VALUES ('delete', old.id, old.question, old.answer, COALESCE(old.tool_summary, ''));
+  INSERT INTO chunks_fts(rowid, question, answer, tool_summary)
+  VALUES (new.id, new.question, new.answer, COALESCE(new.tool_summary, ''));
 END;
 
 -- ベクトルインデックス（Phase 2）
@@ -147,6 +147,49 @@ END;
 """
 
 
+_MIGRATE_V3_SQL: str = """
+-- FTS5テーブルにtool_summaryカラムを追加するため再作成
+-- 旧トリガーを削除
+DROP TRIGGER IF EXISTS chunks_ai;
+DROP TRIGGER IF EXISTS chunks_ad;
+DROP TRIGGER IF EXISTS chunks_au;
+
+-- 旧FTS5テーブルを削除
+DROP TABLE IF EXISTS chunks_fts;
+
+-- tool_summary付きのFTS5テーブルを再作成
+CREATE VIRTUAL TABLE chunks_fts USING fts5(
+  question, answer, tool_summary,
+  content='chunks', content_rowid='id',
+  tokenize='trigram'
+);
+
+-- FTS5同期トリガー: INSERT
+CREATE TRIGGER chunks_ai AFTER INSERT ON chunks BEGIN
+  INSERT INTO chunks_fts(rowid, question, answer, tool_summary)
+  VALUES (new.id, new.question, new.answer, COALESCE(new.tool_summary, ''));
+END;
+
+-- FTS5同期トリガー: DELETE
+CREATE TRIGGER chunks_ad AFTER DELETE ON chunks BEGIN
+  INSERT INTO chunks_fts(chunks_fts, rowid, question, answer, tool_summary)
+  VALUES ('delete', old.id, old.question, old.answer, COALESCE(old.tool_summary, ''));
+END;
+
+-- FTS5同期トリガー: UPDATE
+CREATE TRIGGER chunks_au AFTER UPDATE ON chunks BEGIN
+  INSERT INTO chunks_fts(chunks_fts, rowid, question, answer, tool_summary)
+  VALUES ('delete', old.id, old.question, old.answer, COALESCE(old.tool_summary, ''));
+  INSERT INTO chunks_fts(rowid, question, answer, tool_summary)
+  VALUES (new.id, new.question, new.answer, COALESCE(new.tool_summary, ''));
+END;
+
+-- 既存データをFTS5に再投入
+INSERT INTO chunks_fts(rowid, question, answer, tool_summary)
+SELECT id, question, answer, COALESCE(tool_summary, '') FROM chunks;
+"""
+
+
 def init_schema(conn: sqlite3.Connection) -> None:
     """スキーマを作成する（冪等）。
 
@@ -169,6 +212,16 @@ def init_schema(conn: sqlite3.Connection) -> None:
         conn.execute(
             "INSERT INTO schema_version (version) VALUES (?)",
             (2,),
+        )
+        conn.commit()
+        current_max = 2
+
+    # v2→v3マイグレーション: FTS5にtool_summaryカラムを追加
+    if current_max is not None and current_max < 3:
+        conn.executescript(_MIGRATE_V3_SQL)
+        conn.execute(
+            "INSERT INTO schema_version (version) VALUES (?)",
+            (3,),
         )
         conn.commit()
 

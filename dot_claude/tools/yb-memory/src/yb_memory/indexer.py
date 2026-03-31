@@ -219,12 +219,19 @@ def ingest_session(conn: sqlite3.Connection, session_id: str, jsonl_path: Path) 
                 rows = cursor.fetchall()
 
                 if rows:
-                    # Q+Aを結合してバッチエンコード（テキスト長を制限）
+                    # Q+A+tool_summaryを結合してバッチエンコード（テキスト長を制限）
                     max_text_len = 1024
-                    texts = [
-                        f"{row['question']} {row['answer']}"[:max_text_len]
-                        for row in rows
-                    ]
+                    texts = []
+                    for row in rows:
+                        parts = [row['question'], row['answer']]
+                        # tool_summaryが存在すればembeddingに含める
+                        tool_summary = conn.execute(
+                            "SELECT tool_summary FROM chunks WHERE id = ?",
+                            (row['id'],),
+                        ).fetchone()
+                        if tool_summary and tool_summary['tool_summary']:
+                            parts.append(tool_summary['tool_summary'])
+                        texts.append(" ".join(parts)[:max_text_len])
                     embeddings = encode_documents_batch(texts)
 
                     # chunks_vecに挿入
@@ -355,7 +362,7 @@ def reindex_embeddings(conn: sqlite3.Connection, dry_run: bool = False) -> dict:
     # chunks_vecにembeddingがないチャンクを検索
     cursor = conn.execute(
         """
-        SELECT c.id, c.question, c.answer FROM chunks c
+        SELECT c.id, c.question, c.answer, c.tool_summary FROM chunks c
         LEFT JOIN chunks_vec v ON c.id = v.id
         WHERE v.id IS NULL
         """
@@ -379,11 +386,13 @@ def reindex_embeddings(conn: sqlite3.Connection, dry_run: bool = False) -> dict:
         batch = rows[i : i + batch_size]
 
         try:
-            # Q+Aを結合してバッチエンコード（テキスト長を制限）
-            texts = [
-                f"{row['question']} {row['answer']}"[:max_text_len]
-                for row in batch
-            ]
+            # Q+A+tool_summaryを結合してバッチエンコード（テキスト長を制限）
+            texts = []
+            for row in batch:
+                parts = [row['question'], row['answer']]
+                if row['tool_summary']:
+                    parts.append(row['tool_summary'])
+                texts.append(" ".join(parts)[:max_text_len])
             embeddings = encode_documents_batch(texts)
 
             # chunks_vecに挿入
