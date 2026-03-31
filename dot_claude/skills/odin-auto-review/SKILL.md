@@ -48,7 +48,7 @@ Anthropic公式: "separating the agent doing the work from the agent judging it 
 
 ## ステップ2: 並列レビュー実行
 
-以下の4つのレビューを1回のレスポンスで同時起動する:
+以下の5つのレビューを1回のレスポンスで同時起動する:
 
 1. Agentツールで code-reviewer サブエージェントタイプを起動（model: sonnet）
    - 変更差分を渡し、品質・保守性の観点でレビューを依頼する
@@ -58,15 +58,18 @@ Anthropic公式: "separating the agent doing the work from the agent judging it 
    - 変更コードの再利用性・効率性をチェックする
 4. Agentツールで subagent_type に "coderabbit:code-reviewer" を指定して起動する
    - プラグイン未インストールの場合はスキップする
+5. Skillツールで `codex:review` を実行する（Codex経由のレビュー）
+   - `--base main --wait` オプションを付けて実行する
+   - Codexプラグインが未インストールの場合はスキップする
 
 全レビューの完了を待つ。
 
 #### 完了チェックポイント（ステップ2）
 
-- 4つのレビュー（code-reviewer, security-reviewer, simplify, coderabbit）が実行されていること
-- coderabbitがスキップされた場合、残り3つが実行されていること
+- 5つのレビュー（code-reviewer, security-reviewer, simplify, coderabbit, codex）が実行されていること
+- coderabbit・codexがスキップされた場合、残りのレビューが実行されていること
 
-> superpowersプラグインが未インストールの場合: simplifyスキルをスキップし、残りの2-3レビューで実行する。
+> superpowersプラグインが未インストールの場合: simplifyスキルをスキップし、残りのレビューで実行する。
 
 ## ステップ3: 結果統合と報告
 

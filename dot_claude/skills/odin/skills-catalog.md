@@ -28,7 +28,7 @@
 |----------|------|---------|---------|
 | odin-talk-clarify | 要件の曖昧点を対話で解消 | 要件テキスト | clarified-*.md |
 | odin-talk-propose | 複数アプローチの比較提案 | 課題・要件 | 比較表+推奨パターン |
-| odin-talk-review | 多角的コードレビュー | 変更差分 | レビュー結果（3段階分類） |
+| odin-talk-review | 多角的コードレビュー（code-reviewer + security-reviewer + simplify + coderabbit + codex並列） | 変更差分 | レビュー結果（3段階分類） |
 | odin-talk-explain | 対象者レベル別の説明 | コードベース・成果物 | 説明レポート（4スタイル対応） |
 
 ### auto系（自動補助）-- 6スキル
@@ -36,11 +36,17 @@
 | スキル名 | 役割 | 発動タイミング |
 |----------|------|--------------|
 | odin-auto-quality | 品質チェック一括実行（lint/型/テスト/セキュリティ） | do系スキル完了後 |
-| odin-auto-review | 軽量セルフレビュー（code-reviewer + security-reviewer並列） | do系スキル完了後 |
+| odin-auto-review | 軽量セルフレビュー（code-reviewer + security-reviewer + simplify + coderabbit + codex並列） | do系スキル完了後 |
 | odin-auto-verify | 完了前検証（証拠付き） | タスク完了宣言前 |
 | odin-auto-evolve | 自己進化（不足スキルの生成） | タスク分解でマッピング不可時 |
 | odin-auto-improve | WebSearch+メタ認知による自己改善 | インサイト蓄積後、手動起動 |
 | odin-auto-record | 開発中に気づいた改善点・学びをinsightsファイルに記録する | 各タスク完了時の振り返り |
+
+### codex系（Codex連携）-- 1スキル
+
+| スキル名 | 役割 | 主な入力 | 主な出力 |
+|----------|------|---------|---------|
+| odin-codex-search | Codex経由Web検索（未対応環境はWebSearchフォールバック） | 検索クエリ・調査目的 | 構造化された調査結果 |
 
 ### learn系（学ぶ）-- 2スキル
 

@@ -1,0 +1,8 @@
+# 環境別設定フラグ
+# マシン固有のオーバーライドは ~/.config/chezmoi/chezmoi.toml [data] セクションで行う
+
+# Codex連携（OpenAI Codex CLI + codex-plugin-cc）
+# true にする場合: ~/.config/chezmoi/chezmoi.toml に以下を追加
+#   [data]
+#   codex_enabled = true
+codex_enabled: false

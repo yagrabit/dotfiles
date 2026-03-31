@@ -1,5 +1,6 @@
 {
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
       "Bash(ls:*)",
       "Bash(cat:*)",
@@ -200,7 +201,8 @@
     "context7@claude-plugins-official": true,
     "atlassian@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
-    "playwright@claude-plugins-official": true
+    "playwright@claude-plugins-official": true{{ if .codex_enabled }},
+    "codex@openai-codex": true{{ end }}
   },
   "mcpServers": {},
   "autoMemoryEnabled": false,

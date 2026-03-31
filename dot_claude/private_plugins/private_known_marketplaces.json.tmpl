@@ -6,5 +6,13 @@
     },
     "installLocation": "{{ .chezmoi.homeDir }}/.claude/plugins/marketplaces/claude-plugins-official",
     "lastUpdated": "2026-03-30T05:41:33.059Z"
-  }
+  }{{ if .codex_enabled }},
+  "openai-codex": {
+    "source": {
+      "source": "github",
+      "repo": "openai/codex-plugin-cc"
+    },
+    "installLocation": "{{ .chezmoi.homeDir }}/.claude/plugins/marketplaces/openai-codex",
+    "lastUpdated": "2026-03-31T00:27:59.309Z"
+  }{{ end }}
 }

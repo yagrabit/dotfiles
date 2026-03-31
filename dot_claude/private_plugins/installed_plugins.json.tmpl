@@ -79,6 +79,16 @@
         "installedAt": "2026-03-30T05:41:11.436Z",
         "lastUpdated": "2026-03-30T05:41:11.436Z"
       }
-    ]
+    ]{{ if .codex_enabled }},
+    "codex@openai-codex": [
+      {
+        "scope": "user",
+        "installPath": "{{ .chezmoi.homeDir }}/.claude/plugins/cache/openai-codex/codex/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-03-31T00:28:10.728Z",
+        "lastUpdated": "2026-03-31T00:28:10.728Z",
+        "gitCommitSha": "f4d65d9641fadc7632afecd5735daf8e16060c98"
+      }
+    ]{{ end }}
   }
 }
