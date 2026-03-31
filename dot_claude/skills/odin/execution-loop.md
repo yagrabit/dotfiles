@@ -51,6 +51,12 @@
 
 以下のタイミングでauto系スキルを自動的に挿入・実行する:
 
+think系スキル完了後（design/requirements/plan）:
+- Skillツールで `odin-auto-peer-review` を実行する
+- ドキュメントのファイルパスと種別をodinコンテキストに含めて渡す
+- レビューアは独立したサブエージェント（Agentツール）として起動し、ドキュメント内容のみ渡す（作成時の文脈は渡さない）
+- PASS判定後に次のステップへ進む
+
 do系スキル完了後:
 - Skillツールで `odin-auto-quality` を実行する（--fix付き）
 

@@ -1,4 +1,4 @@
-## 配下スキル一覧（全24スキル）
+## 配下スキル一覧（全25スキル）
 
 ### think系（考える）-- 6スキル
 
@@ -31,12 +31,13 @@
 | odin-talk-review | 多角的コードレビュー（code-reviewer + security-reviewer + simplify + coderabbit + codex並列） | 変更差分 | レビュー結果（3段階分類） |
 | odin-talk-explain | 対象者レベル別の説明 | コードベース・成果物 | 説明レポート（4スタイル対応） |
 
-### auto系（自動補助）-- 6スキル
+### auto系（自動補助）-- 7スキル
 
 | スキル名 | 役割 | 発動タイミング |
 |----------|------|--------------|
 | odin-auto-quality | 品質チェック一括実行（lint/型/テスト/セキュリティ） | do系スキル完了後 |
 | odin-auto-review | 軽量セルフレビュー（code-reviewer + security-reviewer + simplify + coderabbit + codex並列） | do系スキル完了後 |
+| odin-auto-peer-review | ドキュメント向けピアレビュー（バイアスなし独立レビューア→修正→再評価の反復ループ） | think系スキル完了後（design/requirements/plan） |
 | odin-auto-verify | 完了前検証（証拠付き） | タスク完了宣言前 |
 | odin-auto-evolve | 自己進化（不足スキルの生成） | タスク分解でマッピング不可時 |
 | odin-auto-improve | WebSearch+メタ認知による自己改善 | インサイト蓄積後、手動起動 |
