@@ -9,6 +9,9 @@
 # Claude Code worktree（agentが自動作成する一時作業領域）
 .claude/worktrees/
 
+# Playwright MCP（テスト実行時の一時ファイル）
+.playwright-mcp/
+
 # Claude Code成果物（セッション間の中間ファイル）
 .claude/artifacts/
 
