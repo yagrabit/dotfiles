@@ -2,7 +2,7 @@
 name: odin
 description: 開発ワークフローのオーケストレーター。ユーザーの要望を分析し、配下25スキルから最適な組み合わせを選んでオーケストレーションする。あらゆる開発シーンに対応し、自己進化する。「/odin」で起動。
 user-invocable: true
-allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Agent, AskUserQuestion, WebSearch
+allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Agent, Skill, AskUserQuestion, WebSearch
 ---
 
 # odin

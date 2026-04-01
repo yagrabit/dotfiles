@@ -2,7 +2,7 @@
 name: odin-auto-review
 description: code-reviewer・security-reviewerを並列起動し、品質とセキュリティの多角的セルフレビュー結果を統合して報告する。odin司令塔から実装完了後に自動呼び出されるほか、「レビューして」「セルフレビューして」で単体起動。
 user-invocable: false
-allowed-tools: Bash, Read, Grep, Glob, Agent, AskUserQuestion
+allowed-tools: Bash, Read, Grep, Glob, Agent, Skill, AskUserQuestion
 ---
 
 # odin-auto-review

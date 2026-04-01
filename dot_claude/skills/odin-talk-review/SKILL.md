@@ -2,7 +2,7 @@
 name: odin-talk-review
 description: code-reviewer・security-reviewer・simplify・coderabbit:code-reviewer・codex:reviewを並列実行し、品質/セキュリティ/パフォーマンスの多角的コードレビュー結果を重大/改善/情報の3段階で統合して報告する。PR差分・ブランチ差分・指定ファイルを対象にできる。「レビューして」「PRをレビューして」「コードを見て」で起動。odinから自動起動される場合もある。
 user-invocable: true
-allowed-tools: Bash, Read, Grep, Glob, Agent, AskUserQuestion
+allowed-tools: Bash, Read, Grep, Glob, Agent, Skill, AskUserQuestion
 ---
 
 # odin-talk-review
