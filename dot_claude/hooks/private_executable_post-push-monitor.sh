@@ -95,7 +95,7 @@ HOME_DIR="${HOME}"
 
 # CI/CodeRabbit監視指示メッセージ生成
 MSG="push完了。PR #${PR_NUMBER} のCI/CodeRabbitを監視するため、以下のCronCreateを実行してください:
-コマンド: ${HOME_DIR}/.claude/hooks/check-ci-coderabbit.sh ${OWNER} ${REPO} ${PR_NUMBER}
+コマンド: gh pr checks ${PR_NUMBER} --repo ${OWNER}/${REPO} 2>&1; echo '---'; gh api repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}/reviews --jq '.[].state' 2>/dev/null | sort | uniq -c
 間隔: */1 * * * * (1分間隔)
 タイムアウト: 10分後に停止"
 
