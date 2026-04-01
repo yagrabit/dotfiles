@@ -141,3 +141,54 @@ Phase 2: 深掘りヒアリング
     4. おまかせ」
   ...以降省略
 ```
+
+---
+
+## アンチパターン: 委譲違反の例
+
+odinが鉄則1に違反するパターンと正しい実行例の対比。
+
+### 違反例1: Agentツール直接使用
+
+```
+❌ 違反: odinがPhase 5でExploreエージェントを直接起動
+  Agent({
+    prompt: "コードベースを調査して設計書を評価してください",
+    subagent_type: "Explore"
+  })
+
+✅ 正しい: Skillツールでodin-think-researchに委譲
+  Skill({
+    skill: "odin-think-research",
+    args: '{"odin_context": {"task": "コードベース調査", ...}}'
+  })
+```
+
+### 違反例2: odin自身が分析を実行
+
+```
+❌ 違反: odinがRead/Grepで直接ファイルを読み、自分で分析して結論を出す
+  Read → Grep → 「分析結果: この設計は問題ありません」
+
+✅ 正しい: Skillツールでodin-think-analyzeに委譲
+  Skill({
+    skill: "odin-think-analyze",
+    args: '{"odin_context": {"task": "設計書の品質分析", ...}}'
+  })
+```
+
+### 違反例3: 「簡単だから」スキルを省略
+
+```
+❌ 違反: 「レビューは短いドキュメントだから自分でやろう」
+  → odinが直接ドキュメントを読んで評価コメントを書く
+
+✅ 正しい: 複雑さに関係なくSkillツールで委譲
+  Skill({
+    skill: "odin-auto-peer-review",
+    args: '{"odin_context": {"task": "設計書レビュー", "artifacts": {"design": "..."}}}'
+  })
+```
+
+判断基準: Phase 5のタスク実行では、「情報収集」以外の全ての作業をSkillツールで委譲する。
+「簡単だから」「短いから」「1つだけだから」は委譲省略の正当な理由にならない。
