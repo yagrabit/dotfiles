@@ -155,6 +155,110 @@ browser_evaluate で以下の4つのJSスニペットを順番に実行する。
 })()
 ```
 
+### 1-3.5. テーマ検出
+
+Phase 1-3 の4つのJSスニペット実行完了後、以下のテーマ検出スニペットを browser_evaluate で実行する。
+
+#### テーマ検出スニペット
+
+```javascript
+(() => {
+  const result = {
+    hasThemeSupport: false,
+    detectedMethod: null,
+    currentTheme: null,
+    toggleElement: null
+  };
+
+  // 1. prefers-color-scheme メディアクエリの検出
+  try {
+    for (const sheet of document.styleSheets) {
+      try {
+        for (const rule of sheet.cssRules) {
+          if (rule instanceof CSSMediaRule &&
+              rule.conditionText?.includes('prefers-color-scheme')) {
+            result.hasThemeSupport = true;
+            result.detectedMethod = 'media-query';
+          }
+        }
+      } catch(e) {}
+    }
+  } catch(e) {}
+
+  // 2. data-theme / class ベースの検出
+  const html = document.documentElement;
+  const dataTheme = html.getAttribute('data-theme') ||
+                    html.getAttribute('data-color-mode') ||
+                    html.getAttribute('data-color-scheme');
+  if (dataTheme) {
+    result.hasThemeSupport = true;
+    result.detectedMethod = 'data-theme';
+    result.currentTheme = dataTheme.includes('dark') ? 'dark' : 'light';
+  } else if (html.classList.contains('dark') || document.body.classList.contains('dark')) {
+    result.hasThemeSupport = true;
+    result.detectedMethod = 'class';
+    result.currentTheme = 'dark';
+  } else if (html.classList.contains('light') || document.body.classList.contains('light')) {
+    result.hasThemeSupport = true;
+    result.detectedMethod = 'class';
+    result.currentTheme = 'light';
+  }
+
+  // 3. 背景色の明度からテーマ推定（フォールバック）
+  if (!result.currentTheme) {
+    const bg = getComputedStyle(document.body).backgroundColor;
+    const match = bg.match(/\d+/g);
+    if (match) {
+      const [r, g, b] = match.map(Number);
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      result.currentTheme = luminance < 0.5 ? 'dark' : 'light';
+    }
+  }
+
+  // 4. テーマ切替ボタンの検出
+  const toggleSelectors = [
+    '[aria-label*="theme" i]', '[aria-label*="dark" i]',
+    '[aria-label*="light" i]', '[aria-label*="mode" i]',
+    '[data-testid*="theme" i]',
+    '.theme-toggle', '#theme-toggle',
+    '[class*="theme-switch"]', '[class*="dark-mode"]',
+    'button:has([class*="moon"])', 'button:has([class*="sun"])'
+  ];
+  for (const sel of toggleSelectors) {
+    try {
+      const el = document.querySelector(sel);
+      if (el) {
+        result.hasThemeSupport = true;
+        result.toggleElement = sel;
+        break;
+      }
+    } catch(e) {}
+  }
+
+  return result;
+})()
+```
+
+#### 2回抽出フロー
+
+テーマ検出結果で `hasThemeSupport: true` の場合:
+
+1. 現在のテーマでの抽出結果を1回目として記録（Phase 1-3の結果がそのまま使われる）
+2. テーマを切り替える:
+   - `toggleElement` がある場合: `browser_click` でトグルボタンをクリック
+   - `detectedMethod === 'data-theme'` の場合: `browser_evaluate` で属性値を変更
+   - `detectedMethod === 'class'` の場合: `browser_evaluate` でクラスを切替
+   - `detectedMethod === 'media-query'` のみの場合: 制限事項。Playwright MCPには `emulateMedia` 相当のツールがないため、サポート外とする。「media-queryベースのテーマ切替は自動抽出に非対応です」とレポートに記載する
+3. `browser_wait_for` で遷移完了を待機（500ms）
+4. Phase 1-3 の4つのJSスニペット（色・タイポグラフィ・スペーシング・エフェクト）を再実行（2回目の抽出）
+5. 両方の結果をレポートに `### ライトモードトークン` / `### ダークモードトークン` として出力
+
+テーマ未検出（`hasThemeSupport: false`）の場合:
+- 1回のみの抽出結果を使用
+- 背景色の明度から推定したテーマ名（light/dark）を記録
+- tokens.jsonはテーマ分岐なし（フラット構造）で生成
+- レポートに「テーマ切替は検出されませんでした。{推定テーマ名}モードとして抽出しました」と記載
+
 ### 1-4. エラーハンドリング
 
 | エラー | 対処 |
@@ -219,6 +323,20 @@ browser_evaluate で以下の4つのJSスニペットを順番に実行する。
 ### エフェクト
 | 種類 | 値 | 使用回数 |
 |------|-----|---------|
+```
+
+#### テーマ対応時の出力
+
+テーマが検出された場合、上記の各テーブルをライトモード・ダークモードそれぞれで出力する:
+
+```
+### ライトモードトークン
+
+（上記と同じテーブル形式でライトモードの値を出力）
+
+### ダークモードトークン
+
+（上記と同じテーブル形式でダークモードの値を出力）
 ```
 
 ---
@@ -290,6 +408,16 @@ URL: {対象URL}
 {サイトの目的・ターゲットユーザー・第一印象の1-3文サマリー}
 
 ## デザイントークン
+
+テーマサポート: {あり（{検出方法}） / なし（{推定テーマ名}モードとして抽出）}
+
+テーマサポートありの場合、カラーパレットとエフェクトのセクションをテーマごとに分けて出力:
+
+### ライトモード カラーパレット
+（テーブル）
+
+### ダークモード カラーパレット
+（テーブル）
 
 ### カラーパレット
 
