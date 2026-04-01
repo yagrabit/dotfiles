@@ -12,6 +12,9 @@
 # Playwright MCP（テスト実行時の一時ファイル）
 .playwright-mcp/
 
+# デザインシステム生成物（プロジェクト固有、dotfilesに含めない）
+design-system/
+
 # Claude Code成果物（セッション間の中間ファイル）
 .claude/artifacts/
 
