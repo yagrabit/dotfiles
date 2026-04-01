@@ -114,7 +114,7 @@ do-implement / do-refactor 完了後（品質チェック通過後）:
 
 全実装完了後（最後のdo-implement/do-refactor/do-test完了後）:
 - Skillツールで `odin-auto-review` を実行する
-- ただし、次のWaveでodin-do-prを実行する場合は、auto-reviewをスキップする（do-pr内部でセルフレビューが実行されるため、2重実行を防ぐ）
+- ただし、次のWaveでodin-do-prを実行する場合は、auto-reviewをスキップする（do-prがodin-talk-reviewを呼び出してフルレビュー（5種）を実施するため、2重実行を防ぐ）
 
 各タスク完了宣言前:
 - Skillツールで `odin-auto-verify` を実行する

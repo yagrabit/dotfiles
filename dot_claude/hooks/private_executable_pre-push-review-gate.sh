@@ -38,19 +38,20 @@ if [[ -z "$branch" ]]; then
   exit 0
 fi
 
-# main/master/develop への直接pushは対象外
-if [[ "$branch" == "main" || "$branch" == "master" || "$branch" == "develop" ]]; then
-  exit 0
+# 保護ブランチ（main, master, develop, epic/*）への直接pushをブロック
+if [[ "$branch" == "main" || "$branch" == "master" || "$branch" == "develop" || "$branch" == epic/* ]]; then
+  echo "ブロック: 保護ブランチ（${branch}）への直接pushは禁止されています。フィーチャーブランチからPRを作成してください。" >&2
+  exit 2
 fi
 
 # ブランチ名の "/" を "-" に置換して安全なファイル名にする
 safe_branch="$(echo "$branch" | tr '/' '-')"
 flag_file="/tmp/claude-sessions/review-passed-${safe_branch}"
 
-# フラグ管理ディレクトリが存在しない場合はフラグシステム未初期化として通過
-# （一度もレビュースキルを実行していない環境）
+# フラグ管理ディレクトリが存在しない場合は作成してフラグチェックを続行
+# （opt-out設計: レビュー未実施ならブロックする）
 if [[ ! -d "/tmp/claude-sessions" ]]; then
-  exit 0
+  mkdir -p /tmp/claude-sessions
 fi
 
 # フラグファイルの存在を確認

@@ -1,8 +1,8 @@
 ---
 name: odin-do-pr
-description: ブランチ確認・push・セルフレビュー・Draft PR作成まで一括実行する。requesting-code-review連携でcode-reviewer + security-reviewerを並列実行。「PRを作って」「プルリクを作って」「PR出して」などで起動。odinから自動起動される場合もある。
+description: ブランチ確認・フルレビュー・push・Draft PR作成まで一括実行する。odin-talk-review連携で5種レビュー（code-reviewer + security-reviewer + simplify + coderabbit + codex）を実施。「PRを作って」「プルリクを作って」「PR出して」などで起動。odinから自動起動される場合もある。
 user-invocable: true
-allowed-tools: Bash, Read, Edit, Write, Grep, Glob, Agent, AskUserQuestion
+allowed-tools: Bash, Read, Edit, Write, Grep, Glob, Agent, Skill, AskUserQuestion
 ---
 
 # odin-do-pr
@@ -115,36 +115,27 @@ PR作成スキル。odin司令塔のdoフェーズで使用する。
 - ソフトリミット超過時にユーザー確認が取れていること
 - ハードリミット超過時に分割または例外承認が得られていること
 
-### ステップ2: セルフレビューの実施
+### ステップ2: フルレビューの実施
 
-superpowers:requesting-code-review のパターンに従い、セルフレビューを実施する。
+Skillツールで `odin-talk-review` を実行し、多角的なフルレビューを実施する。
 
-1. レビュー対象の差分を取得する:
+1. Skillツールで `odin-talk-review` を実行する:
+   - odin-talk-reviewは以下の5つのレビューを並列実行する:
+     - code-reviewer（品質・保守性）
+     - security-reviewer（OWASP Top 10ベース）
+     - simplify（再利用性・効率性）
+     - coderabbit:code-reviewer（プラグイン未インストール時はスキップ）
+     - codex:review（プラグイン未インストール時はスキップ）
+   - odinコンテキストがある場合はそのまま渡す
+
+2. odin-talk-reviewの結果を確認する:
+   - 重大な問題がある場合:
+     - AskUserQuestionで「PR作成前に修正しますか？」を確認する
+     - 修正する場合はodin-do-refactorまたは直接修正してからodin-do-commitを実行する
+     - 修正しない場合はPR本文に既知の問題として記載する
+
+3. リモートにpushする:
    ```bash
-   git diff $(git merge-base HEAD main)..HEAD
-   git diff --name-only $(git merge-base HEAD main)..HEAD
-   ```
-
-2. code-reviewer と security-reviewer を並列で起動する:
-   - Agentツールで code-reviewer サブエージェントを起動（品質・保守性の観点）
-   - Agentツールで security-reviewer サブエージェントを起動（OWASP Top 10ベース）
-
-3. レビュー結果を統合する:
-   - 重大な問題（即座に修正が必要）
-   - 改善提案（推奨）
-   - 情報（参考）
-
-4. 重大な問題がある場合:
-   - AskUserQuestionで「PR作成前に修正しますか？」を確認する
-   - 修正する場合はodin-do-refactorまたは直接修正してからodin-do-commitを実行する
-   - 修正しない場合はPR本文に既知の問題として記載する
-
-5. レビュー完了フラグを作成し、リモートにpushする:
-   ```bash
-   # レビュー完了フラグを作成（pre-push-review-gateフック用）
-   mkdir -p /tmp/claude-sessions
-   date +%s > "/tmp/claude-sessions/review-passed-$(git branch --show-current | tr '/' '-')"
-
    # ガードチェック: 保護ブランチでないことを確認
    CURRENT_BRANCH=$(git branch --show-current)
    if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ] || [ "$CURRENT_BRANCH" = "develop" ] || [[ "$CURRENT_BRANCH" == epic/* ]]; then
@@ -152,10 +143,11 @@ superpowers:requesting-code-review のパターンに従い、セルフレビュ
    fi
    git push -u origin "$CURRENT_BRANCH"
    ```
+   - レビュー完了フラグはodin-talk-review（ステップ4.5）が自動作成するため、ここでは作成しない
 
 #### 完了チェックポイント（ステップ2）
 
-- code-reviewer と security-reviewer のレビューが完了していること
+- odin-talk-reviewによるフルレビューが完了していること（5レビュー。プラグイン未インストール分はスキップ可）
 - 重大な問題がない（または対応方針が決まっていること）
 - リモートへのpushが成功していること（--forceフラグなし）
 
@@ -248,11 +240,11 @@ superpowers:requesting-code-review のパターンに従い、セルフレビュ
   現在: feat/notification-badge ✓
   コミット: 3件確認
 
-ステップ2: セルフレビュー
-  並列起動: code-reviewer + security-reviewer
+ステップ2: フルレビュー（odin-talk-review委譲）
+  5種並列: code-reviewer + security-reviewer + simplify + coderabbit + codex
   結果: 改善提案1件（関数の命名）、重大問題なし
   → PR本文にレビュー観点として記載
-  レビュー完了フラグ作成 + git push -u origin feat/notification-badge → 成功
+  レビュー完了フラグ（talk-review作成済み） + git push -u origin feat/notification-badge → 成功
 
 ステップ3: Draft PR作成
   タイトル: feat: 通知バッジコンポーネントを追加
