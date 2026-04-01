@@ -29,7 +29,7 @@
 
 3. Skillツールで対応するodinスキルを実行する（odinコンテキストJSONを$ARGUMENTSとして渡す）
 4. スキルの実行結果を確認する
-5. auto系品質チェックを実行する（do系スキル完了後）
+5. auto系スキルの自動挿入: 5-3節に従い、完了したスキルの種別に応じてauto系スキルを挿入・実行する
 6. 振り返り（メタ認知）: 5-X セクションに従い、odin-auto-recordスキル（Skillツール: odin-auto-record）に記録を委譲する
 7. タスク完了: TaskUpdateツールでステータスを `completed` に更新する
 
