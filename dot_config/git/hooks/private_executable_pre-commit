@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# グローバル pre-commit フック
+# ~/.config/git/sensitive-words.txt に記載された機密ワードの漏洩を防止する
+
+set -euo pipefail
+
+SENSITIVE_WORDS_FILE="$HOME/.config/git/sensitive-words.txt"
+
+# --- 機密ワードチェック ---
+if [ -f "$SENSITIVE_WORDS_FILE" ]; then
+    DIFF=$(git diff --cached --diff-filter=ACMR 2>/dev/null || true)
+
+    if [ -n "$DIFF" ]; then
+        FOUND=0
+        while IFS= read -r word; do
+            # 空行・コメント行をスキップ
+            [[ -z "$word" || "$word" == \#* ]] && continue
+
+            MATCHES=$(echo "$DIFF" | grep -in "$word" || true)
+            if [ -n "$MATCHES" ]; then
+                if [ "$FOUND" -eq 0 ]; then
+                    echo "[sensitive-words] 機密ワードが検出されました:"
+                    echo ""
+                    FOUND=1
+                fi
+                echo "  ワード: $word"
+                echo "$MATCHES" | head -5 | sed 's/^/    /'
+                echo ""
+            fi
+        done < "$SENSITIVE_WORDS_FILE"
+
+        if [ "$FOUND" -ne 0 ]; then
+            echo "コミットをブロックしました。"
+            echo "誤検知の場合は git commit --no-verify を使用してください。"
+            exit 1
+        fi
+    fi
+fi
+
+# --- ローカルフックのチェーン実行 ---
+# core.hooksPath を設定するとローカルフックが無視されるため、明示的にチェーンする
+
+# husky v9+
+if [ -x ".husky/pre-commit" ]; then
+    exec .husky/pre-commit "$@"
+fi
+
+# lefthook
+if [ -f "lefthook.yml" ] && command -v lefthook &>/dev/null; then
+    exec lefthook run pre-commit
+fi
+
+# 標準的なローカルフック (.git/hooks/pre-commit)
+GIT_DIR=$(git rev-parse --git-dir 2>/dev/null)
+LOCAL_HOOK="$GIT_DIR/hooks/pre-commit"
+if [ -x "$LOCAL_HOOK" ]; then
+    exec "$LOCAL_HOOK" "$@"
+fi
