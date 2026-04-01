@@ -33,7 +33,7 @@ superpowersプラグインが必須（dispatching-parallel-agents / systematic-d
 
 odin経由であっても以下のルールは例外なく適用される。配下スキルもこのルールに従う。
 
-1. mainブランチへの直接pushを禁止する。必ずフィーチャーブランチからPRを経由する
+1. 保護ブランチ（main, develop, epic/*）への直接pushを禁止する。必ずフィーチャーブランチからPRを経由する
 2. `--force` / `--force-with-lease` 付きのpushを全ブランチで禁止する
 3. 破壊的git操作（`git reset --hard`, `git checkout .`, `git clean -f`, `git branch -D`, `git stash drop`等）はAskUserQuestionでユーザーの明示的承認を得てから実行する
 4. PRは `--draft` フラグ付きでのみ作成する。Ready for reviewへの変更はユーザーが手動で行う
@@ -94,7 +94,7 @@ Phase 3スキップかつ使用スキルが1個のみ（do系またはauto系）
 
 ### Phase 5: 実行ループ
 
-承認された計画をWave単位で実行する。各タスクでodinコンテキストJSONを構築してSkillツールに渡す。do系完了後はauto-quality・simplify・auto-verifyを自動挿入する。並列実行は最大4エージェントまで。エラーは3回まで自動リトライし、解決しない場合はエスカレーションする。各タスク完了時にodin-auto-recordで振り返りを記録する。
+承認された計画をWave単位で実行する。各タスクでodinコンテキストJSONを構築してSkillツールに渡す。do系完了後はauto-quality・simplify・auto-verifyを自動挿入する。並列実行は最大4エージェントまで。do系スキルの並列実行時は `Agent(isolation: "worktree")` でワークツリー隔離を必須とし、完了後はフィーチャーブランチへのDraft PRを作成する（自動マージしない）。エラーは3回まで自動リトライし、解決しない場合はエスカレーションする。各タスク完了時にodin-auto-recordで振り返りを記録する。
 完了チェックポイント: 全Wave・全タスク完了、auto-verify全PASS、未解決エラー0件。
 
 → 詳細: [execution-loop.md](execution-loop.md)

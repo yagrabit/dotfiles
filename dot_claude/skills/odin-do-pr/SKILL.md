@@ -27,7 +27,7 @@ PR作成スキル。odin司令塔のdoフェーズで使用する。
 
 このスキルは以下の安全制御を遵守する:
 
-- mainブランチへの直接pushを禁止する。push前に必ず `git branch --show-current` で確認し、mainの場合は即座に中断する
+- 保護ブランチ（main, develop, epic/*）への直接pushを禁止する。push前に必ず `git branch --show-current` で確認し、該当する場合は即座に中断する
 - `git push --force` / `git push --force-with-lease` を全ブランチで禁止する。通常の `git push -u origin ブランチ名` のみ使用する
 - PRは必ず `--draft` フラグ付きで作成する。`--draft` なしの `gh pr create` を実行しない
 - `git reset --hard` / `git checkout .` / `git clean -f` 等の破壊的操作を実行しない
@@ -58,7 +58,7 @@ PR作成スキル。odin司令塔のdoフェーズで使用する。
    - description: 機能内容を英語で短縮（kebab-case）
    - 例: `feat/notification-badge`, `fix/login-redirect`
 
-4. ブランチが適切でない場合（mainブランチ、または命名規則に合わない場合）:
+4. ブランチが適切でない場合（保護ブランチ（main, develop, epic/*）、または命名規則に合わない場合）:
    - AskUserQuestionでブランチ名を確認する
    - 新しいブランチを作成する:
      ```bash
@@ -74,7 +74,7 @@ PR作成スキル。odin司令塔のdoフェーズで使用する。
 #### 完了チェックポイント（ステップ1）
 
 - ブランチが `{type}/{description}` 形式であること
-- mainブランチでないこと（ガードチェック通過済み）
+- 保護ブランチでないこと（ガードチェック通過済み）
 - コミットが1つ以上存在すること
 
 ### ステップ1.5: PRサイズチェック
@@ -145,10 +145,10 @@ superpowers:requesting-code-review のパターンに従い、セルフレビュ
    mkdir -p /tmp/claude-sessions
    date +%s > "/tmp/claude-sessions/review-passed-$(git branch --show-current | tr '/' '-')"
 
-   # ガードチェック: mainブランチでないことを確認
+   # ガードチェック: 保護ブランチでないことを確認
    CURRENT_BRANCH=$(git branch --show-current)
-   if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ]; then
-     echo "ERROR: mainブランチへの直接pushは禁止されています" && exit 1
+   if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ] || [ "$CURRENT_BRANCH" = "develop" ] || [[ "$CURRENT_BRANCH" == epic/* ]]; then
+     echo "ERROR: 保護ブランチ（main, develop, epic/*）への直接pushは禁止されています" && exit 1
    fi
    git push -u origin "$CURRENT_BRANCH"
    ```
@@ -172,12 +172,18 @@ superpowers:requesting-code-review のパターンに従い、セルフレビュ
    git diff $(git merge-base HEAD main)..HEAD --stat
    ```
 
-3. PRタイトルと本文を作成する:
+3. 既存PRのタイトルパターンを取得する:
+   ```bash
+   gh pr list --state all --limit 10 --json title --jq '.[].title'
+   ```
+   取得したタイトルから命名パターン（prefix形式、言語、長さ、区切り文字等）を分析する。
+
+4. PRタイトルと本文を作成する:
 
    タイトルの基準:
+   - 手順3で分析した既存パターンに合わせる（最優先）
    - 70文字以内
-   - 日本語で変更の概要を記述
-   - Conventional Commits形式のprefixを付ける（任意）
+   - パターンが検出できない場合のデフォルト: Conventional Commits形式prefix + 日本語
    - 例: `feat: 通知バッジコンポーネントを追加`
 
    本文の構成（テンプレートがない場合）:
@@ -213,7 +219,7 @@ superpowers:requesting-code-review のパターンに従い、セルフレビュ
    - 関連チケット: {チケットURL}
    ```
 
-4. Draft PRを作成する:
+5. Draft PRを作成する:
    ```bash
    gh pr create --draft --title "PRタイトル" --body "$(cat <<'EOF'
    ## 概要
@@ -222,7 +228,7 @@ superpowers:requesting-code-review のパターンに従い、セルフレビュ
    )"
    ```
 
-5. PR URLをユーザーに提示する
+6. PR URLをユーザーに提示する
 
 #### 完了チェックポイント（ステップ3）
 
