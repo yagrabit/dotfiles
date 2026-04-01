@@ -1,4 +1,4 @@
-## 配下スキル一覧（全27スキル）
+## 配下スキル一覧（全28スキル）
 
 ### think系（考える）-- 6スキル
 
@@ -56,9 +56,10 @@
 | odin-learn | 独立学習セッション・スキルマップ管理 | 学習トピック/スキルマップ | skillmap-latest.md + flashcards-latest.md |
 | odin-learn-review | PRレビュー時の教育モード | レビュー対象PR/差分 | 教育対話 + フラッシュカード + スキルマップ更新 |
 
-### design系（デザイン分析）-- 2スキル
+### design系（デザイン分析・生成）-- 3スキル
 
 | スキル名 | 役割 | 主な入力 | 主な出力 |
 |----------|------|---------|---------|
 | odin-design-dissect | WebサイトURLからデザインシステムを抽出・分析（learn/auditモード） | WebサイトURL | dissect-*.md / audit-*.md |
+| odin-design-generate | 分析結果からDS生成（HTMLビジュアルガイド + tokens.json + design.md）、対話的改善 | dissect-*.md / audit-*.md | design-system/ ディレクトリ一式 |
 | odin-design-knowledge | デザイン分析ナレッジの検索・比較・統計・学習進捗管理 | 検索クエリ/比較対象 | 検索結果 / 比較表 / 統計 / 進捗レポート |
