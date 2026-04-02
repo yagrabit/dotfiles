@@ -649,26 +649,27 @@ cmd_dispatch() {
         fi
     fi
 
-    # プロンプトをtmpfileに書き出し
-    local tmpfile="/tmp/odin-board-${id}.md"
-    cat > "$tmpfile" <<EOF
-/odin ${title}
+    # ランチャースクリプトを書き出し（引用符のネスト問題を回避）
+    local launcher="/tmp/odin-board-launch-${id}.sh"
+    cat > "$launcher" <<LAUNCH_SCRIPT
+#!/usr/bin/env bash
+cd "${project_path}" || exit 1
+${git_cmd:+${git_cmd} || exit 1}
+exec claude "/odin ${title}
 
-${body}
-EOF
-
-    # tmuxペインの起動
-    local launch_cmd="claude -p \"\$(cat ${tmpfile})\""
-    if [[ -n "$git_cmd" ]]; then
-        launch_cmd="${git_cmd} && ${launch_cmd}"
-    fi
+${body}"
+LAUNCH_SCRIPT
+    chmod +x "$launcher"
 
     local new_pane
-    new_pane="$(tmux split-window -h -p 50 -c "$project_path" -P -F '#{pane_id}' "bash -c '${launch_cmd}; rm -f ${tmpfile}'" 2>/dev/null)" || {
+    new_pane="$(tmux split-window -h -p 50 -P -F '#{pane_id}' "${launcher}" 2>/dev/null)" || {
         echo "エラー: tmuxペインの作成に失敗しました" >&2
-        rm -f "$tmpfile"
+        rm -f "$launcher"
         return 1
     }
+    # ランチャーはexecで置き換わるので、起動後に削除
+    sleep 1
+    rm -f "$launcher"
 
     # ペイン起動成功: ステータス更新
     write_field "$file" "status" "odin"
