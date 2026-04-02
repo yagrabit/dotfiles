@@ -30,7 +30,8 @@ read_field() {
     local file="$1"
     local field="$2"
     # FMの---で囲まれた範囲内から、指定フィールドの値を取得
-    sed -n '/^---$/,/^---$/p' "$file" | grep "^${field}:" | sed "s/^${field}: *//" | sed 's/^"//' | sed 's/"$//'
+    # LC_ALL=Cで不正バイト列によるsedエラーを防ぐ
+    LC_ALL=C sed -n '/^---$/,/^---$/p' "$file" | grep "^${field}:" | LC_ALL=C sed "s/^${field}: *//" | LC_ALL=C sed 's/^"//' | LC_ALL=C sed 's/"$//'
 }
 
 # YAML FMの指定フィールドを更新する
@@ -42,9 +43,9 @@ write_field() {
     # フィールドが文字列値の場合はダブルクォートで囲む
     # tags（配列）やステータス等のシンプルな値はそのまま
     if [[ "$field" == "title" || "$field" == "created" || "$field" == "updated" || "$field" == "project" || "$field" == "branch" ]]; then
-        sed -i '' "s|^${field}: .*|${field}: \"${value}\"|" "$file"
+        LC_ALL=C sed -i '' "s|^${field}: .*|${field}: \"${value}\"|" "$file"
     else
-        sed -i '' "s|^${field}: .*|${field}: ${value}|" "$file"
+        LC_ALL=C sed -i '' "s|^${field}: .*|${field}: ${value}|" "$file"
     fi
 }
 
