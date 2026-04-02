@@ -487,15 +487,10 @@ cmd__move_interactive() {
     cmd_move "$id" "$new_status"
 }
 
-# _add-interactive: TUI内でタスクを追加する（対話フロー）
+# _add-interactive: TUI内でタスクを追加する（エディタベース）
+# fzf execute内のreadはUTF-8マルチバイト文字を壊すため、エディタで入力する
 cmd__add_interactive() {
-    # 1. タイトル入力
-    local title=""
-    printf "タイトル> "
-    read -r title
-    [[ -z "$title" ]] && return 0
-
-    # 2. プロジェクト選択（ghq list + fzf）
+    # 1. プロジェクト選択（ghq list + fzf）
     local project=""
     if command -v ghq &>/dev/null; then
         project=$(ghq list 2>/dev/null | fzf \
@@ -507,7 +502,7 @@ cmd__add_interactive() {
         ) || true
     fi
 
-    # 3. 優先度選択
+    # 2. 優先度選択
     local priority=""
     priority=$(printf "medium\nhigh\nlow" | fzf \
         --prompt="優先度> " \
@@ -516,26 +511,35 @@ cmd__add_interactive() {
         --header="優先度を選択" \
     ) || priority="medium"
 
-    # 4. タスク追加（まずファイルを作る）
-    local args=("$title")
-    [[ -n "$project" ]] && args+=(-p "$project")
-    args+=(--pri "$priority")
-    local output
-    output="$(cmd_add "${args[@]}")"
-    echo "$output"
-    local file
-    file="$(echo "$output" | tail -1)"
+    # 3. テンプレートファイルを作成し、エディタで入力
+    local tmpfile
+    tmpfile="$(mktemp /tmp/odin-board-add-XXXXXX.md)"
+    cat > "$tmpfile" <<'TEMPLATE'
 
-    # 5. 説明を追加するか確認 → エディタで編集
-    local add_desc
-    add_desc=$(printf "いいえ（タイトルのみ）\nはい（エディタで説明を追加）" | fzf \
-        --prompt="説明を追加しますか？> " \
-        --height=5 \
-        --reverse \
-    ) || add_desc="いいえ（タイトルのみ）"
-    if [[ "$add_desc" == "はい（エディタで説明を追加）" ]] && [[ -f "$file" ]]; then
-        "${EDITOR:-vi}" "$file"
+<!-- 1行目: タイトル（この行を消してタイトルを入力） -->
+<!-- 4行目以降: 説明（不要ならそのまま保存） -->
+TEMPLATE
+
+    "${EDITOR:-vi}" "$tmpfile"
+
+    # エディタ終了後: 1行目をタイトル、コメント行以外をボディとして読み取る
+    local title body
+    title="$(head -1 "$tmpfile" | sed 's/^[[:space:]]*//')"
+    # コメント行とテンプレート行を除いたボディ
+    body="$(sed '1d; /^<!-- .* -->$/d' "$tmpfile" | sed '/./,$!d')"
+    rm -f "$tmpfile"
+
+    # タイトルが空 or コメント行のままなら中止
+    if [[ -z "$title" ]] || [[ "$title" == "<!--"* ]]; then
+        echo "追加をキャンセルしました"
+        return 0
     fi
+
+    # 4. タスク追加
+    local args=("$title" --pri "$priority")
+    [[ -n "$project" ]] && args+=(-p "$project")
+    [[ -n "$body" ]] && args+=(--body "$body")
+    cmd_add "${args[@]}"
 }
 
 # _rm-interactive: TUI内でタスクを削除する（確認付き）
