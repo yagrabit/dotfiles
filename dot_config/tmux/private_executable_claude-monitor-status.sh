@@ -62,6 +62,13 @@ if [[ -d "$SESSION_DIR" ]]; then
   done
 fi
 
+# odin-boardサマリーの取得
+BOARD_SCRIPT="${HOME}/.config/tmux/odin-board.sh"
+board_summary=""
+if [[ -x "$BOARD_SCRIPT" ]]; then
+  board_summary=$("$BOARD_SCRIPT" status 2>/dev/null || true)
+fi
+
 # 出力
 if (( total == 0 )); then
   # Claudeが1つも無い場合は空文字列
@@ -74,4 +81,11 @@ else
   # 青セグメントのみ
   printf '#[fg=colour31,bg=colour235]%s#[fg=colour255,bg=colour31,bold] %s %d #[fg=colour31,bg=colour235]%s#[default] ' \
     "$PL_LEFT" "$ICON_TERM" "$total" "$PL_RIGHT"
+fi
+
+# odin-boardサマリーの出力（タスクがある場合のみ）
+if [[ -n "$board_summary" ]]; then
+  ICON_BOARD=$'\xef\x81\x88'   # クリップボードアイコン (U+F048)
+  printf '#[fg=colour136,bg=colour235]%s#[fg=colour235,bg=colour136] %s %s #[fg=colour136,bg=colour235]%s#[default] ' \
+    "$PL_LEFT" "$ICON_BOARD" "$board_summary" "$PL_RIGHT"
 fi
