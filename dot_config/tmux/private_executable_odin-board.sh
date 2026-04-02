@@ -649,27 +649,33 @@ cmd_dispatch() {
         fi
     fi
 
-    # ランチャースクリプトを書き出し（引用符のネスト問題を回避）
+    # プロンプトファイルとランチャースクリプトを書き出し
+    local promptfile="/tmp/odin-board-prompt-${id}.md"
     local launcher="/tmp/odin-board-launch-${id}.sh"
+
+    cat > "$promptfile" <<PROMPT_EOF
+/odin ${title}
+
+${body}
+PROMPT_EOF
+
+    # ランチャースクリプト（変数展開をエスケープして安全に生成）
     cat > "$launcher" <<LAUNCH_SCRIPT
 #!/usr/bin/env bash
 cd "${project_path}" || exit 1
 ${git_cmd:+${git_cmd} || exit 1}
-exec claude "/odin ${title}
-
-${body}"
+prompt=\$(cat "${promptfile}")
+rm -f "${promptfile}" "${launcher}"
+exec claude "\$prompt"
 LAUNCH_SCRIPT
     chmod +x "$launcher"
 
     local new_pane
     new_pane="$(tmux split-window -h -p 50 -P -F '#{pane_id}' "${launcher}" 2>/dev/null)" || {
         echo "エラー: tmuxペインの作成に失敗しました" >&2
-        rm -f "$launcher"
+        rm -f "$launcher" "$promptfile"
         return 1
     }
-    # ランチャーはexecで置き換わるので、起動後に削除
-    sleep 1
-    rm -f "$launcher"
 
     # ペイン起動成功: ステータス更新
     write_field "$file" "status" "odin"
