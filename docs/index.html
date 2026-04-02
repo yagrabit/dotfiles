@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dotfiles observatory</title>
+  <meta name="description" content="chezmoi + Claude Code ハーネスのメトリクスダッシュボード">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    /* === リセット・基本 === */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* === デザイントークン === */
+    :root {
+      --bg-base: #060a14;
+      --bg-surface: rgba(13, 19, 36, 0.65);
+      --bg-surface-hover: rgba(13, 19, 36, 0.85);
+      --bg-elevated: rgba(30, 41, 59, 0.4);
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-cyan: #22d3ee;
+      --accent-emerald: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-rose: #fb7185;
+      --accent-violet: #a78bfa;
+      --glow-cyan: rgba(34, 211, 238, 0.25);
+      --glow-emerald: rgba(52, 211, 153, 0.25);
+      --glow-amber: rgba(251, 191, 36, 0.25);
+      --glow-rose: rgba(251, 113, 133, 0.25);
+      --glow-violet: rgba(167, 139, 250, 0.25);
+      --border-subtle: rgba(148, 163, 184, 0.08);
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Noto Sans JP', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --radius: 14px;
+      --transition: 280ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* === 背景エフェクト === */
+    .bg-effects {
+      position: fixed; inset: 0; z-index: -1; overflow: hidden;
+      background: var(--bg-base);
+    }
+    .bg-grid {
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+    .bg-orb {
+      position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.12;
+      will-change: transform;
+    }
+    .bg-orb--cyan {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, var(--accent-cyan), transparent 70%);
+      top: -20%; right: -10%;
+      animation: drift1 28s ease-in-out infinite;
+    }
+    .bg-orb--violet {
+      width: 550px; height: 550px;
+      background: radial-gradient(circle, var(--accent-violet), transparent 70%);
+      bottom: -15%; left: -8%;
+      animation: drift2 34s ease-in-out infinite;
+    }
+    .bg-orb--emerald {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, var(--accent-emerald), transparent 70%);
+      top: 50%; left: 50%;
+      animation: drift3 22s ease-in-out infinite;
+      opacity: 0.06;
+    }
+
+    @keyframes drift1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(-60px, 40px) scale(1.05); }
+      66% { transform: translate(30px, -30px) scale(0.95); }
+    }
+    @keyframes drift2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(50px, -40px) scale(1.08); }
+    }
+    @keyframes drift3 {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-40%, -60%) scale(1.15); }
+    }
+
+    /* === レイアウト === */
+    .container {
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* === ヘッダー === */
+    header {
+      padding: 48px 0 32px;
+      animation: fadeSlideDown 0.6s ease-out both;
+    }
+    .header-inner {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 20px;
+    }
+    .logo { display: flex; align-items: center; gap: 14px; }
+    .logo-mark {
+      width: 38px; height: 38px; position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-mark::before {
+      content: '';
+      width: 28px; height: 28px;
+      border: 2px solid var(--accent-cyan);
+      transform: rotate(45deg);
+      border-radius: 4px;
+      box-shadow: 0 0 16px var(--glow-cyan);
+      animation: logoPulse 3s ease-in-out infinite;
+    }
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 16px var(--glow-cyan); }
+      50% { box-shadow: 0 0 28px var(--glow-cyan), 0 0 8px var(--accent-cyan); }
+    }
+    .logo h1 {
+      font-family: var(--font-display);
+      font-size: 28px; font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--text-primary) 60%, var(--accent-cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .tagline {
+      font-size: 13px; color: var(--text-muted);
+      margin-top: 6px; letter-spacing: 0.3px;
+    }
+    .header-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .status-badge {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);
+      background: var(--bg-surface);
+      padding: 6px 14px; border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      backdrop-filter: blur(8px);
+    }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent-emerald);
+      animation: statusPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes statusPulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5); }
+      50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(52, 211, 153, 0); }
+    }
+    .repo-link {
+      font-family: var(--font-mono); font-size: 12px;
+      color: var(--text-muted); text-decoration: none;
+      transition: color var(--transition);
+    }
+    .repo-link:hover { color: var(--accent-cyan); }
+
+    /* === サマリーカード === */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px; padding: 8px 0 40px;
+    }
+    .card {
+      position: relative;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      padding: 22px 20px 18px;
+      backdrop-filter: blur(12px);
+      transition: all var(--transition);
+      overflow: hidden;
+      animation: fadeSlideUp 0.5s ease-out both;
+    }
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--card-accent);
+      box-shadow: 0 2px 16px -2px var(--card-glow);
+    }
+    .card:hover {
+      background: var(--bg-surface-hover);
+      border-color: rgba(148, 163, 184, 0.15);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.5);
+    }
+    .card--cyan  { --card-accent: var(--accent-cyan);    --card-glow: var(--glow-cyan); }
+    .card--violet { --card-accent: var(--accent-violet);  --card-glow: var(--glow-violet); }
+    .card--emerald { --card-accent: var(--accent-emerald); --card-glow: var(--glow-emerald); }
+    .card--amber { --card-accent: var(--accent-amber);   --card-glow: var(--glow-amber); }
+    .card--rose  { --card-accent: var(--accent-rose);    --card-glow: var(--glow-rose); }
+
+    .card-icon {
+      font-size: 16px; margin-bottom: 10px;
+      color: var(--card-accent); opacity: 0.8;
+    }
+    .card-value {
+      font-family: var(--font-mono);
+      font-size: 36px; font-weight: 600;
+      line-height: 1; letter-spacing: -1px;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .card-label {
+      font-size: 12px; color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+    .card-trend {
+      position: absolute; top: 16px; right: 16px;
+      font-family: var(--font-mono); font-size: 11px;
+      padding: 2px 8px; border-radius: 6px;
+    }
+    .card-trend--up {
+      color: var(--accent-emerald);
+      background: rgba(52, 211, 153, 0.1);
+    }
+    .card-trend--down {
+      color: var(--accent-rose);
+      background: rgba(251, 113, 133, 0.1);
+    }
+    .card-trend--flat {
+      color: var(--text-muted);
+      background: rgba(148, 163, 184, 0.08);
+    }
+
+    /* === チャートセクション === */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px; padding-bottom: 40px;
+    }
+    .chart-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      animation: fadeSlideUp 0.6s ease-out both;
+    }
+    .chart-panel h3 {
+      font-family: var(--font-display);
+      font-size: 14px; font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.5px;
+      margin-bottom: 20px;
+    }
+    .chart-wrap { position: relative; height: 240px; }
+    .chart-wrap canvas { width: 100% !important; height: 100% !important; }
+
+    /* === 詳細テーブル === */
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px; padding-bottom: 48px;
+    }
+    .detail-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      animation: fadeSlideUp 0.7s ease-out both;
+    }
+    .detail-panel h3 {
+      font-family: var(--font-display);
+      font-size: 14px; font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+    .detail-table { width: 100%; border-collapse: collapse; }
+    .detail-table tr {
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background var(--transition);
+    }
+    .detail-table tr:last-child { border-bottom: none; }
+    .detail-table tr:hover { background: var(--bg-elevated); }
+    .detail-table td {
+      padding: 10px 0;
+      font-size: 13px;
+    }
+    .detail-table td:first-child {
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+    .detail-table td:last-child {
+      text-align: right;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .version-tag {
+      display: inline-block;
+      padding: 2px 10px; border-radius: 6px;
+      font-size: 11px;
+      background: rgba(34, 211, 238, 0.08);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(34, 211, 238, 0.15);
+    }
+
+    /* === フッター === */
+    footer {
+      padding: 24px 0 40px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-subtle);
+    }
+    footer a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+      transition: opacity var(--transition);
+    }
+    footer a:hover { opacity: 0.7; }
+
+    /* === アニメーション === */
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .stagger-1 { animation-delay: 0.08s; }
+    .stagger-2 { animation-delay: 0.16s; }
+    .stagger-3 { animation-delay: 0.24s; }
+    .stagger-4 { animation-delay: 0.32s; }
+    .stagger-5 { animation-delay: 0.40s; }
+    .stagger-6 { animation-delay: 0.48s; }
+    .stagger-7 { animation-delay: 0.56s; }
+    .stagger-8 { animation-delay: 0.64s; }
+
+    /* === エラー表示 === */
+    .error-banner {
+      text-align: center; padding: 48px 24px;
+      color: var(--text-muted); font-size: 14px;
+    }
+    .error-banner code {
+      font-family: var(--font-mono);
+      color: var(--accent-amber);
+      background: rgba(251, 191, 36, 0.08);
+      padding: 2px 8px; border-radius: 4px;
+    }
+
+    /* === スクロールバー === */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.15);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.25); }
+
+    /* === レスポンシブ === */
+    @media (max-width: 900px) {
+      .summary-grid { grid-template-columns: repeat(3, 1fr); }
+      .charts-grid, .details-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .header-inner { flex-direction: column; }
+      .header-meta { align-items: flex-start; }
+      .logo h1 { font-size: 22px; }
+      .card-value { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 背景エフェクト -->
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="bg-orb bg-orb--cyan"></div>
+    <div class="bg-orb bg-orb--violet"></div>
+    <div class="bg-orb bg-orb--emerald"></div>
+  </div>
+
+  <div class="container">
+
+    <!-- ヘッダー -->
+    <header>
+      <div class="header-inner">
+        <div>
+          <div class="logo">
+            <div class="logo-mark" aria-hidden="true"></div>
+            <h1>dotfiles observatory</h1>
+          </div>
+          <p class="tagline">chezmoi + Claude Code ハーネスの観測所</p>
+        </div>
+        <div class="header-meta">
+          <div class="status-badge">
+            <span class="status-dot"></span>
+            <span>最終収集: <time id="lastUpdated">--</time></span>
+          </div>
+          <a id="repoLink" class="repo-link" href="#" target="_blank" rel="noopener">--</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="dashboard">
+
+      <!-- サマリーカード -->
+      <section class="summary-grid" aria-label="メトリクスサマリー">
+        <div class="card card--cyan stagger-1">
+          <div class="card-icon">&#9670;</div>
+          <div class="card-value" id="val-score">--</div>
+          <div class="card-label">ハーネス品質</div>
+          <div class="card-trend" id="trend-score"></div>
+        </div>
+        <div class="card card--violet stagger-2">
+          <div class="card-icon">&#9733;</div>
+          <div class="card-value" id="val-skills">--</div>
+          <div class="card-label">スキル数</div>
+          <div class="card-trend" id="trend-skills"></div>
+        </div>
+        <div class="card card--emerald stagger-3">
+          <div class="card-icon">&#9776;</div>
+          <div class="card-value" id="val-files">--</div>
+          <div class="card-label">管理ファイル</div>
+          <div class="card-trend" id="trend-files"></div>
+        </div>
+        <div class="card card--amber stagger-4">
+          <div class="card-icon">&#9881;</div>
+          <div class="card-value" id="val-hooks">--</div>
+          <div class="card-label">フック</div>
+          <div class="card-trend" id="trend-hooks"></div>
+        </div>
+        <div class="card card--rose stagger-5">
+          <div class="card-icon">&#9998;</div>
+          <div class="card-value" id="val-commits">--</div>
+          <div class="card-label">週間コミット</div>
+          <div class="card-trend" id="trend-commits"></div>
+        </div>
+      </section>
+
+      <!-- チャート -->
+      <section class="charts-grid" aria-label="トレンドチャート">
+        <div class="chart-panel stagger-5">
+          <h3>&#9656; スコア推移</h3>
+          <div class="chart-wrap"><canvas id="chartScore"></canvas></div>
+        </div>
+        <div class="chart-panel stagger-6">
+          <h3>&#9656; スキルカテゴリ</h3>
+          <div class="chart-wrap"><canvas id="chartSkills"></canvas></div>
+        </div>
+        <div class="chart-panel stagger-7">
+          <h3>&#9656; コミット推移</h3>
+          <div class="chart-wrap"><canvas id="chartCommits"></canvas></div>
+        </div>
+        <div class="chart-panel stagger-8">
+          <h3>&#9656; コミット種別</h3>
+          <div class="chart-wrap"><canvas id="chartTypes"></canvas></div>
+        </div>
+      </section>
+
+      <!-- 詳細テーブル -->
+      <section class="details-grid" aria-label="詳細情報">
+        <div class="detail-panel stagger-7">
+          <h3>&#9656; ツールバージョン</h3>
+          <table class="detail-table" id="tableTools">
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="detail-panel stagger-8">
+          <h3>&#9656; 構成メトリクス</h3>
+          <table class="detail-table" id="tableConfig">
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+    <footer>
+      <a id="footerLink" href="#" target="_blank" rel="noopener">yagrabit/dotfiles</a>
+      &nbsp;&middot;&nbsp; chezmoi + Claude Code で管理
+    </footer>
+  </div>
+
+  <script>
+    /* === Chart.js グローバル設定 === */
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.borderColor = 'rgba(148, 163, 184, 0.08)';
+    Chart.defaults.font.family = "'IBM Plex Mono', 'Noto Sans JP', monospace";
+    Chart.defaults.font.size = 11;
+    Chart.defaults.plugins.legend.display = false;
+    Chart.defaults.animation = { duration: 900, easing: 'easeOutQuart' };
+
+    const COLORS = {
+      cyan:    { solid: '#22d3ee', fill: 'rgba(34, 211, 238, 0.12)', border: 'rgba(34, 211, 238, 0.6)' },
+      violet:  { solid: '#a78bfa', fill: 'rgba(167, 139, 250, 0.12)', border: 'rgba(167, 139, 250, 0.6)' },
+      emerald: { solid: '#34d399', fill: 'rgba(52, 211, 153, 0.12)', border: 'rgba(52, 211, 153, 0.6)' },
+      amber:   { solid: '#fbbf24', fill: 'rgba(251, 191, 36, 0.12)', border: 'rgba(251, 191, 36, 0.6)' },
+      rose:    { solid: '#fb7185', fill: 'rgba(251, 113, 133, 0.12)', border: 'rgba(251, 113, 133, 0.6)' },
+    };
+
+    const TOOLTIP = {
+      backgroundColor: 'rgba(10, 15, 30, 0.92)',
+      titleColor: '#e2e8f0',
+      bodyColor: '#94a3b8',
+      borderColor: 'rgba(56, 189, 248, 0.2)',
+      borderWidth: 1,
+      padding: 10,
+      cornerRadius: 8,
+      boxPadding: 4,
+    };
+
+    /* === ユーティリティ === */
+    function animateCounter(el, target, duration = 1200) {
+      const start = performance.now();
+      function tick(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * ease);
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function setTrend(id, current, previous) {
+      const el = document.getElementById(id);
+      if (!el || previous == null) return;
+      const diff = current - previous;
+      if (diff > 0) {
+        el.textContent = `+${diff}`;
+        el.className = 'card-trend card-trend--up';
+      } else if (diff < 0) {
+        el.textContent = `${diff}`;
+        el.className = 'card-trend card-trend--down';
+      } else {
+        el.textContent = '±0';
+        el.className = 'card-trend card-trend--flat';
+      }
+    }
+
+    function shortDate(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      return `${d.getMonth() + 1}/${d.getDate()}`;
+    }
+
+    /* === データ読み込みと描画 === */
+    async function init() {
+      let data;
+      try {
+        const res = await fetch('./data/metrics.json');
+        if (!res.ok) throw new Error(res.status);
+        data = await res.json();
+      } catch (e) {
+        document.getElementById('dashboard').innerHTML =
+          '<div class="error-banner">メトリクスデータを読み込めませんでした。<br><code>docs/data/metrics.json</code> を確認してください。</div>';
+        return;
+      }
+
+      const { current: c, history: h, repository: repo, collected_at } = data;
+
+      /* ヘッダー */
+      const dateStr = collected_at
+        ? new Date(collected_at).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' })
+        : '--';
+      document.getElementById('lastUpdated').textContent = dateStr;
+      document.getElementById('repoLink').textContent = repo.name;
+      document.getElementById('repoLink').href = repo.url;
+      document.getElementById('footerLink').href = repo.url;
+
+      /* 前週データ（トレンド比較用） */
+      const prev = h.length >= 2 ? h[h.length - 2] : null;
+      const latest = h.length ? h[h.length - 1] : {};
+
+      /* サマリーカード */
+      if (c.harness_score != null) {
+        animateCounter(document.getElementById('val-score'), c.harness_score);
+      } else {
+        document.getElementById('val-score').textContent = '--';
+      }
+      animateCounter(document.getElementById('val-skills'), c.skills.total);
+      animateCounter(document.getElementById('val-files'), c.chezmoi.managed_files);
+      animateCounter(document.getElementById('val-hooks'), c.hooks);
+      animateCounter(document.getElementById('val-commits'), latest.commits ?? 0);
+
+      if (prev) {
+        setTrend('trend-score', c.harness_score, prev.harness_score);
+        setTrend('trend-skills', c.skills.total, prev.skills_total);
+        setTrend('trend-files', c.chezmoi.managed_files, prev.managed_files);
+        setTrend('trend-hooks', c.hooks, prev.hooks);
+        setTrend('trend-commits', latest.commits, prev.commits);
+      }
+
+      /* --- チャート描画 --- */
+      const labels = h.map(e => shortDate(e.date));
+
+      /* スコア推移 → スコアデータがない場合はスキル成長チャートに切替 */
+      const hasScores = h.some(e => e.harness_score != null);
+      const ctxScore = document.getElementById('chartScore').getContext('2d');
+
+      if (hasScores) {
+        const scoreGrad = ctxScore.createLinearGradient(0, 0, 0, 240);
+        scoreGrad.addColorStop(0, 'rgba(34, 211, 238, 0.18)');
+        scoreGrad.addColorStop(1, 'rgba(34, 211, 238, 0)');
+        document.querySelector('#chartScore').closest('.chart-panel').querySelector('h3').textContent = '\u25b8 スコア推移';
+        new Chart(ctxScore, {
+          type: 'line',
+          data: { labels, datasets: [{
+            data: h.map(e => e.harness_score),
+            borderColor: COLORS.cyan.solid, backgroundColor: scoreGrad,
+            fill: true, tension: 0.35, pointRadius: 4, spanGaps: true,
+            pointBackgroundColor: COLORS.cyan.solid,
+            pointBorderColor: 'rgba(6, 10, 20, 0.8)', pointBorderWidth: 2,
+            pointHoverRadius: 6, borderWidth: 2.5,
+          }]},
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+              y: { min: 50, max: 100, ticks: { stepSize: 10 }, grid: { color: 'rgba(148, 163, 184, 0.06)' } },
+              x: { grid: { display: false } },
+            },
+            plugins: { tooltip: { ...TOOLTIP, callbacks: { label: ctx => `スコア: ${ctx.parsed.y}` } } },
+          },
+        });
+      } else {
+        /* スコア未測定時はスキル・フック・ファイルの成長推移を表示 */
+        const growGrad = ctxScore.createLinearGradient(0, 0, 0, 240);
+        growGrad.addColorStop(0, 'rgba(167, 139, 250, 0.12)');
+        growGrad.addColorStop(1, 'rgba(167, 139, 250, 0)');
+        document.querySelector('#chartScore').closest('.chart-panel').querySelector('h3').textContent = '\u25b8 成長推移';
+        new Chart(ctxScore, {
+          type: 'line',
+          data: { labels, datasets: [
+            { label: 'スキル', data: h.map(e => e.skills_total), borderColor: COLORS.violet.solid, backgroundColor: growGrad, fill: true, tension: 0.35, pointRadius: 3, borderWidth: 2 },
+            { label: 'フック', data: h.map(e => e.hooks), borderColor: COLORS.amber.solid, tension: 0.35, pointRadius: 3, borderWidth: 2 },
+          ]},
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.06)' } },
+              x: { grid: { display: false } },
+            },
+            plugins: {
+              legend: { display: true, labels: { boxWidth: 10, padding: 12, font: { size: 11 }, usePointStyle: true } },
+              tooltip: { ...TOOLTIP },
+            },
+          },
+        });
+      }
+
+      /* スキルカテゴリ（レーダー） */
+      const cats = c.skills.categories;
+      const catLabels = Object.keys(cats);
+      const catValues = Object.values(cats);
+
+      new Chart(document.getElementById('chartSkills'), {
+        type: 'radar',
+        data: {
+          labels: catLabels,
+          datasets: [{
+            data: catValues,
+            borderColor: COLORS.violet.solid,
+            backgroundColor: COLORS.violet.fill,
+            pointBackgroundColor: COLORS.violet.solid,
+            pointBorderColor: 'rgba(6, 10, 20, 0.6)',
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: Math.max(...catValues) + 2,
+              ticks: { display: false, stepSize: 2 },
+              grid: { color: 'rgba(148, 163, 184, 0.08)' },
+              angleLines: { color: 'rgba(148, 163, 184, 0.08)' },
+              pointLabels: {
+                font: { family: "'IBM Plex Mono', monospace", size: 10 },
+                color: '#94a3b8',
+              },
+            },
+          },
+          plugins: {
+            tooltip: {
+              ...TOOLTIP,
+              callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed.r} スキル` },
+            },
+          },
+        },
+      });
+
+      /* コミット推移（バー） */
+      new Chart(document.getElementById('chartCommits'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            data: h.map(e => e.commits),
+            backgroundColor: h.map((_, i) =>
+              i === h.length - 1 ? COLORS.emerald.solid : COLORS.emerald.border
+            ),
+            borderRadius: 6,
+            borderSkipped: false,
+            barPercentage: 0.6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 2 },
+              grid: { color: 'rgba(148, 163, 184, 0.06)' },
+            },
+            x: { grid: { display: false } },
+          },
+          plugins: {
+            tooltip: {
+              ...TOOLTIP,
+              callbacks: { label: ctx => `${ctx.parsed.y} コミット` },
+            },
+          },
+        },
+      });
+
+      /* コミット種別（ドーナツ） */
+      const typeData = latest.commit_types || {};
+      const typeLabels = Object.keys(typeData);
+      const typeValues = Object.values(typeData);
+      const typeColors = [
+        COLORS.emerald.solid, COLORS.rose.solid, COLORS.amber.solid,
+        COLORS.violet.solid, COLORS.cyan.solid, '#94a3b8',
+      ];
+
+      new Chart(document.getElementById('chartTypes'), {
+        type: 'doughnut',
+        data: {
+          labels: typeLabels,
+          datasets: [{
+            data: typeValues,
+            backgroundColor: typeColors.slice(0, typeLabels.length),
+            borderColor: 'rgba(6, 10, 20, 0.8)',
+            borderWidth: 2,
+            hoverOffset: 6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          cutout: '62%',
+          plugins: {
+            legend: {
+              display: true,
+              position: 'right',
+              labels: {
+                boxWidth: 10, boxHeight: 10,
+                padding: 12,
+                font: { family: "'IBM Plex Mono', monospace", size: 11 },
+                usePointStyle: true,
+                pointStyle: 'rectRounded',
+              },
+            },
+            tooltip: {
+              ...TOOLTIP,
+              callbacks: {
+                label: ctx => {
+                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                  const pct = total ? Math.round((ctx.parsed / total) * 100) : 0;
+                  return `${ctx.label}: ${ctx.parsed} (${pct}%)`;
+                },
+              },
+            },
+          },
+        },
+      });
+
+      /* --- テーブル描画 --- */
+
+      /* ツールバージョン */
+      const toolsBody = document.querySelector('#tableTools tbody');
+      const toolNames = {
+        git: 'Git', fish: 'Fish Shell', neovim: 'Neovim',
+        chezmoi: 'chezmoi', starship: 'Starship', node: 'Node.js', mise: 'mise',
+      };
+      for (const [key, ver] of Object.entries(c.tools)) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${toolNames[key] || key}</td><td><span class="version-tag">v${ver}</span></td>`;
+        toolsBody.appendChild(tr);
+      }
+
+      /* 構成メトリクス */
+      const configBody = document.querySelector('#tableConfig tbody');
+      const configRows = [
+        ['管理ファイル数', c.chezmoi.managed_files],
+        ['テンプレート数', c.chezmoi.template_files],
+        ['エージェント数', c.agents],
+        ['fish 関数', c.fish_functions],
+        ['Neovim プラグイン', c.nvim_plugins],
+        ['CLAUDE.md 行数', c.claude_md_lines],
+      ];
+      for (const [label, value] of configRows) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${label}</td><td>${value}</td>`;
+        configBody.appendChild(tr);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

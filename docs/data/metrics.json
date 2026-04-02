@@ -1,0 +1,101 @@
+{
+  "repository": {
+    "name": "yagrabit/dotfiles",
+    "url": "https://github.com/yagrabit/dotfiles",
+    "description": "chezmoi管理のdotfilesリポジトリ"
+  },
+  "collected_at": "2026-04-02T00:36:41Z",
+  "current": {
+    "harness_score": null,
+    "skills": {
+      "total": 45,
+      "categories": {
+        "think": 6,
+        "do": 6,
+        "talk": 4,
+        "auto": 7,
+        "learn": 2,
+        "design": 3,
+        "ux": 7,
+        "tooling": 10
+      }
+    },
+    "hooks": 16,
+    "agents": 5,
+    "chezmoi": {
+      "managed_files": 178,
+      "template_files": 15
+    },
+    "fish_functions": 13,
+    "nvim_plugins": 4,
+    "claude_md_lines": 41,
+    "tools": {
+      "git": "2.50.1",
+      "fish": "4.5.0",
+      "neovim": "0.11.6",
+      "chezmoi": "2.70.0",
+      "starship": "1.24.2",
+      "node": "25.8.1",
+      "mise": "2026.3.10"
+    }
+  },
+  "history": [
+    {
+      "date": "2026-03-16",
+      "harness_score": null,
+      "skills_total": 26,
+      "hooks": 9,
+      "managed_files": 92,
+      "template_files": 17,
+      "fish_functions": 13,
+      "nvim_plugins": 4,
+      "commits": 52,
+      "commit_types": {
+        "feat": 31,
+        "fix": 4,
+        "chore": 8,
+        "refactor": 6,
+        "docs": 1,
+        "other": 2
+      }
+    },
+    {
+      "date": "2026-03-23",
+      "harness_score": null,
+      "skills_total": 40,
+      "hooks": 16,
+      "managed_files": 169,
+      "template_files": 15,
+      "fish_functions": 13,
+      "nvim_plugins": 4,
+      "commits": 69,
+      "commit_types": {
+        "feat": 38,
+        "fix": 15,
+        "chore": 7,
+        "refactor": 5,
+        "docs": 3,
+        "other": 1
+      }
+    },
+    {
+      "date": "2026-03-30",
+      "harness_score": null,
+      "skills_total": 45,
+      "hooks": 16,
+      "managed_files": 178,
+      "template_files": 15,
+      "fish_functions": 13,
+      "nvim_plugins": 4,
+      "commits": 26,
+      "commit_types": {
+        "feat": 13,
+        "fix": 8,
+        "chore": 4,
+        "refactor": 0,
+        "docs": 1,
+        "other": 0
+      }
+    }
+  ]
+}
