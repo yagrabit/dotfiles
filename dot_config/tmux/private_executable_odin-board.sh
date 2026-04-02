@@ -147,7 +147,7 @@ EOF
 # addサブコマンド: タスクを追加する
 cmd_add() {
     ensure_init
-    local title="" project="" branch="" priority="medium" tags=""
+    local title="" body="" project="" branch="" priority="medium" tags=""
 
     # 第1引数がタイトル
     if [[ $# -gt 0 && "$1" != -* ]]; then
@@ -162,6 +162,7 @@ cmd_add() {
             -b) branch="$2"; shift 2 ;;
             --pri) priority="$2"; shift 2 ;;
             -t) tags="$2"; shift 2 ;;
+            --body) body="$2"; shift 2 ;;
             *) title="${title:-$1}"; shift ;;
         esac
     done
@@ -178,7 +179,7 @@ cmd_add() {
     local id
     id="$(generate_id)"
     local file
-    file="$(create_task "$id" "$title" "" "inbox" "$priority" "human" "$project" "$branch" "$tags")"
+    file="$(create_task "$id" "$title" "$body" "inbox" "$priority" "human" "$project" "$branch" "$tags")"
     echo "タスクを追加しました: #${id##*-} ${title}"
     echo "$file"
 }
@@ -515,11 +516,26 @@ cmd__add_interactive() {
         --header="優先度を選択" \
     ) || priority="medium"
 
-    # 4. タスク追加
+    # 4. タスク追加（まずファイルを作る）
     local args=("$title")
     [[ -n "$project" ]] && args+=(-p "$project")
     args+=(--pri "$priority")
-    cmd_add "${args[@]}"
+    local output
+    output="$(cmd_add "${args[@]}")"
+    echo "$output"
+    local file
+    file="$(echo "$output" | tail -1)"
+
+    # 5. 説明を追加するか確認 → エディタで編集
+    local add_desc
+    add_desc=$(printf "いいえ（タイトルのみ）\nはい（エディタで説明を追加）" | fzf \
+        --prompt="説明を追加しますか？> " \
+        --height=5 \
+        --reverse \
+    ) || add_desc="いいえ（タイトルのみ）"
+    if [[ "$add_desc" == "はい（エディタで説明を追加）" ]] && [[ -f "$file" ]]; then
+        "${EDITOR:-vi}" "$file"
+    fi
 }
 
 # _rm-interactive: TUI内でタスクを削除する（確認付き）
