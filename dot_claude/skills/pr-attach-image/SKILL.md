@@ -84,7 +84,8 @@ async (page) => {
     { timeout: 30000 }
   );
 
-  // テキストエリアからMarkdown画像記法を取得
+  // テキストエリアから画像タグを取得
+  // GitHubはHTML形式（<img width="..." src="..." />）で挿入する
   const textarea = page.locator(
     '.js-new-comment-form textarea, #new_comment_field'
   ).last();
@@ -97,21 +98,26 @@ async (page) => {
 }
 ```
 
-戻り値の例: `![image](https://github.com/user-attachments/assets/abcd1234-...)`
+戻り値の例:
+```html
+<img width="1440" height="730" alt="screenshot" src="https://github.com/user-attachments/assets/abcd1234-..." />
+```
+
+GitHubはHTML `<img>` タグ形式で画像を挿入する。このHTMLはそのままPRコメントで使用できる。
 
 複数画像がある場合は、画像ごとにこのスクリプトを繰り返し実行する。
-各実行で取得したMarkdownテキストを配列に蓄積しておく。
+各実行で取得したHTMLを配列に蓄積しておく。
 
 ### Step 5: PRコメントの投稿
 
-取得した画像URLをまとめて、`gh pr comment`でMarkdownコメントを投稿する。
+取得した画像HTMLをまとめて、`gh pr comment`でコメントを投稿する。
 
 ```bash
 gh pr comment <PR番号> --body "$(cat <<'EOF'
 ## エビデンス
 
 <画像の説明>
-![image](取得したURL)
+<img width="1440" height="730" alt="screenshot" src="https://github.com/user-attachments/assets/..." />
 EOF
 )"
 ```
@@ -120,6 +126,7 @@ EOF
 - 画像が複数ある場合は見出し「## エビデンス」を付け、各画像に説明を添える
 - 画像が1枚の場合は見出しを省略してシンプルに記述してもよい
 - 画像の説明はファイル名やコンテキスト（どの画面のスクショか等）から推測する
+- Step 4で取得したHTMLタグはそのまま使用する（GitHub MarkdownはHTMLをレンダリングする）
 
 ### Step 6: 後処理
 
