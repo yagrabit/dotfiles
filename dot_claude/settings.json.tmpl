@@ -138,6 +138,15 @@
             "command": "{{ .chezmoi.homeDir }}/.claude/hooks/post-push-monitor.sh"
           }
         ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/post-skill-auto-review-reminder.sh"
+          }
+        ]
       }
     ],
     "SessionStart": [
