@@ -37,10 +37,10 @@
 
 | スキル名 | 役割 | 発動タイミング |
 |----------|------|--------------|
-| odin-auto-quality | 品質チェック一括実行（lint/型/テスト/セキュリティ） | do系スキル完了後 |
-| odin-auto-review | 軽量セルフレビュー（code-reviewer + security-reviewer + simplify + coderabbit + codex並列） | do系スキル完了後 |
-| odin-auto-peer-review | ドキュメント向けピアレビュー（バイアスなし独立レビューア→修正→再評価の反復ループ） | think系スキル完了後（design/requirements/plan） |
-| odin-auto-verify | 完了前検証（証拠付き） | タスク完了宣言前 |
+| odin-auto-quality | 品質チェック一括実行（lint/型/テスト/セキュリティ） | do系スキル完了後（フック自動リマインド） |
+| odin-auto-review | 軽量セルフレビュー（code-reviewer + security-reviewer + simplify + coderabbit + codex並列） | 全実装完了時（フック自動リマインド。次Waveにdo-prがあればスキップ） |
+| odin-auto-peer-review | ドキュメント向けピアレビュー（バイアスなし独立レビューア→修正→再評価の反復ループ） | think系(design/requirements/plan)完了後（フック自動リマインド） |
+| odin-auto-verify | 完了前検証（証拠付き） | タスク完了宣言前（フック自動リマインド） |
 | odin-auto-evolve | 自己進化（不足スキルの生成） | タスク分解でマッピング不可時 |
 | odin-auto-improve | WebSearch+メタ認知による自己改善 | インサイト蓄積後、手動起動 |
 | odin-auto-record | 開発中に気づいた改善点・学びをinsightsファイルに記録する | 各タスク完了時の振り返り |

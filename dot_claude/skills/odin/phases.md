@@ -143,7 +143,7 @@ AskUserQuestionで以下の選択肢を提示する:
 - 調査・分析系 → think系スキル
 - 実装・テスト・コミット・PR系 → do系スキル
 - ヒアリング・提案・レビュー・説明系 → talk系スキル
-- 品質チェック・レビュー・検証 → auto系スキル（do系完了後に自動挿入）
+- 品質チェック・レビュー・検証 → auto系スキル（PostToolUseフックが自動リマインド。条件はexecution-loop § 5-3参照）
 - UI/Webデザイン系 → ux-3-core（コアインテリジェンス）を起点にux-2-tokens, ux-4-stylingを連携
 
 マッピングできないタスクがある場合:
@@ -179,8 +179,7 @@ Wave 3（Wave 2完了後、並列可能）:
   T-05: [odin-do-implement] 機能B実装
 
 Wave 4（Wave 3完了後）:
-  T-06: [odin-auto-quality] 品質チェック
-  T-07: [odin-auto-review] セルフレビュー
+  （auto系スキルはPostToolUseフックが自動リマインド — 計画に明示不要）
 
 Wave 5:
   T-08: [odin-do-commit] コミット

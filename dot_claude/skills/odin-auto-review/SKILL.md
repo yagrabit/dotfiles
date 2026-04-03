@@ -1,6 +1,6 @@
 ---
 name: odin-auto-review
-description: code-reviewer・security-reviewerを並列起動し、品質とセキュリティの多角的セルフレビュー結果を統合して報告する。odin司令塔から実装完了後に自動呼び出されるほか、「レビューして」「セルフレビューして」で単体起動。
+description: code-reviewer・security-reviewerを並列起動し、品質とセキュリティの多角的セルフレビュー結果を統合して報告する。全実装完了後にPostToolUseフックが自動リマインドするほか、「レビューして」「セルフレビューして」で単体起動。
 user-invocable: false
 allowed-tools: Bash, Read, Grep, Glob, Agent, Skill, AskUserQuestion
 ---

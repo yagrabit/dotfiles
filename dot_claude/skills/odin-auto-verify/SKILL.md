@@ -1,6 +1,6 @@
 ---
 name: odin-auto-verify
-description: タスク完了宣言の前にテスト・ビルド・lintを実行し、証拠付きで成果を検証する。superpowersのverification-before-completionと連携し、「検証なしに完了と言わない」原則を徹底する。odin司令塔からタスク完了時に自動呼び出されるほか、「検証して」「完了確認して」で単体起動。
+description: タスク完了宣言の前にテスト・ビルド・lintを実行し、証拠付きで成果を検証する。superpowersのverification-before-completionと連携し、「検証なしに完了と言わない」原則を徹底する。タスク完了宣言前にPostToolUseフックが自動リマインドするほか、「検証して」「完了確認して」で単体起動。
 user-invocable: false
 allowed-tools: Bash, Read, Grep, Glob, Skill, AskUserQuestion
 ---

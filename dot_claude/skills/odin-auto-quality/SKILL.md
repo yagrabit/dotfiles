@@ -1,6 +1,6 @@
 ---
 name: odin-auto-quality
-description: lint・型チェック・テスト・セキュリティスキャンを一括実行し、pass/fail/skipで結果を報告する。--fixで自動修正ループも実行可能。odin司令塔からdo系スキル完了後に自動呼び出されるほか、「品質チェックして」「lint通して」で単体起動。
+description: lint・型チェック・テスト・セキュリティスキャンを一括実行し、pass/fail/skipで結果を報告する。--fixで自動修正ループも実行可能。do系スキル完了後にPostToolUseフックが自動リマインドするほか、「品質チェックして」「lint通して」で単体起動。
 user-invocable: false
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write, Agent
 ---

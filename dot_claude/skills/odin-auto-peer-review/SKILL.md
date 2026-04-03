@@ -1,6 +1,6 @@
 ---
 name: odin-auto-peer-review
-description: think系スキルが生成したドキュメント（設計書、要件定義、ADR、テスト計画等）に対して、バイアスのない独立レビューアでレビュー→修正の反復ループを自動実行する。odinから自動呼び出しされるほか、「ドキュメントをレビューして」「ピアレビューして」で単体起動。
+description: think系スキルが生成したドキュメント（設計書、要件定義、ADR、テスト計画等）に対して、バイアスのない独立レビューアでレビュー→修正の反復ループを自動実行する。think系(design/requirements/plan)完了後にPostToolUseフックが自動リマインドするほか、「ドキュメントをレビューして」「ピアレビューして」で単体起動。
 user-invocable: true
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Agent, AskUserQuestion
 ---
