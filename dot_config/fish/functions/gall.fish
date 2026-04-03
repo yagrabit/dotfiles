@@ -19,7 +19,6 @@ function gall
                 echo ""
             end
         end
-    end | pbcopy
-    echo "✅ "(count $argv)" 個のファイルをGemini用フォーマットでコピーしました！"
-    echo "💡 ブラウザで Command + V してください。"
+    end | fish_clipboard_copy
+    echo "(count $argv) 個のファイルをMarkdownフォーマットでクリップボードにコピーしました"
 end

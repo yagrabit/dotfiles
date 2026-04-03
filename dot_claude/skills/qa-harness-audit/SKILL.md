@@ -7,6 +7,11 @@ allowed-tools: Read, Grep, Glob, Bash
 
 外部スクリプトは使用しない。Claude自身がリポジトリの.claude/ディレクトリを分析してスコアリングする。
 
+注意: dotfilesリポジトリでは、ソースパスがデプロイ先と異なる。
+- ソース: `dot_claude/` → デプロイ先: `.claude/`
+- ソース: `settings.json.tmpl` → デプロイ先: `settings.json`
+分析時はデプロイ先（`.claude/`）を対象とする。dotfilesリポジトリ自体を監査する場合は上記の読み替えを行うこと。
+
 ## 分析対象カテゴリ（各0-10点、合計0-70点）
 
 ### 1. Skills (0-10)

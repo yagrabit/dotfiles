@@ -14,6 +14,20 @@ if ! command -v jq &>/dev/null; then
   exit 0
 fi
 
+# macOS互換のtimeout関数
+_timeout() {
+  local duration="$1"
+  shift
+  if command -v timeout &>/dev/null; then
+    timeout "$duration" "$@"
+  elif command -v gtimeout &>/dev/null; then
+    gtimeout "$duration" "$@"
+  else
+    # timeout/gtimeoutがない場合はそのまま実行（タイムアウトなし）
+    "$@"
+  fi
+}
+
 # ファイルパス抽出
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null) || exit 0
 
@@ -73,7 +87,7 @@ fi
 HASH_BEFORE=$(md5 -q "$FILE_PATH" 2>/dev/null || md5sum "$FILE_PATH" 2>/dev/null | cut -d' ' -f1 || true)
 
 # フォーマット実行（15秒タイムアウト）
-timeout 15 ${FORMATTER_CMD} "$FILE_PATH" 2>/dev/null || true
+_timeout 15 ${FORMATTER_CMD} "$FILE_PATH" 2>/dev/null || true
 
 # フォーマット後のハッシュを取得
 HASH_AFTER=$(md5 -q "$FILE_PATH" 2>/dev/null || md5sum "$FILE_PATH" 2>/dev/null | cut -d' ' -f1 || true)

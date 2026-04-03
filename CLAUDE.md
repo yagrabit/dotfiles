@@ -6,7 +6,7 @@ chezmoi管理のdotfilesリポジトリ。
 
 - `dot_config/` → `~/.config/` にデプロイ
 - `dot_tmux.conf` → `~/.tmux.conf`
-- `dot_gitconfig.tmpl` → `~/.gitconfig`（chezmoiテンプレート）
+- `dot_config/git/` → `~/.config/git/` にデプロイ（gitグローバル設定）
 - `dot_claude/` → `~/.claude/` にデプロイ（ユーザーレベルClaude設定）
 - `Dockerfile` → Docker検証環境（chezmoi管理対象外）
 

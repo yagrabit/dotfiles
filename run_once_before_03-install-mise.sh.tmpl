@@ -11,6 +11,17 @@ if command -v mise &>/dev/null; then
 fi
 
 echo "mise をインストールします..."
-curl -fsSL https://mise.run | sh
+# Homebrewが利用可能であればbrew経由でインストール（セキュリティ向上）
+{{ if eq .chezmoi.os "darwin" -}}
+BREW_BIN="/opt/homebrew/bin/brew"
+{{ else -}}
+BREW_BIN="/home/linuxbrew/.linuxbrew/bin/brew"
+{{ end -}}
+if command -v brew &>/dev/null || [ -x "$BREW_BIN" ]; then
+  "$BREW_BIN" install mise
+else
+  # Homebrewが未導入の場合のみcurl経由（初回ブートストラップ時）
+  curl -fsSL https://mise.run | sh
+fi
 
 echo "mise のインストールが完了しました。"

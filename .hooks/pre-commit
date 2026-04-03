@@ -6,13 +6,9 @@
 
 # --- secretlintによる秘密情報検出 ---
 if command -v secretlint &> /dev/null; then
-  staged_all=$(git diff --cached --name-only --diff-filter=ACM)
-  if [ -n "$staged_all" ]; then
-    echo "$staged_all" | xargs secretlint
-    if [ $? -ne 0 ]; then
-      echo "エラー: secretlintが秘密情報を検出しました。コミットを中止します。"
-      exit 1
-    fi
+  if ! git diff --cached --name-only -z --diff-filter=ACM | xargs -0 secretlint 2>/dev/null; then
+    echo "エラー: secretlintが秘密情報を検出しました。コミットを中止します。"
+    exit 1
   fi
 else
   echo "警告: secretlintが見つかりません。mise install を実行してください。"
@@ -22,27 +18,22 @@ fi
 HOME_PATH="$HOME"
 TEMPLATE_VAR='{{ .chezmoi.homeDir }}'
 
-staged_tmpl=$(git diff --cached --name-only --diff-filter=ACM | grep '\.tmpl$' || true)
-
-if [ -n "$staged_tmpl" ]; then
-  modified=false
-
-  for file in $staged_tmpl; do
-    if grep -q "$HOME_PATH" "$file" 2>/dev/null; then
-      if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "s|$HOME_PATH|$TEMPLATE_VAR|g" "$file"
-      else
-        sed -i "s|$HOME_PATH|$TEMPLATE_VAR|g" "$file"
-      fi
-      git add "$file"
-      modified=true
-      echo "絶対パスを置換しました: $file"
+modified=false
+while IFS= read -r -d '' file; do
+  if grep -q "$HOME_PATH" "$file" 2>/dev/null; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      sed -i '' "s|$HOME_PATH|$TEMPLATE_VAR|g" "$file"
+    else
+      sed -i "s|$HOME_PATH|$TEMPLATE_VAR|g" "$file"
     fi
-  done
-
-  if [ "$modified" = true ]; then
-    echo "ホームパスを {{ .chezmoi.homeDir }} に置換しました"
+    git add "$file"
+    modified=true
+    echo "絶対パスを置換しました: $file"
   fi
+done < <(git diff --cached --name-only -z --diff-filter=ACM | grep -z '\.tmpl$')
+
+if [ "$modified" = true ]; then
+  echo "ホームパスを {{ .chezmoi.homeDir }} に置換しました"
 fi
 
 # --- chezmoi管理ファイルの削除・リネームを.chezmoiremoveに自動追記 ---

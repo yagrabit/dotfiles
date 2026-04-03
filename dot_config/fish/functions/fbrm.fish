@@ -5,9 +5,12 @@ function fbrm -d 'リモートブランチをfzfで切り替え'
         return
     end
 
-    set -l res (git stash 2>&1)
+    # stash前後のカウントで判定（locale非依存）
+    set -l stash_count_before (git stash list 2>/dev/null | count)
+    git stash 2>/dev/null
     git switch $branch
-    if not string match -q "No local changes*" $res
+    set -l stash_count_after (git stash list 2>/dev/null | count)
+    if test "$stash_count_after" -gt "$stash_count_before"
         git stash pop
     end
     commandline -f repaint

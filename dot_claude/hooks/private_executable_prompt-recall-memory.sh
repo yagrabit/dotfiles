@@ -24,9 +24,10 @@ if [ -z "$PROMPT" ] || [ "${#PROMPT}" -lt 3 ]; then
   exit 0
 fi
 
-# yb-memoryで検索（JSON出力、最大1件、全プロジェクト横断）
+# yb-memoryで検索（JSON出力、最大1件、同一プロジェクト限定）
 # コンテキスト消費を抑えるため件数を1に制限する
-RESULTS=$(yb-memory search "$PROMPT" --all-projects --limit 1 --json 2>/dev/null) || true
+# --all-projectsを使わず、プロジェクトスコープ内の記憶のみ参照する
+RESULTS=$(yb-memory search "$PROMPT" --limit 1 --json 2>/dev/null) || true
 
 # 結果が空配列 "[]" またはエラーならスキップ
 if [ -z "$RESULTS" ] || [ "$RESULTS" = "[]" ]; then

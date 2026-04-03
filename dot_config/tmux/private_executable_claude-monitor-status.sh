@@ -62,11 +62,24 @@ if [[ -d "$SESSION_DIR" ]]; then
   done
 fi
 
-# odin-boardサマリーの取得
+# odin-boardサマリーの取得（キャッシュ付き: TTL 10秒）
 BOARD_SCRIPT="${HOME}/.config/tmux/odin-board.sh"
+BOARD_CACHE="/tmp/odin-board-status-cache"
+BOARD_CACHE_TTL=10
 board_summary=""
 if [[ -x "$BOARD_SCRIPT" ]]; then
-  board_summary=$("$BOARD_SCRIPT" status 2>/dev/null || true)
+  # キャッシュが存在しTTL内であればキャッシュから読む
+  if [[ -f "$BOARD_CACHE" ]]; then
+    cache_age=$(( $(date +%s) - $(stat -f %m "$BOARD_CACHE" 2>/dev/null || stat -c %Y "$BOARD_CACHE" 2>/dev/null || echo 0) ))
+    if (( cache_age < BOARD_CACHE_TTL )); then
+      board_summary=$(cat "$BOARD_CACHE")
+    fi
+  fi
+  # キャッシュが無いか期限切れなら再取得
+  if [[ -z "$board_summary" ]]; then
+    board_summary=$("$BOARD_SCRIPT" status 2>/dev/null || true)
+    echo -n "$board_summary" > "$BOARD_CACHE" 2>/dev/null || true
+  fi
 fi
 
 # 出力

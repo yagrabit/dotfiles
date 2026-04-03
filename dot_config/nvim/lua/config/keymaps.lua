@@ -8,7 +8,7 @@ local keymap = vim.keymap.set
 
 -- 基本操作
 keymap("n", "<leader>w", "<cmd>w<cr>", { desc = "保存" })
-keymap("n", "<leader>q", "<cmd>q<cr>", { desc = "終了" })
+keymap("n", "<leader>q", "<cmd>confirm q<cr>", { desc = "終了（未保存時は確認）" })
 
 -- ウィンドウ移動
 keymap("n", "<C-h>", "<C-w>h", { desc = "左のウィンドウへ" })

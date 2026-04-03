@@ -12,11 +12,11 @@ set -gx HOMEBREW_FORBIDDEN_FORMULAE node bat eza fd fzf ghq neovim ripgrep stars
 fish_add_path ~/.local/bin
 
 {{ if eq .chezmoi.os "darwin" }}
-# macOS固有設定
-set -gx PATH /opt/homebrew/bin /opt/homebrew/sbin $PATH
+# macOS固有設定（fish_add_pathで重複防止）
+fish_add_path /opt/homebrew/bin /opt/homebrew/sbin
 {{ else }}
-# Linux Homebrew
-set -gx PATH /home/linuxbrew/.linuxbrew/bin $PATH
+# Linux Homebrew（fish_add_pathで重複防止）
+fish_add_path /home/linuxbrew/.linuxbrew/bin
 {{ end }}
 
 # モダンツールのエイリアス
@@ -44,25 +44,41 @@ if type -q nvim
     alias vi 'nvim'
 end
 
-# zoxide初期化
-if type -q zoxide
-    zoxide init fish | source
+# ツール初期化（キャッシュ付き: バージョン変更時のみ再生成）
+function _cached_init --argument-names cmd subcmd cache_name
+    set -l cache_dir ~/.cache/fish
+    set -l cache_file "$cache_dir/$cache_name.fish"
+    set -l version_file "$cache_dir/$cache_name.version"
+
+    if not type -q $cmd
+        return
+    end
+
+    set -l current_version ($cmd --version 2>/dev/null | head -1; or echo unknown)
+
+    # キャッシュが有効ならそのまま読む
+    if test -f "$cache_file" -a -f "$version_file"
+        if test (cat "$version_file" 2>/dev/null) = "$current_version"
+            source "$cache_file"
+            return
+        end
+    end
+
+    # キャッシュを再生成
+    mkdir -p "$cache_dir"
+    $cmd $subcmd > "$cache_file" 2>/dev/null
+    echo "$current_version" > "$version_file"
+    source "$cache_file"
 end
+
+_cached_init zoxide "init fish" zoxide
+_cached_init mise "activate fish" mise
+_cached_init starship "init fish" starship
 
 # fzf設定
 if type -q fzf
     set -gx FZF_DEFAULT_COMMAND 'fd --type f --hidden --follow --exclude .git'
     set -gx FZF_DEFAULT_OPTS '--height 40% --layout=reverse --border'
-end
-
-# mise初期化
-if type -q mise
-    mise activate fish | source
-end
-
-# starship初期化
-if type -q starship
-    starship init fish | source
 end
 
 # キーバインド
@@ -89,14 +105,4 @@ if type -q fzf
     bind / _slash_command_or_insert
 end
 
-# tmux自動起動（インタラクティブシェルかつtmux外の場合）
-if status is-interactive; and type -q tmux; and not set -q TMUX
-{{ if eq .chezmoi.os "darwin" }}
-    # macOS: Ghosttyクイックターミナルでは起動しない
-    if not set -q GHOSTTY_QUICK_TERMINAL
-        tmux new-session -A -s main
-    end
-{{ else }}
-    tmux new-session -A -s main
-{{ end }}
-end
+# tmux自動起動はconf.d/tmux-auto-attach.fish.tmplに分離

@@ -1,0 +1,12 @@
+# tmux自動起動（インタラクティブシェルかつtmux外の場合）
+# config.fishの初期化完了後にconf.dで実行される
+if status is-interactive; and type -q tmux; and not set -q TMUX
+{{ if eq .chezmoi.os "darwin" }}
+    # macOS: Ghosttyクイックターミナルでは起動しない
+    if not set -q GHOSTTY_QUICK_TERMINAL
+        tmux new-session -A -s main
+    end
+{{ else }}
+    tmux new-session -A -s main
+{{ end }}
+end
