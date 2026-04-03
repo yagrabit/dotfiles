@@ -1,16 +1,17 @@
--- Markdownプレビュー・検索
--- lazy.nvimのkeys/configで遅延ロード時にキーマップを登録する
+-- Markdownプレビュー（glowによるプレビューはtelescope不要）
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "markdown",
+  callback = function()
+    vim.keymap.set("n", "<leader>mp", "<cmd>split | terminal glow %<cr>", { buffer = true, desc = "Markdownプレビュー" })
+  end,
+})
 
+-- Markdownファイル検索（telescope依存、遅延ロード）
 return {
   {
     "nvim-telescope/telescope.nvim",
     optional = true,
     keys = {
-      {
-        "<leader>mp",
-        "<cmd>split | terminal glow %<cr>",
-        desc = "Markdownプレビュー",
-      },
       {
         "<leader>fm",
         function()

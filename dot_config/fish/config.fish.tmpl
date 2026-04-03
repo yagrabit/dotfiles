@@ -45,35 +45,39 @@ if type -q nvim
 end
 
 # ツール初期化（キャッシュ付き: バージョン変更時のみ再生成）
-function _cached_init --argument-names cmd subcmd cache_name
-    set -l cache_dir ~/.cache/fish
-    set -l cache_file "$cache_dir/$cache_name.fish"
-    set -l version_file "$cache_dir/$cache_name.version"
+# --versionはキャッシュミス判定時のみ実行し、ホットパスのコストを最小化する
+function _cached_init
+    set -l cmd $argv[1]
+    set -l subcmd_args $argv[2..-1]
 
     if not type -q $cmd
         return
     end
 
-    set -l current_version ($cmd --version 2>/dev/null | head -1; or echo unknown)
+    set -l cache_dir ~/.cache/fish
+    set -l cache_file "$cache_dir/$cmd.fish"
 
-    # キャッシュが有効ならそのまま読む
-    if test -f "$cache_file" -a -f "$version_file"
-        if test (cat "$version_file" 2>/dev/null) = "$current_version"
-            source "$cache_file"
-            return
-        end
+    # キャッシュが存在し、バイナリより新しければsourceする（プロセス起動なし）
+    set -l cmd_path (command -s $cmd)
+    if test -f "$cache_file"; and not test "$cmd_path" -nt "$cache_file"
+        source "$cache_file"
+        return
     end
 
-    # キャッシュを再生成
-    mkdir -p "$cache_dir"
-    $cmd $subcmd > "$cache_file" 2>/dev/null
-    echo "$current_version" > "$version_file"
-    source "$cache_file"
+    # キャッシュがなければ生成
+    mkdir -p -m 700 "$cache_dir"
+    if $cmd $subcmd_args > "$cache_file" 2>/dev/null
+        source "$cache_file"
+    else
+        # コマンド失敗時はキャッシュを書かずに直接実行にフォールバック
+        rm -f "$cache_file"
+        $cmd $subcmd_args | source
+    end
 end
 
-_cached_init zoxide "init fish" zoxide
-_cached_init mise "activate fish" mise
-_cached_init starship "init fish" starship
+_cached_init zoxide init fish
+_cached_init mise activate fish
+_cached_init starship init fish
 
 # fzf設定
 if type -q fzf

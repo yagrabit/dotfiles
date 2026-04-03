@@ -6,9 +6,12 @@
 
 # --- secretlintによる秘密情報検出 ---
 if command -v secretlint &> /dev/null; then
-  if ! git diff --cached --name-only -z --diff-filter=ACM | xargs -0 secretlint 2>/dev/null; then
-    echo "エラー: secretlintが秘密情報を検出しました。コミットを中止します。"
-    exit 1
+  staged_count=$(git diff --cached --name-only --diff-filter=ACM | wc -l)
+  if [ "$staged_count" -gt 0 ]; then
+    if ! git diff --cached --name-only -z --diff-filter=ACM | xargs -0 secretlint 2>/dev/null; then
+      echo "エラー: secretlintが秘密情報を検出しました。コミットを中止します。"
+      exit 1
+    fi
   fi
 else
   echo "警告: secretlintが見つかりません。mise install を実行してください。"
