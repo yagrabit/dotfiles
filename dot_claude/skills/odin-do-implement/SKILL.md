@@ -129,6 +129,16 @@ superpowers:test-driven-development のパターンに従い実行する。
 2. 実装したい振る舞いを表すテストコードを書く
 3. テストを実行し、失敗（Red）を確認する
 4. テストが正しい理由で失敗していることを確認する（コンパイルエラーではなくアサーション失敗）
+5. Red証拠ログを保存する（TDD実施の証拠）:
+   ```bash
+   # Redフェーズの証拠を保存（テスト失敗の出力をログに記録）
+   mkdir -p .claude/artifacts/evidence
+   {テストコマンド} 2>&1 | tail -50 > .claude/artifacts/evidence/red-{task-id}.log
+   echo "phase: red" >> .claude/artifacts/evidence/red-{task-id}.log
+   echo "timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .claude/artifacts/evidence/red-{task-id}.log
+   ```
+   - `{task-id}` はodinコンテキストのtask_id、またはタスク名をkebab-caseにしたもの
+   - ログが50行を超える場合は末尾50行を保存する（全量保存は不要）
 
 ```bash
 # 自動検出したテストコマンドで対象テストファイルを実行する
@@ -140,6 +150,13 @@ superpowers:test-driven-development のパターンに従い実行する。
 2. 過剰な最適化・抽象化はしない（まず動かすことを優先）
 3. テストを実行し、成功（Green）を確認する
 4. 既存のテストが壊れていないことを確認する（全テスト実行）
+5. Green証拠ログを保存する:
+   ```bash
+   # Greenフェーズの証拠を保存（テスト成功の出力をログに記録）
+   {テストコマンド} 2>&1 | tail -50 > .claude/artifacts/evidence/green-{task-id}.log
+   echo "phase: green" >> .claude/artifacts/evidence/green-{task-id}.log
+   echo "timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .claude/artifacts/evidence/green-{task-id}.log
+   ```
 
 ```bash
 # 全テスト実行（自動検出したテストコマンドを使用）
