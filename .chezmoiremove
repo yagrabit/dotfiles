@@ -60,3 +60,7 @@
 .claude/rules/common/agents.md
 .claude/rules/common/pr-sizing.md
 .claude/rules/common/typescript-practice.md
+
+# Karabiner-Elements削除（2026-04-04）
+.config/karabiner
+.config/karabiner/assets/complex_modifications

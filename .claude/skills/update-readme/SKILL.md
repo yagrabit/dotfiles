@@ -33,7 +33,6 @@ git status --short
 | tmux | dot_tmux.conf |
 | Git | dot_gitconfig.tmpl |
 | Ghostty | dot_config/ghostty/** |
-| Karabiner-Elements | dot_config/karabiner/** |
 | Claude Code | dot_claude/** |
 | ディレクトリ構成 | ルート直下のファイル追加/削除、dot_config/直下の変更 |
 | Docker検証 | Dockerfile |
