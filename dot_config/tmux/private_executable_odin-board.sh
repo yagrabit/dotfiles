@@ -751,6 +751,109 @@ LAUNCH_SCRIPT
     echo "ペイン: ${new_pane} @ ${project_path}"
 }
 
+# --- docs サブコマンド ---
+cmd_docs() {
+    local subcmd="${1:?エラー: docsサブコマンドを指定してください（add/rm/list/save/browse）}"
+    shift
+    case "$subcmd" in
+        add)    cmd_docs_add "$@" ;;
+        rm)     cmd_docs_rm "$@" ;;
+        list)   cmd_docs_list "$@" ;;
+        save)   cmd_docs_save "$@" ;;
+        browse) cmd_docs_browse "$@" ;;
+        *) echo "エラー: 不明なdocsサブコマンド '${subcmd}'" >&2; return 1 ;;
+    esac
+}
+
+cmd_docs_add() {
+    local id="${1:?エラー: タスクIDを指定してください}"
+    local url="${2:?エラー: URLを指定してください}"
+    shift 2
+    local title="" type=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -t) title="$2"; shift 2 ;;
+            --type) type="$2"; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+    find_task "$id" >/dev/null
+    if [[ -z "$title" ]]; then
+        title="$(echo "$url" | sed -E 's|^https?://([^/]+).*|\1|; s|^jira:||')"
+    fi
+    if [[ -z "$type" ]]; then
+        case "$url" in
+            jira:*) type="jira" ;;
+            *confluence*) type="confluence" ;;
+            *github.com*) type="github" ;;
+            *) type="web" ;;
+        esac
+    fi
+    local file
+    file="$(find_task "$id")"
+    local full_id
+    full_id="$(read_field "$file" id)"
+    add_doc "$full_id" "$title" "$url" "$type"
+    echo "ドキュメントを追加しました: ${title} (${url})"
+}
+
+cmd_docs_rm() {
+    local id="${1:?エラー: タスクIDを指定してください}"
+    local query="${2:?エラー: 削除対象（URLまたはタイトル）を指定してください}"
+    local file
+    file="$(find_task "$id")"
+    local full_id
+    full_id="$(read_field "$file" id)"
+    rm_doc "$full_id" "$query"
+    echo "ドキュメントを削除しました: ${query}"
+}
+
+cmd_docs_list() {
+    local id="${1:?エラー: タスクIDを指定してください}"
+    local file
+    file="$(find_task "$id")"
+    local full_id
+    full_id="$(read_field "$file" id)"
+    local docs_path="${DOCS_DIR}/${full_id}"
+    local found=0
+
+    local index
+    index="$(_docs_index "$full_id")"
+    if [[ -f "$index" ]]; then
+        while IFS=$'\t' read -r title url type saved_path; do
+            local domain
+            domain="$(echo "$url" | sed -E 's|^https?://([^/]+).*|\1|; s|^(jira:.*)|\1|')"
+            local saved_marker=""
+            [[ -n "$saved_path" ]] && saved_marker=" [saved]"
+            printf "[link]  %s (%s)%s\n" "$title" "$domain" "$saved_marker"
+            found=1
+        done < <(read_docs "$full_id")
+    fi
+
+    if [[ -d "$docs_path" ]]; then
+        for f in "$docs_path"/*; do
+            [[ -f "$f" ]] || continue
+            local basename
+            basename="$(basename "$f")"
+            [[ "$basename" == "index.json" ]] && continue
+            printf "[local] %s\n" "$basename"
+            found=1
+        done
+    fi
+
+    if [[ $found -eq 0 ]]; then
+        echo "ドキュメントがありません"
+    fi
+}
+
+cmd_docs_save() {
+    echo "未実装"
+}
+
+cmd_docs_browse() {
+    echo "未実装"
+}
+
 # 使い方を表示する
 usage() {
     cat <<'EOF'
@@ -769,6 +872,11 @@ usage() {
   rm <id>                        タスクを削除する
   tui                            カンバンTUIを起動する
   status                         ステータスバー用サマリーを出力する
+  docs add <id> <url> [options]  ドキュメントリンクを追加する
+  docs rm <id> <query>           ドキュメントリンクを削除する
+  docs list <id>                 ドキュメント一覧を表示する
+  docs save <id> <url>           Webページを取得・翻訳して保存する
+  docs browse <id>               ドキュメントブラウザを起動する
 
 オプション (add):
   -p <project>                   プロジェクト（owner/repo形式）
@@ -823,6 +931,9 @@ case "$cmd" in
         ;;
     dispatch)
         cmd_dispatch "$@"
+        ;;
+    docs)
+        cmd_docs "$@"
         ;;
     _move-interactive)
         cmd__move_interactive "$@"

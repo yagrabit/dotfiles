@@ -524,3 +524,75 @@ EOF
     run jq -r '.links[0].saved_path' "$index"
     [ "$output" = "web-example-com-20260404-1200.md" ]
 }
+
+# --- docs サブコマンド テスト ---
+
+@test "docs add: URLとタイトルでリンクが追加される" {
+    create_test_task "20260404-1200-a1b2"
+    run bash "$SCRIPT" docs add "20260404-1200-a1b2" "https://example.com/api" -t "API設計"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"追加しました"* ]]
+    local index="${ODIN_BOARD_DIR}/docs/20260404-1200-a1b2/index.json"
+    [ -f "$index" ]
+    run jq -r '.links[0].title' "$index"
+    [ "$output" = "API設計" ]
+}
+
+@test "docs add: タイトル省略時はドメイン名が自動設定される" {
+    create_test_task "20260404-1200-a1b2"
+    run bash "$SCRIPT" docs add "20260404-1200-a1b2" "https://example.com/article"
+    [ "$status" -eq 0 ]
+    local index="${ODIN_BOARD_DIR}/docs/20260404-1200-a1b2/index.json"
+    run jq -r '.links[0].title' "$index"
+    [ "$output" = "example.com" ]
+}
+
+@test "docs add: jira:プレフィックスで自動的にjiraタイプになる" {
+    create_test_task "20260404-1200-a1b2"
+    run bash "$SCRIPT" docs add "20260404-1200-a1b2" "jira:VIV-123" -t "認証仕様"
+    [ "$status" -eq 0 ]
+    local index="${ODIN_BOARD_DIR}/docs/20260404-1200-a1b2/index.json"
+    run jq -r '.links[0].type' "$index"
+    [ "$output" = "jira" ]
+}
+
+@test "docs add: --typeオプションでタイプを指定できる" {
+    create_test_task "20260404-1200-a1b2"
+    run bash "$SCRIPT" docs add "20260404-1200-a1b2" "https://confluence.example.com/pages/123" -t "設計書" --type confluence
+    [ "$status" -eq 0 ]
+    local index="${ODIN_BOARD_DIR}/docs/20260404-1200-a1b2/index.json"
+    run jq -r '.links[0].type' "$index"
+    [ "$output" = "confluence" ]
+}
+
+@test "docs rm: URLの部分一致で削除される" {
+    create_test_task "20260404-1200-a1b2"
+    bash "$SCRIPT" docs add "20260404-1200-a1b2" "https://example.com/api" -t "API設計"
+    bash "$SCRIPT" docs add "20260404-1200-a1b2" "jira:VIV-123" -t "認証仕様"
+    run bash "$SCRIPT" docs rm "20260404-1200-a1b2" "example.com"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"削除しました"* ]]
+    local index="${ODIN_BOARD_DIR}/docs/20260404-1200-a1b2/index.json"
+    run jq '.links | length' "$index"
+    [ "$output" = "1" ]
+}
+
+@test "docs list: リンクとローカルファイルが統合表示される" {
+    create_test_task "20260404-1200-a1b2"
+    bash "$SCRIPT" docs add "20260404-1200-a1b2" "https://example.com/api" -t "API設計"
+    mkdir -p "${ODIN_BOARD_DIR}/docs/20260404-1200-a1b2"
+    echo "# 調査結果" > "${ODIN_BOARD_DIR}/docs/20260404-1200-a1b2/research-20260404.md"
+    run bash "$SCRIPT" docs list "20260404-1200-a1b2"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"[link]"* ]]
+    [[ "$output" == *"API設計"* ]]
+    [[ "$output" == *"[local]"* ]]
+    [[ "$output" == *"research-20260404.md"* ]]
+}
+
+@test "docs list: ドキュメントがない場合のメッセージ" {
+    create_test_task "20260404-1200-a1b2"
+    run bash "$SCRIPT" docs list "20260404-1200-a1b2"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"ドキュメントがありません"* ]]
+}
