@@ -7,8 +7,72 @@ set -euo pipefail
 BOARD_DIR="${ODIN_BOARD_DIR:-${HOME}/.local/share/odin-board}"
 TASKS_DIR="${BOARD_DIR}/tasks"
 ARCHIVE_DIR="${BOARD_DIR}/archive"
+DOCS_DIR="${BOARD_DIR}/docs"
 
 # --- ヘルパー関数 ---
+
+# index.jsonのパスを返す
+# 使い方: _docs_index <task-id>
+_docs_index() {
+    echo "${DOCS_DIR}/${1}/index.json"
+}
+
+# 全リンクをTSV形式で出力（title\turl\ttype\tsaved_path）
+# 使い方: read_docs <task-id>
+read_docs() {
+    local index
+    index="$(_docs_index "$1")"
+    [[ -f "$index" ]] || return 0
+    jq -r '.links[] | [.title, .url, .type, (.saved_path // "")] | @tsv' "$index"
+}
+
+# リンクを追加（URLで重複チェック）
+# 使い方: add_doc <task-id> <title> <url> [<type>]
+add_doc() {
+    local task_id="$1" title="$2" url="$3" type="${4:-web}"
+    local index
+    index="$(_docs_index "$task_id")"
+    mkdir -p "$(dirname "$index")"
+    if [[ ! -f "$index" ]]; then
+        echo '{"links":[]}' > "$index"
+    fi
+    if jq -e --arg u "$url" '.links[] | select(.url == $u)' "$index" >/dev/null 2>&1; then
+        echo "既に登録済み: ${url}" >&2
+        return 0
+    fi
+    local tmpfile
+    tmpfile="$(mktemp)"
+    jq --arg t "$title" --arg u "$url" --arg tp "$type" \
+        '.links += [{"title":$t,"url":$u,"type":$tp,"saved_path":null}]' \
+        "$index" > "$tmpfile" && mv "$tmpfile" "$index"
+}
+
+# リンクを削除（URLまたはタイトルの部分一致）
+# 使い方: rm_doc <task-id> <query>
+rm_doc() {
+    local task_id="$1" query="$2"
+    local index
+    index="$(_docs_index "$task_id")"
+    [[ -f "$index" ]] || return 1
+    local tmpfile
+    tmpfile="$(mktemp)"
+    jq --arg q "$query" \
+        '.links |= map(select((.url | contains($q) | not) and (.title | contains($q) | not)))' \
+        "$index" > "$tmpfile" && mv "$tmpfile" "$index"
+}
+
+# saved_pathを更新
+# 使い方: update_saved_path <task-id> <url> <path>
+update_saved_path() {
+    local task_id="$1" url="$2" path="$3"
+    local index
+    index="$(_docs_index "$task_id")"
+    local tmpfile
+    tmpfile="$(mktemp)"
+    jq --arg u "$url" --arg p "$path" \
+        '(.links[] | select(.url == $u)).saved_path = $p' \
+        "$index" > "$tmpfile" && mv "$tmpfile" "$index"
+}
 
 # ディレクトリの初期化（存在しなければ作成）
 ensure_init() {

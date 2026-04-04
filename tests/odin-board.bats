@@ -427,3 +427,100 @@ EOF
     [[ "$output" == *"add"* ]]
     [[ "$output" == *"dispatch"* ]]
 }
+
+# --- docs ヘルパー テスト ---
+
+@test "docs: _docs_indexがindex.jsonのパスを返す" {
+    source "$SCRIPT"
+    run _docs_index "20260404-1200-a1b2"
+    [ "$status" -eq 0 ]
+    [[ "$output" == "${ODIN_BOARD_DIR}/docs/20260404-1200-a1b2/index.json" ]]
+}
+
+@test "docs: add_docでリンクが追加される" {
+    source "$SCRIPT"
+    add_doc "20260404-1200-a1b2" "API設計" "https://example.com/api" "web"
+    local index="${DOCS_DIR}/20260404-1200-a1b2/index.json"
+    [ -f "$index" ]
+    run jq -r '.links[0].title' "$index"
+    [ "$output" = "API設計" ]
+    run jq -r '.links[0].url' "$index"
+    [ "$output" = "https://example.com/api" ]
+    run jq -r '.links[0].type' "$index"
+    [ "$output" = "web" ]
+    run jq -r '.links[0].saved_path' "$index"
+    [ "$output" = "null" ]
+}
+
+@test "docs: add_docで重複URLはスキップされる" {
+    source "$SCRIPT"
+    add_doc "20260404-1200-a1b2" "API設計" "https://example.com/api" "web"
+    add_doc "20260404-1200-a1b2" "API設計v2" "https://example.com/api" "web"
+    local index="${DOCS_DIR}/20260404-1200-a1b2/index.json"
+    run jq '.links | length' "$index"
+    [ "$output" = "1" ]
+}
+
+@test "docs: add_docでtype省略時はwebがデフォルト" {
+    source "$SCRIPT"
+    add_doc "20260404-1200-a1b2" "テスト" "https://example.com"
+    local index="${DOCS_DIR}/20260404-1200-a1b2/index.json"
+    run jq -r '.links[0].type' "$index"
+    [ "$output" = "web" ]
+}
+
+@test "docs: rm_docでURLの部分一致で削除される" {
+    source "$SCRIPT"
+    add_doc "20260404-1200-a1b2" "API設計" "https://example.com/api" "web"
+    add_doc "20260404-1200-a1b2" "認証仕様" "jira:VIV-123" "jira"
+    rm_doc "20260404-1200-a1b2" "example.com"
+    local index="${DOCS_DIR}/20260404-1200-a1b2/index.json"
+    run jq '.links | length' "$index"
+    [ "$output" = "1" ]
+    run jq -r '.links[0].title' "$index"
+    [ "$output" = "認証仕様" ]
+}
+
+@test "docs: rm_docでタイトルの部分一致で削除される" {
+    source "$SCRIPT"
+    add_doc "20260404-1200-a1b2" "API設計" "https://example.com/api" "web"
+    rm_doc "20260404-1200-a1b2" "API設計"
+    local index="${DOCS_DIR}/20260404-1200-a1b2/index.json"
+    run jq '.links | length' "$index"
+    [ "$output" = "0" ]
+}
+
+@test "docs: rm_docでindex.jsonが存在しない場合エラー" {
+    source "$SCRIPT"
+    run rm_doc "nonexistent" "query"
+    [ "$status" -eq 1 ]
+}
+
+@test "docs: read_docsがTSV形式でリンクを出力する" {
+    source "$SCRIPT"
+    add_doc "20260404-1200-a1b2" "API設計" "https://example.com/api" "web"
+    add_doc "20260404-1200-a1b2" "認証仕様" "jira:VIV-123" "jira"
+    run read_docs "20260404-1200-a1b2"
+    [ "$status" -eq 0 ]
+    [ "${#lines[@]}" -eq 2 ]
+    [[ "${lines[0]}" == *"API設計"* ]]
+    [[ "${lines[0]}" == *"https://example.com/api"* ]]
+    [[ "${lines[1]}" == *"認証仕様"* ]]
+    [[ "${lines[1]}" == *"jira:VIV-123"* ]]
+}
+
+@test "docs: read_docsでindex.jsonが存在しない場合は空出力" {
+    source "$SCRIPT"
+    run read_docs "nonexistent"
+    [ "$status" -eq 0 ]
+    [ "$output" = "" ]
+}
+
+@test "docs: update_saved_pathでsaved_pathが更新される" {
+    source "$SCRIPT"
+    add_doc "20260404-1200-a1b2" "API設計" "https://example.com/api" "web"
+    update_saved_path "20260404-1200-a1b2" "https://example.com/api" "web-example-com-20260404-1200.md"
+    local index="${DOCS_DIR}/20260404-1200-a1b2/index.json"
+    run jq -r '.links[0].saved_path' "$index"
+    [ "$output" = "web-example-com-20260404-1200.md" ]
+}
