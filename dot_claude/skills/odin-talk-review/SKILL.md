@@ -229,12 +229,7 @@ Finding ID規約:
 
 routeToSkill規約:
 - 各Finding（重大・改善）に差し戻し先スキルを付記する
-- ルーティング判定基準:
-  - 仕様の欠陥・要件漏れ → `think-requirements`
-  - 設計上の問題・アーキテクチャ不備 → `think-design`
-  - 実装のバグ・品質問題・AIスロップ → `do-implement`
-  - テストの不足・品質問題 → `do-test`
-  - セキュリティ脆弱性 → `do-implement`（セキュリティ修正は実装で対応）
+- 判定基準はexecution-loop.md § 5-3.7の正本を参照する
 - odinオーケストレーターはrouteToSkillを読み取り、最も上流のスキルから修正を実行する（§ 5-3.7参照）
 
 カテゴリのタグ一覧:

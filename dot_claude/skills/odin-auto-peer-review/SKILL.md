@@ -179,13 +179,13 @@ research（調査レポート）:
    - [{基準カテゴリ}] {内容}
 
    Finding ID規約:
-   - F-{NNN} 形式で重大・改善の全指摘に付与する（情報レベルは不要）
+   - F-{NNN} 形式（3桁ゼロ埋め、レビューセッション内で連番）で重大・改善の全指摘に付与する（情報レベルは不要）
    - 反復ループでFinding IDによる解決追跡を行う
-   - routeToSkillはドキュメント種別に応じて判定する:
+   - routeToSkillの判定基準はexecution-loop.md § 5-3.7の正本を参照する。ドキュメントレビューで主に使われる値:
+     - 調査の不足 → think-research（注: auto-peer-reviewの自動発動対象外だが、route先としては有効）
      - 要件の欠陥 → think-requirements
      - 設計の問題 → think-design
      - タスク分解の問題 → think-plan
-     - 調査の不足 → think-research
 
    注意:
    - 根拠のない賛辞は禁止。問題点と改善案に集中してください
