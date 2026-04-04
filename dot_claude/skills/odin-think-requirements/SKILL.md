@@ -99,6 +99,57 @@ odinコンテキストJSONの例:
 - 非機能要件が少なくとも1つ以上明記されていること
 - 制約・前提条件が整理されていること
 
+### ステップ2.5: EARS形式変換（オプション）
+
+核心的な振る舞い要件（機能要件のうち、システムの動的な振る舞いを定義するもの）をEARS（Easy Approach to Requirements Syntax）形式に変換する。EARS形式は要件のテスト可能性を構造的に保証する。
+
+発動条件:
+- odinコンテキストに `ears: true` が指定されている場合
+- ユーザーが「EARS形式で」「テスト可能な形式で」と指定した場合
+- 機能要件が5つ以上あり、テスト可能性を高める価値がある場合（自動判定）
+- 上記いずれにも該当しない場合はスキップする
+
+EARS形式の5パターン:
+
+| パターン | テンプレート | 適用場面 |
+|---------|------------|---------|
+| Ubiquitous | The [system] shall [behavior] | 常に成立すべき制約 |
+| Event-driven | When [trigger], the [system] shall [response] | イベント駆動の振る舞い |
+| State-driven | While [condition], the [system] shall [behavior] | 状態依存の振る舞い |
+| Unwanted | If [unwanted condition], then the [system] shall [response] | 異常系・エラー処理 |
+| Optional | Where [feature is enabled], the [system] shall [behavior] | オプション機能 |
+
+変換手順:
+1. ステップ2の機能要件（FR-*）から振る舞い要件を抽出する
+2. 各要件に最適なEARSパターンを選択する
+3. EARS形式に変換する（元のユーザーストーリーも保持する）
+4. 変換結果をステップ5の出力に「EARS形式要件」セクションとして追加する
+
+出力形式（ステップ5の要件定義書内に追加）:
+```markdown
+## EARS形式要件（テスト可能な仕様）
+
+### EARS-001: {FR-001に対応}
+パターン: Event-driven
+When ユーザーがロ���インフォームに有効な認証情報を入力して送信する,
+the 認証システム shall セッショントークンを生成し、ダッシュボードにリダイレクトする
+
+### EARS-002: {FR-001の異常系に対応}
+パターン: Unwanted
+If ユーザーが無効な認証情報で3回連続ログインに失敗した,
+then the 認証システム shall アカウントを一時ロックし、ロック通知メールを送信する
+```
+
+注意:
+- 全FRをEARS化する必要はない。振る舞い要件のみ変換する（UI仕様やデータ定義は対象外）
+- EARS形式はodin-do-testがテストケース自動生成の入力として使用する
+
+#### 完了チェックポイント（ステップ2.5）
+
+- 発動条件を満たす場合のみ実行されていること
+- 変換対象のFRにEARS-{NNN}が紐づいていること
+- 各EARS要件にパターン名が明記されていること
+
 ### ステップ3: requirements-analystによる品質チェック
 
 requirements-analystサブエージェントに構造化した要件を渡し、以下を検出させる:
