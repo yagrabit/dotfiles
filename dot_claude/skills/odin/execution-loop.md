@@ -29,10 +29,20 @@
       "research": ".claude/artifacts/research-YYYYMMDD-HHMM.md",
       "design": ".claude/artifacts/design-YYYYMMDD-HHMM.md"
     },
-    "hearing_summary": "Phase 3で承認された理解要約"
+    "hearing_summary": "Phase 3で承認された理解要約",
+    "board_task_id": "",
+    "artifacts_dir": ".claude/artifacts"
   }
 }
 ```
+
+#### artifacts_dirの伝搬
+
+odinコンテキストJSONの `artifacts_dir` フィールドを各スキルに伝搬する。
+スキルのARGUMENTSに `--artifacts-dir {artifacts_dir}` を含める。
+
+各スキル（think系・do系）は成果物を `artifacts_dir` に出力する。
+odinが `artifacts` フィールドに記録するパスも `artifacts_dir` 配下を使用する。
 
 2.5. 委譲前セルフチェック（スキップ不可）:
    - これからSkillツールを使おうとしているか？ → YES: 続行 / NO: 停止して修正

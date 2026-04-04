@@ -691,3 +691,29 @@ EOF
     run head -3 "$saved_file"
     [[ "$output" == *"元URL: https://example.com/test"* ]]
 }
+
+# --- docs browse テスト ---
+
+@test "docs browse: _generate_docs_listがローカルとリンクを統合表示する" {
+    source "$SCRIPT"
+    add_doc "20260404-1200-a1b2" "API設計" "https://example.com/api" "web"
+    mkdir -p "${DOCS_DIR}/20260404-1200-a1b2"
+    echo "# 調査" > "${DOCS_DIR}/20260404-1200-a1b2/research.md"
+    run _generate_docs_list "20260404-1200-a1b2"
+    [ "$status" -eq 0 ]
+    [[ "${lines[0]}" == local* ]]
+    [[ "${lines[0]}" == *"research.md"* ]]
+    [[ "${lines[1]}" == link* ]]
+    [[ "${lines[1]}" == *"API設計"* ]]
+}
+
+@test "docs browse: _generate_docs_listでsaved済みリンクはsavedタイプになる" {
+    source "$SCRIPT"
+    add_doc "20260404-1200-a1b2" "API設計" "https://example.com/api" "web"
+    update_saved_path "20260404-1200-a1b2" "https://example.com/api" "web-example.md"
+    mkdir -p "${DOCS_DIR}/20260404-1200-a1b2"
+    echo "# saved" > "${DOCS_DIR}/20260404-1200-a1b2/web-example.md"
+    run _generate_docs_list "20260404-1200-a1b2"
+    [[ "${lines[0]}" == local* ]]
+    [[ "${lines[1]}" == saved* ]]
+}

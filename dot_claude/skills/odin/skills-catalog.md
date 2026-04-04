@@ -32,6 +32,7 @@
 | odin-talk-propose | 複数アプローチの比較提案 | 課題・要件 | 比較表+推奨パターン |
 | odin-talk-review | 多角的コードレビュー（code-reviewer + security-reviewer + simplify + coderabbit + codex並列） | 変更差分 | レビュー結果（3段階分類） |
 | odin-talk-explain | 対象者レベル別の説明 | コードベース・成果物 | 説明レポート（4スタイル対応） |
+| odin-talk-triage | 雑な入力の解析・タスク分類・odin-board登録 | ユーザーの自由形式テキスト | odin-boardにタスク登録、investigate分類は即時実行 |
 
 ### auto系（自動補助）-- 7スキル
 

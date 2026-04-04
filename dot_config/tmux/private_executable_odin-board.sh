@@ -501,7 +501,7 @@ board_header() {
         esac
     done
     printf "Inbox(%d)  Human(%d)  Odin(%d)  Done(%d)\n" "$i" "$h" "$o" "$d"
-    echo "[d]委譲 [m]移動 [a]追加 [x]完了 [D]削除 [e]編集 [R]更新 [q]閉じる"
+    echo "[d]委譲 [m]移動 [a]追加 [x]完了 [D]削除 [e]編集 [o]Docs [R]更新 [q]閉じる"
 }
 
 # タスク一覧をfzf用のフォーマットで生成する
@@ -556,6 +556,7 @@ cmd_tui() {
             --bind "e:execute(${script_path} edit {2})+reload(${script_path} tui --list)" \
             --bind "D:execute(${script_path} _rm-interactive {2})+reload(${script_path} tui --list)" \
             --bind "enter:execute(${script_path} _jump-or-show {2})" \
+            --bind "o:execute(${script_path} docs browse {2})" \
             --bind "R:reload(${script_path} tui --list)" \
         || true
 }
@@ -931,8 +932,112 @@ Markdown形式で出力してください。" > "$output_file"
     echo "保存しました: ${filename}"
 }
 
+# fzf用ドキュメントリストを生成する（type\t表示テキスト\tパスorURL）
+# 使い方: _generate_docs_list <full-task-id>
+_generate_docs_list() {
+    local full_id="$1"
+    local docs_path="${DOCS_DIR}/${full_id}"
+
+    # ローカルファイル
+    if [[ -d "$docs_path" ]]; then
+        for f in "$docs_path"/*; do
+            [[ -f "$f" ]] || continue
+            local basename
+            basename="$(basename "$f")"
+            [[ "$basename" == "index.json" ]] && continue
+            printf "local\t* %s\t%s\n" "$basename" "$f"
+        done
+    fi
+
+    # 外部リンク
+    local index
+    index="$(_docs_index "$full_id")"
+    if [[ -f "$index" ]]; then
+        while IFS=$'\t' read -r title url type saved_path; do
+            local domain
+            domain="$(echo "$url" | sed -E 's|^https?://([^/]+).*|\1|; s|^(jira:.*)|\1|')"
+            local display="o ${title} (${domain})"
+            if [[ -n "$saved_path" ]]; then
+                printf "saved\t%s\t%s\n" "$display" "${docs_path}/${saved_path}"
+            else
+                printf "link\t%s\t%s\n" "$display" "$url"
+            fi
+        done < <(read_docs "$full_id")
+    fi
+}
+
 cmd_docs_browse() {
-    echo "未実装"
+    local id="${1:?エラー: タスクIDを指定してください}"
+    local file
+    file="$(find_task "$id")"
+    local full_id
+    full_id="$(read_field "$file" id)"
+    local title
+    title="$(read_field "$file" title)"
+    local short_id="${full_id##*-}"
+    local script_path
+    script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+
+    local list
+    list="$(_generate_docs_list "$full_id")"
+    if [[ -z "$list" ]]; then
+        echo "ドキュメントがありません"
+        return 0
+    fi
+
+    echo "$list" | \
+        fzf \
+            --ansi \
+            --header="[タスク: #${short_id} ${title}]
+---
+[Enter]開く [s]Save&翻訳 [Ctrl-Y]パスコピー [Esc]戻る" \
+            --reverse \
+            --delimiter=$'\t' \
+            --with-nth=2 \
+            --preview "${script_path} _docs-preview {1} {3}" \
+            --preview-window "right:45%:wrap" \
+            --bind "enter:execute(${script_path} _docs-open {1} {3})" \
+            --bind "s:execute(test {1} = link && ${script_path} docs save ${full_id} {3} || true)+reload(${script_path} _docs-generate-list ${full_id})" \
+            --bind "ctrl-y:execute-silent(echo -n {3} | pbcopy)" \
+        || true
+}
+
+cmd__docs_open() {
+    local type="$1" target="$2"
+    case "$type" in
+        local|saved)
+            if command -v glow &>/dev/null; then
+                glow -s dark -p "$target"
+            else
+                less "$target"
+            fi
+            ;;
+        link)
+            open "$target" 2>/dev/null || xdg-open "$target" 2>/dev/null || echo "URLを開けません: ${target}"
+            ;;
+    esac
+}
+
+cmd__docs_preview() {
+    local type="$1" target="$2"
+    case "$type" in
+        local|saved)
+            if command -v glow &>/dev/null; then
+                glow -s dark "$target"
+            else
+                cat "$target"
+            fi
+            ;;
+        link)
+            echo "外部リンク: ${target}"
+            echo ""
+            echo "[s] を押すとSave&翻訳でローカルに保存できます"
+            ;;
+    esac
+}
+
+cmd__docs_generate_list() {
+    _generate_docs_list "$1"
 }
 
 # 使い方を表示する
@@ -1027,6 +1132,15 @@ case "$cmd" in
         ;;
     _rm-interactive)
         cmd__rm_interactive "$@"
+        ;;
+    _docs-open)
+        cmd__docs_open "$@"
+        ;;
+    _docs-preview)
+        cmd__docs_preview "$@"
+        ;;
+    _docs-generate-list)
+        cmd__docs_generate_list "$@"
         ;;
     -h|--help|help|"")
         usage

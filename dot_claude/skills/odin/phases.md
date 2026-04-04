@@ -45,6 +45,18 @@
 - 調査結果はPhase 4のタスク分解で活用する
 - 調査不要な場合（品質チェック等の定型作業）はスキップする
 
+#### 収集5: odin-boardタスクID検出
+
+入力テキストの末尾に `odin-board-task: {id}` マーカーがあるか確認する。
+存在する場合:
+- `board_task_id` にIDを設定
+- `artifacts_dir` を `~/.local/share/odin-board/docs/{board_task_id}` に設定
+- マーカー行を入力テキストから除去（以降の処理に影響しないよう）
+
+存在しない場合:
+- `board_task_id` は空文字列
+- `artifacts_dir` は `.claude/artifacts`（従来通り）
+
 ### 完了チェックポイント（Phase 1）
 
 - 目的が1文で要約できること
