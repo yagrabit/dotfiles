@@ -382,6 +382,17 @@ EOF
 
 # --- rm テスト ---
 
+@test "rm: タスク削除時にdocsディレクトリも削除される" {
+    local file
+    file=$(create_test_task "20260404-1200-a1b2")
+    mkdir -p "${ODIN_BOARD_DIR}/docs/20260404-1200-a1b2"
+    echo '{"links":[]}' > "${ODIN_BOARD_DIR}/docs/20260404-1200-a1b2/index.json"
+    echo "# doc" > "${ODIN_BOARD_DIR}/docs/20260404-1200-a1b2/research.md"
+    run bash "$SCRIPT" rm "a1b2"
+    [ "$status" -eq 0 ]
+    [ ! -d "${ODIN_BOARD_DIR}/docs/20260404-1200-a1b2" ]
+}
+
 @test "rm: タスクファイルが削除される" {
     bash "$SCRIPT" add "削除テスト"
     local file
@@ -416,6 +427,36 @@ EOF
     run bash "$SCRIPT" status
     [ "$status" -eq 0 ]
     [ "$output" = "" ]
+}
+
+@test "status: アーカイブ時にdocsも移動される" {
+    source "$SCRIPT"
+    local id="20260404-1200-a1b2"
+    local file="${TASKS_DIR}/${id}.md"
+    create_test_task "$id"
+    write_field "$file" "status" "done"
+    # 31日前の日付を設定（macOS date）
+    local old_date
+    old_date="$(date -j -v-31d '+%Y-%m-%dT%H:%M:%S' 2>/dev/null || date -d '31 days ago' '+%Y-%m-%dT%H:%M:%S')"
+    write_field "$file" "updated" "$old_date"
+    # docsを作成
+    mkdir -p "${DOCS_DIR}/${id}"
+    echo "# doc" > "${DOCS_DIR}/${id}/research.md"
+    # statusを実行してアーカイブをトリガー
+    cmd_status >/dev/null
+    [ ! -d "${DOCS_DIR}/${id}" ]
+    [ -d "${ARCHIVE_DIR}/${id}" ]
+    [ -f "${ARCHIVE_DIR}/${id}/research.md" ]
+}
+
+@test "status: odin-paneがagentの場合はodinとしてカウントされる" {
+    source "$SCRIPT"
+    local file
+    file=$(create_test_task "20260404-1200-a1b2")
+    write_field "$file" "status" "odin"
+    write_field "$file" "odin-pane" "agent"
+    run cmd_status
+    [[ "$output" == *"O:1"* ]]
 }
 
 # --- usage テスト ---
@@ -595,4 +636,58 @@ EOF
     run bash "$SCRIPT" docs list "20260404-1200-a1b2"
     [ "$status" -eq 0 ]
     [[ "$output" == *"ドキュメントがありません"* ]]
+}
+
+# --- docs save テスト ---
+
+@test "docs save: URLを取得してローカルに保存される" {
+    source "$SCRIPT"
+    create_test_task "20260404-1200-a1b2"
+    add_doc "20260404-1200-a1b2" "テスト記事" "https://example.com/article" "web"
+    # モック化
+    _fetch_url() { echo "# Test Article"; echo ""; echo "Hello World"; }
+    claude() { cat; }
+    export -f _fetch_url claude
+    cmd_docs_save "a1b2" "https://example.com/article"
+    local docs_path="${DOCS_DIR}/20260404-1200-a1b2"
+    local count
+    count=$(find "$docs_path" -name "web-example-com-*.md" -type f | wc -l | tr -d ' ')
+    [ "$count" -eq 1 ]
+    # index.jsonのsaved_pathが更新されたことを確認
+    local index="${DOCS_DIR}/20260404-1200-a1b2/index.json"
+    run jq -r '.links[0].saved_path' "$index"
+    [[ "$output" == web-example-com-*.md ]]
+}
+
+@test "docs save: 未登録URLは自動でadd_docされる" {
+    source "$SCRIPT"
+    mkdir -p "${DOCS_DIR}/20260404-1200-a1b2"
+    echo '{"links":[]}' > "${DOCS_DIR}/20260404-1200-a1b2/index.json"
+    _fetch_url() { echo "# Content"; }
+    claude() { cat; }
+    export -f _fetch_url claude
+    # find_taskのためにテストタスクが必要
+    create_test_task "20260404-1200-a1b2"
+    cmd_docs_save "a1b2" "https://newsite.com/page"
+    local index="${DOCS_DIR}/20260404-1200-a1b2/index.json"
+    run jq '.links | length' "$index"
+    [ "$output" = "1" ]
+    run jq -r '.links[0].url' "$index"
+    [ "$output" = "https://newsite.com/page" ]
+}
+
+@test "docs save: 保存されたファイルにメタデータヘッダーが含まれる" {
+    source "$SCRIPT"
+    create_test_task "20260404-1200-a1b2"
+    add_doc "20260404-1200-a1b2" "テスト" "https://example.com/test" "web"
+    _fetch_url() { echo "Test content"; }
+    claude() { cat; }
+    export -f _fetch_url claude
+    cmd_docs_save "a1b2" "https://example.com/test"
+    local docs_path="${DOCS_DIR}/20260404-1200-a1b2"
+    local saved_file
+    saved_file=$(find "$docs_path" -name "web-example-com-*.md" -type f | head -1)
+    [ -f "$saved_file" ]
+    run head -3 "$saved_file"
+    [[ "$output" == *"元URL: https://example.com/test"* ]]
 }

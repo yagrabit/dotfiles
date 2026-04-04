@@ -359,6 +359,13 @@ cmd_rm() {
     file="$(find_task "$id")"
     local title
     title="$(read_field "$file" title)"
+    # docsディレクトリの削除
+    local full_id
+    full_id="$(read_field "$file" id)"
+    local docs_path="${DOCS_DIR}/${full_id}"
+    if [[ -d "$docs_path" ]]; then
+        rm -rf "$docs_path"
+    fi
     rm "$file"
     echo "タスクを削除しました: #${id##*-} ${title}"
 }
@@ -386,7 +393,10 @@ cmd_status() {
                 # odinペインの孤児検出
                 local pane
                 pane="$(read_field "$file" odin-pane)"
-                if [[ -n "$pane" ]] && ! tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -q "^${pane}$"; then
+                if [[ "$pane" == "agent" ]]; then
+                    # サブエージェント実行中: 孤児検出をスキップ
+                    o=$((o + 1))
+                elif [[ -n "$pane" ]] && ! tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -q "^${pane}$"; then
                     # ペインが消滅している場合、humanに戻す
                     write_field "$file" "status" "human"
                     write_field "$file" "odin-pane" '""'
@@ -432,6 +442,12 @@ _archive_old_tasks() {
         if (( now_epoch - updated_epoch > threshold )); then
             mkdir -p "$ARCHIVE_DIR"
             mv "$file" "$ARCHIVE_DIR/"
+            # docsディレクトリも移動
+            local task_id
+            task_id="$(basename "$file" .md)"
+            if [[ -d "${DOCS_DIR}/${task_id}" ]]; then
+                mv "${DOCS_DIR}/${task_id}" "${ARCHIVE_DIR}/${task_id}"
+            fi
         fi
     done
 }
@@ -721,6 +737,9 @@ cmd_dispatch() {
 /odin ${title}
 
 ${body}
+
+---
+odin-board-task: ${id}
 PROMPT_EOF
 
     # ランチャースクリプト（変数展開をエスケープして安全に生成）
@@ -846,8 +865,70 @@ cmd_docs_list() {
     fi
 }
 
+# URLからHTMLを取得してMarkdownに変換する
+# 使い方: _fetch_url <url>
+_fetch_url() {
+    local url="$1"
+    local content=""
+    if command -v pandoc &>/dev/null; then
+        content=$(curl -sL --max-time 30 "$url" | pandoc -f html -t markdown --wrap=none 2>/dev/null)
+    fi
+    if [[ -z "$content" ]]; then
+        content=$(curl -sL --max-time 30 "$url" | LC_ALL=C sed 's/<[^>]*>//g' | head -500)
+    fi
+    if [[ -z "$content" ]]; then
+        echo "エラー: コンテンツを取得できませんでした: ${url}" >&2
+        return 1
+    fi
+    echo "$content"
+}
+
 cmd_docs_save() {
-    echo "未実装"
+    local id="${1:?エラー: タスクIDを指定してください}"
+    local url="${2:?エラー: URLを指定してください}"
+    local file
+    file="$(find_task "$id")"
+    local full_id
+    full_id="$(read_field "$file" id)"
+    local docs_path="${DOCS_DIR}/${full_id}"
+    mkdir -p "$docs_path"
+
+    # URLが未登録なら自動追加
+    local index
+    index="$(_docs_index "$full_id")"
+    if [[ ! -f "$index" ]] || ! jq -e --arg u "$url" '.links[] | select(.url == $u)' "$index" >/dev/null 2>&1; then
+        local auto_title
+        auto_title="$(echo "$url" | sed -E 's|^https?://([^/]+).*|\1|')"
+        add_doc "$full_id" "$auto_title" "$url"
+    fi
+
+    echo "コンテンツを取得中: ${url}"
+    local content
+    content="$(_fetch_url "$url")" || return 1
+
+    local domain
+    domain="$(echo "$url" | sed -E 's|^https?://([^/]+).*|\1|' | sed 's/[^a-zA-Z0-9-]/-/g')"
+    local timestamp
+    timestamp="$(date '+%Y%m%d-%H%M')"
+    local filename="web-${domain}-${timestamp}.md"
+    local output_file="${docs_path}/${filename}"
+
+    if command -v claude &>/dev/null; then
+        echo "翻訳・要約中..."
+        echo "$content" | claude -p "以下のWebページの内容を日本語に翻訳してください。
+冒頭に「## サマリー」として3-5行の要約を付け、その後「## 本文」として翻訳全文を出力してください。
+Markdown形式で出力してください。" > "$output_file"
+    else
+        echo "$content" > "$output_file"
+    fi
+
+    {
+        printf '# %s\n\n> 元URL: %s\n> 取得日: %s\n\n' "$domain" "$url" "$(date '+%Y-%m-%d')"
+        cat "$output_file"
+    } > "${output_file}.tmp" && mv "${output_file}.tmp" "$output_file"
+
+    update_saved_path "$full_id" "$url" "$filename"
+    echo "保存しました: ${filename}"
 }
 
 cmd_docs_browse() {
