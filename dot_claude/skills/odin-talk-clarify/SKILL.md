@@ -130,11 +130,20 @@ odinコンテキストJSONの例:
 
 1. `.claude/artifacts/` ディレクトリが存在しなければ作成する
 2. 現在時刻を取得し、`yyyyMMdd-HHmm` 形式のタイムスタンプを生成する
-3. 以下のフォーマットで明確化ドキュメントを出力する
+3. 以下のフォーマットで明確化ドキュメントを出力する（先頭にodin_coherence frontmatterを付与する。`depends_on` には入力として使用したresearch成果物のidがあれば記載する）
 
 出力先: `.claude/artifacts/clarified-{yyyyMMdd-HHmm}.md`
 
 ```
+---
+odin_coherence:
+  id: "clarified-{yyyyMMdd-HHmm}"
+  kind: "clarified"
+  depends_on:
+    - "{入力で使用したresearch成果物のid（あれば）例: research-20260320-1430}"
+  updated: "{yyyy-MM-ddTHH:mm}"
+---
+
 # 要件明確化ドキュメント
 
 作成日: {yyyy-MM-dd HH:mm}

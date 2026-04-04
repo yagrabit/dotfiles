@@ -140,11 +140,20 @@ requirements-analystサブエージェントに構造化した要件を渡し、
 
 1. `.claude/artifacts/` ディレクトリが存在しなければ作成する
 2. 現在時刻を取得し、`yyyyMMdd-HHmm` 形式のタイムスタンプを生成する
-3. 以下のフォーマットで要件定義書を出力する
+3. 以下のフォーマットで要件定義書を出力する（先頭にodin_coherence frontmatterを付与する。`depends_on` には入力として使用したresearch成果物のidを記載する）
 
 出力先: `.claude/artifacts/requirements-{yyyyMMdd-HHmm}.md`
 
 ```
+---
+odin_coherence:
+  id: "requirements-{yyyyMMdd-HHmm}"
+  kind: "requirements"
+  depends_on:
+    - "{入力で使用したresearch成果物のid 例: research-20260320-1430}"
+  updated: "{yyyy-MM-ddTHH:mm}"
+---
+
 # 要件定義書
 
 作成日: {yyyy-MM-dd HH:mm}

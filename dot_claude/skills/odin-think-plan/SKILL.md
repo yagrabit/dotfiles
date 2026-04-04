@@ -160,11 +160,20 @@ PRサイズ考慮のタスク分解ルール:
 
 1. `.claude/artifacts/` ディレクトリが存在しなければ作成する
 2. 現在時刻を取得し、`yyyyMMdd-HHmm` 形式のタイムスタンプを生成する
-3. 以下のフォーマットで実装計画を出力する
+3. 以下のフォーマットで実装計画を出力する（先頭にodin_coherence frontmatterを付与する。`depends_on` には入力として使用したdesign成果物のidを記載する）
 
 出力先: `.claude/artifacts/plan-{yyyyMMdd-HHmm}.md`
 
 ```
+---
+odin_coherence:
+  id: "plan-{yyyyMMdd-HHmm}"
+  kind: "plan"
+  depends_on:
+    - "{入力で使用したdesign成果物のid 例: design-20260320-1600}"
+  updated: "{yyyy-MM-ddTHH:mm}"
+---
+
 # 実装計画
 
 作成日: {yyyy-MM-dd HH:mm}

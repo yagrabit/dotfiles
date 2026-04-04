@@ -18,7 +18,7 @@ superpowersプラグインが必須（dispatching-parallel-agents / systematic-d
 
 ## 配下スキル
 
-→ [skills-catalog.md](skills-catalog.md) 参照（think系7 / do系7 / talk系4 / auto系7 / codex系1 / learn系2 / design系3）
+→ [skills-catalog.md](skills-catalog.md) 参照（think系7 / do系7 / talk系4 / auto系8 / codex系1 / learn系2 / design系3）
 
 ## 鉄則
 
