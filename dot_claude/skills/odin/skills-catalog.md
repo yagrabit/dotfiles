@@ -1,4 +1,4 @@
-## 配下スキル一覧（全32スキル）
+## 配下スキル一覧（全35スキル）
 
 ### think系（考える）-- 7スキル
 
@@ -67,3 +67,11 @@
 | odin-design-dissect | WebサイトURLからデザインシステムを抽出・分析（learn/auditモード） | WebサイトURL | dissect-*.md / audit-*.md |
 | odin-design-generate | 分析結果からDS生成（HTMLビジュアルガイド + tokens.json + design.md）、対話的改善 | dissect-*.md / audit-*.md | design-system/ ディレクトリ一式 |
 | odin-design-knowledge | デザイン分析ナレッジの検索・比較・統計・学習進捗管理 | 検索クエリ/比較対象 | 検索結果 / 比較表 / 統計 / 進捗レポート |
+
+### ux系（デザイン制作）-- 3スキル
+
+| スキル名 | 役割 | 主な入力 | 主な出力 |
+|----------|------|---------|---------|
+| odin-ux-design | Gemini AIによるロゴ・CIPモックアップ・アイコン生成（55スタイル） | ブランド名・スタイル・業界 | 画像ファイル / HTMLプレゼン |
+| odin-ux-banner | HTML/CSSバナー生成（22スタイル、SNS・広告・Web・印刷対応） | 目的・プラットフォーム・スタイル | HTMLバナーファイル |
+| odin-ux-slides | HTMLプレゼンテーション生成（Chart.js・コピーライティング公式・15デッキ戦略） | トピック・枚数・目的 | HTMLスライドデッキ |

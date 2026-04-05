@@ -1,5 +1,5 @@
 ---
-name: ux-5-design
+name: odin-ux-design
 description: "ロゴ生成（55スタイル）・CIPモックアップ・アイコン・ソーシャルフォト生成。Gemini AIを活用した総合デザインスキル"
 user-invocable: true
 allowed-tools: Bash, Read, Write, AskUserQuestion
@@ -45,20 +45,15 @@ allowed-tools: Bash, Read, Write, AskUserQuestion
 pip install google-genai pillow
 ```
 
-## スキル名マッピング
+## 関連スキル
 
-関連スキルとの連携:
-- `ui-ux-pro-max` / `ux-3-core` → UI/UXデザインインテリジェンス
-- `ux-4-styling` → shadcn/ui + Tailwind CSSスタイリング
-- `ux-2-tokens` → デザイントークン設計
-- `ux-6-banner` → バナーデザイン
-- `ux-1-brand` → ブランドアイデンティティ管理
-- `ux-7-slides` → HTMLプレゼンテーション
+- `odin-ux-banner` → バナーデザイン
+- `odin-ux-slides` → HTMLプレゼンテーション
 
 ## スクリプトパス
 
 全スクリプトはこのスキルディレクトリ内にあります:
-`~/.claude/skills/ux-5-design/scripts/`
+`~/.claude/skills/odin-ux-design/scripts/`
 
 ---
 
@@ -69,15 +64,15 @@ pip install google-genai pillow
 ### ロゴ: デザインブリーフ生成
 
 ```bash
-python3 ~/.claude/skills/ux-5-design/scripts/logo/search.py "tech startup modern" --design-brief -p "BrandName"
+python3 ~/.claude/skills/odin-ux-design/scripts/logo/search.py "tech startup modern" --design-brief -p "BrandName"
 ```
 
 ### ロゴ: スタイル/カラー/業界検索
 
 ```bash
-python3 ~/.claude/skills/ux-5-design/scripts/logo/search.py "minimalist clean" --domain style
-python3 ~/.claude/skills/ux-5-design/scripts/logo/search.py "tech professional" --domain color
-python3 ~/.claude/skills/ux-5-design/scripts/logo/search.py "healthcare medical" --domain industry
+python3 ~/.claude/skills/odin-ux-design/scripts/logo/search.py "minimalist clean" --domain style
+python3 ~/.claude/skills/odin-ux-design/scripts/logo/search.py "tech professional" --domain color
+python3 ~/.claude/skills/odin-ux-design/scripts/logo/search.py "healthcare medical" --domain industry
 ```
 
 ### ロゴ: AI生成
@@ -85,13 +80,13 @@ python3 ~/.claude/skills/ux-5-design/scripts/logo/search.py "healthcare medical"
 出力ロゴ画像は白背景で生成すること。
 
 ```bash
-python3 ~/.claude/skills/ux-5-design/scripts/logo/generate.py --brand "TechFlow" --style minimalist --industry tech
-python3 ~/.claude/skills/ux-5-design/scripts/logo/generate.py --prompt "coffee shop vintage badge" --style vintage
+python3 ~/.claude/skills/odin-ux-design/scripts/logo/generate.py --brand "TechFlow" --style minimalist --industry tech
+python3 ~/.claude/skills/odin-ux-design/scripts/logo/generate.py --prompt "coffee shop vintage badge" --style vintage
 ```
 
 スクリプトが失敗した場合は直接修正を試みること。
 
-生成後、AskUserQuestionでHTMLプレビューを作成するか確認する。希望する場合は `/ux-3-core` でギャラリーを作成。
+生成後、AskUserQuestionでHTMLプレビューを作成するか確認する。
 
 ---
 
@@ -102,32 +97,32 @@ python3 ~/.claude/skills/ux-5-design/scripts/logo/generate.py --prompt "coffee s
 ### CIP: ブリーフ生成
 
 ```bash
-python3 ~/.claude/skills/ux-5-design/scripts/cip/search.py "tech startup" --cip-brief -b "BrandName"
+python3 ~/.claude/skills/odin-ux-design/scripts/cip/search.py "tech startup" --cip-brief -b "BrandName"
 ```
 
 ### CIP: ドメイン検索
 
 ```bash
-python3 ~/.claude/skills/ux-5-design/scripts/cip/search.py "business card letterhead" --domain deliverable
-python3 ~/.claude/skills/ux-5-design/scripts/cip/search.py "luxury premium elegant" --domain style
-python3 ~/.claude/skills/ux-5-design/scripts/cip/search.py "hospitality hotel" --domain industry
-python3 ~/.claude/skills/ux-5-design/scripts/cip/search.py "office reception" --domain mockup
+python3 ~/.claude/skills/odin-ux-design/scripts/cip/search.py "business card letterhead" --domain deliverable
+python3 ~/.claude/skills/odin-ux-design/scripts/cip/search.py "luxury premium elegant" --domain style
+python3 ~/.claude/skills/odin-ux-design/scripts/cip/search.py "hospitality hotel" --domain industry
+python3 ~/.claude/skills/odin-ux-design/scripts/cip/search.py "office reception" --domain mockup
 ```
 
 ### CIP: モックアップ生成
 
 ```bash
 # ロゴ付き（推奨）
-python3 ~/.claude/skills/ux-5-design/scripts/cip/generate.py --brand "TopGroup" --logo /path/to/logo.png --deliverable "business card" --industry "consulting"
+python3 ~/.claude/skills/odin-ux-design/scripts/cip/generate.py --brand "TopGroup" --logo /path/to/logo.png --deliverable "business card" --industry "consulting"
 
 # フルCIPセット
-python3 ~/.claude/skills/ux-5-design/scripts/cip/generate.py --brand "TopGroup" --logo /path/to/logo.png --industry "consulting" --set
+python3 ~/.claude/skills/odin-ux-design/scripts/cip/generate.py --brand "TopGroup" --logo /path/to/logo.png --industry "consulting" --set
 
 # Proモデル（4Kテキスト品質）
-python3 ~/.claude/skills/ux-5-design/scripts/cip/generate.py --brand "TopGroup" --logo logo.png --deliverable "business card" --model pro
+python3 ~/.claude/skills/odin-ux-design/scripts/cip/generate.py --brand "TopGroup" --logo logo.png --deliverable "business card" --model pro
 
 # ロゴなし
-python3 ~/.claude/skills/ux-5-design/scripts/cip/generate.py --brand "TechFlow" --deliverable "business card" --no-logo-prompt
+python3 ~/.claude/skills/odin-ux-design/scripts/cip/generate.py --brand "TechFlow" --deliverable "business card" --no-logo-prompt
 ```
 
 モデル: `flash`（デフォルト、`gemini-2.5-flash-image`）、`pro`（`gemini-3-pro-image-preview`）
@@ -135,7 +130,7 @@ python3 ~/.claude/skills/ux-5-design/scripts/cip/generate.py --brand "TechFlow" 
 ### CIP: HTMLプレゼンテーション生成
 
 ```bash
-python3 ~/.claude/skills/ux-5-design/scripts/cip/render-html.py --brand "TopGroup" --industry "consulting" --images /path/to/cip-output
+python3 ~/.claude/skills/odin-ux-design/scripts/cip/render-html.py --brand "TopGroup" --industry "consulting" --images /path/to/cip-output
 ```
 
 ロゴが未作成の場合は、先にロゴデザインセクションで生成すること。
@@ -149,21 +144,21 @@ python3 ~/.claude/skills/ux-5-design/scripts/cip/render-html.py --brand "TopGrou
 ### アイコン: 単体生成
 
 ```bash
-python3 ~/.claude/skills/ux-5-design/scripts/icon/generate.py --prompt "settings gear" --style outlined
-python3 ~/.claude/skills/ux-5-design/scripts/icon/generate.py --prompt "shopping cart" --style filled --color "#6366F1"
-python3 ~/.claude/skills/ux-5-design/scripts/icon/generate.py --name "dashboard" --category navigation --style duotone
+python3 ~/.claude/skills/odin-ux-design/scripts/icon/generate.py --prompt "settings gear" --style outlined
+python3 ~/.claude/skills/odin-ux-design/scripts/icon/generate.py --prompt "shopping cart" --style filled --color "#6366F1"
+python3 ~/.claude/skills/odin-ux-design/scripts/icon/generate.py --name "dashboard" --category navigation --style duotone
 ```
 
 ### アイコン: バッチ生成
 
 ```bash
-python3 ~/.claude/skills/ux-5-design/scripts/icon/generate.py --prompt "cloud upload" --batch 4 --output-dir ./icons
+python3 ~/.claude/skills/odin-ux-design/scripts/icon/generate.py --prompt "cloud upload" --batch 4 --output-dir ./icons
 ```
 
 ### アイコン: マルチサイズ出力
 
 ```bash
-python3 ~/.claude/skills/ux-5-design/scripts/icon/generate.py --prompt "user profile" --sizes "16,24,32,48" --output-dir ./icons
+python3 ~/.claude/skills/odin-ux-design/scripts/icon/generate.py --prompt "user profile" --sizes "16,24,32,48" --output-dir ./icons
 ```
 
 ### アイコン: API不要モード
@@ -172,7 +167,7 @@ APIキー未設定時でも、`--no-api` フラグでプロンプト情報をJSO
 このJSONをClaude等のLLMに渡してSVGを生成させることが可能です。
 
 ```bash
-python3 ~/.claude/skills/ux-5-design/scripts/icon/generate.py --prompt "settings gear" --style outlined --no-api
+python3 ~/.claude/skills/odin-ux-design/scripts/icon/generate.py --prompt "settings gear" --style outlined --no-api
 ```
 
 ### アイコン: 主要スタイル
@@ -201,9 +196,8 @@ python3 ~/.claude/skills/ux-5-design/scripts/icon/generate.py --prompt "settings
 
 ### デザインシステム構築
 
-1. ブランド（`/ux-1-brand`）→ カラー、タイポグラフィ、ボイス定義
-2. トークン（`/ux-2-tokens`）→ セマンティックトークン層作成
-3. 実装（`/ux-4-styling`）→ Tailwind、shadcn/ui設定
+1. `odin-design-dissect` → 既存サイトからデザイントークン抽出
+2. `odin-design-generate` → tokens.json + ビジュアルガイド生成
 
 ## リファレンス
 

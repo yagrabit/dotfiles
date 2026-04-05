@@ -156,7 +156,7 @@ AskUserQuestionで以下の選択肢を提示する:
 - 実装・テスト・コミット・PR系 → do系スキル
 - ヒアリング・提案・レビュー・説明系 → talk系スキル
 - 品質チェック・レビュー・検証 → auto系スキル（PostToolUseフックが自動リマインド。条件はexecution-loop § 5-3参照）
-- UI/Webデザイン系 → ux-3-core（コアインテリジェンス）を起点にux-2-tokens, ux-4-stylingを連携
+- UI/Webデザイン系 → design系（dissect/generate/knowledge）+ ux系（odin-ux-design/banner/slides）
 
 マッピングできないタスクがある場合:
 - Skillツールで `odin-auto-evolve` を実行し、不足スキルを生成する

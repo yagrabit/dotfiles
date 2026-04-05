@@ -6,6 +6,3 @@
 #   [data]
 #   codex_enabled = true
 codex_enabled: false
-
-# UX系スキルが参照する外部リポジトリのパス
-ux_skill_repo: "ghq/github.com/yagrabit/ui-ux-pro-max-skill"
