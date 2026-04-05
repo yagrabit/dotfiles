@@ -1,4 +1,4 @@
-## 配下スキル一覧（全35スキル）
+## 配下スキル一覧（全37スキル）
 
 ### think系（考える）-- 7スキル
 
@@ -24,7 +24,7 @@
 | odin-do-merge | PRマージ・クリーンアップ | マージ可能なPR | マージ済みPR |
 | odin-do-qa-execute | QA試験の実行とエビデンス収集 | qa-test-items-*.md + テスト対象URL | qa-report-*.md + screenshots/ |
 
-### talk系（伝える）-- 4スキル
+### talk系（伝える）-- 5スキル
 
 | スキル名 | 役割 | 主な入力 | 主な出力 |
 |----------|------|---------|---------|
@@ -40,8 +40,8 @@
 |----------|------|--------------|
 | odin-auto-coherence | 成果物間の整合性追跡（依存グラフ構築・信頼度スコア算出・影響分析） | Phase 5進入前のゲートチェック（scan/validate/impact） |
 | odin-auto-quality | 品質チェック一括実行（lint/型/テスト/セキュリティ） | do系スキル完了後（フック自動リマインド） |
-| odin-auto-review | 軽量セルフレビュー（code-reviewer + security-reviewer + simplify + coderabbit + codex並列） | 全実装完了時（フック自動リマインド。次Waveにdo-prがあればスキップ） |
-| odin-auto-peer-review | ドキュメント向けピアレビュー（バイアスなし独立レビューア→修正→再評価の反復ループ） | think系(design/requirements/plan)完了後（フック自動リマインド） |
+| odin-auto-review | 軽量セルフレビュー（code-reviewer + security-reviewer + simplify + coderabbit + codex並列） | do系タスク完了後の必須チェーン。talk-reviewとの使い分け: auto-reviewは軽量チェック、talk-reviewは全実装完了後のフルレビュー |
+| odin-auto-peer-review | ドキュメント向けピアレビュー（バイアスなし独立レビューア→修正→再評価の反復ループ） | think系（research/requirements/design/plan/investigate/analyze）完了後の必須チェーン |
 | odin-auto-verify | 完了前検証（証拠付き） | タスク完了宣言前（フック自動リマインド） |
 | odin-auto-evolve | 自己進化（不足スキルの生成） | タスク分解でマッピング不可時 |
 | odin-auto-improve | WebSearch+メタ認知による自己改善 | インサイト蓄積後、手動起動 |
@@ -67,6 +67,12 @@
 | odin-design-dissect | WebサイトURLからデザインシステムを抽出・分析（learn/auditモード） | WebサイトURL | dissect-*.md / audit-*.md |
 | odin-design-generate | 分析結果からDS生成（HTMLビジュアルガイド + tokens.json + DESIGN.md）、対話的改善 | dissect-*.md / audit-*.md | design-system/ ディレクトリ一式 |
 | odin-design-knowledge | デザイン分析ナレッジの検索・比較・統計・学習進捗管理 | 検索クエリ/比較対象 | 検索結果 / 比較表 / 統計 / 進捗レポート |
+
+### knowledge系（知識管理）-- 1スキル
+
+| スキル名 | 役割 | 主な入力 | 主な出力 |
+|----------|------|---------|---------|
+| odin-knowledge | 永続ナレッジ���の管理（ingest/query/lint） | 成果物・テキスト・URL / 質問 / なし | ~/.claude/knowledge/*.md / 回答 / Lintレポート |
 
 ### ux系（デザイン制作）-- 3スキル
 
