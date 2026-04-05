@@ -31,7 +31,7 @@ Phase 2: 深掘りヒアリング
     3. おまかせ（まずリロード更新で始める）」
   A2: 1
 
-Phase 3: 理解確認
+Phase 3: 理解要約（自動進行）
   「こう理解しました:
     [目的] アプリ内通知機能（ベルアイコン+ドロップダウン）を追加する
     [成果物] 通知API、通知UIコンポーネント、テスト
@@ -40,31 +40,33 @@ Phase 3: 理解確認
       1. コードベース調査
       2. 要件整理・設計
       3. TDDで実装
-      4. 品質チェック・レビュー
+      4. 品質チェック・レビュー（Codex含む）
       5. コミット・PR作成
     [使用するodinスキル]
-      research, requirements, design, plan, implement, test, auto-quality, auto-review, commit, pr」
-  → ユーザー承認
+      research, requirements, design, plan, implement, test, talk-review, commit, pr」
+  → 承認不要、自動的にPhase 4へ
 
-Phase 4: タスク分解・計画
+Phase 4: タスク分解・計画（自動進行）
   Wave 1: T-01 [research] コードベース調査
   Wave 2: T-02 [requirements] 通知機能の要件整理
           T-03 [design] 設計ドキュメント作成
+          （各成果物にauto-peer-review必須）
   Wave 3: T-04 [plan] タスク分解・実装計画
+          （auto-peer-review必須）
   Wave 4: T-05 [implement] 通知API実装(TDD)
           T-06 [implement] 通知UIコンポーネント実装(TDD)
-  Wave 5: T-07 [auto-quality] 品質チェック(--fix)
-          T-08 [auto-review] セルフレビュー
-  Wave 6: T-09 [commit] コミット
-          T-10 [pr] PR作成
-  → ユーザー承認
+          （各タスクにauto-quality + simplify + auto-verify必須）
+  Wave 5: T-07 [talk-review] フルレビュー（Codex含むクロスモデルレビュー）
+  Wave 6: T-08 [commit] コミット
+          T-09 [pr] PR作成
+  → 承認不要、自動的にPhase 5へ
 
-Phase 5: 実行ループ
-  Wave 1: research実行 → research-20260320-1430.md 出力
-  Wave 2: requirements + design 実行 → 成果物出力
-  Wave 3: plan実行 → plan-20260320-1500.md 出力
-  Wave 4: implement(API) + implement(UI) 並列実行
-  Wave 5: auto-quality(PASS) + auto-review(指摘0件)
+Phase 5: 実行ループ（自律実行）
+  Wave 1: research実行 → research-20260320-1430.md → auto-peer-review(PASS)
+  Wave 2: requirements + design 実行 → 成果物出力 → auto-peer-review(PASS)
+  Wave 3: plan実行 → plan-20260320-1500.md → auto-peer-review(PASS)
+  Wave 4: implement(API) + implement(UI) 並列実行 → auto-quality(PASS) + auto-verify(PASS)
+  Wave 5: talk-review(Codex含む) → 指摘0件
   Wave 6: commit + pr 実行 → PR #45 作成
 
 Phase 6: 完了報告
@@ -85,19 +87,19 @@ Phase 1: 初期入力分析
 
 Phase 2: スキップ（不足情報なし）
 
-Phase 3: 理解確認
+Phase 3: 理解要約（自動進行）
   「こう理解しました:
     [目的] ログインページの "Cannot read properties of undefined" エラーを修正する
     [成果物] バグ修正コミット
-    [アプローチ] 原因調査 → 再現テスト作成 → 修正 → コミット」
-  → ユーザー承認
+    [アプローチ] 原因調査 → 再現テスト作成 → 修正 → レビュー → コミット」
+  → 承認不要、自動的にPhase 4へ
 
-Phase 4: 計画
+Phase 4: 計画（自動進行）
   Wave 1: T-01 [investigate] エラー原因調査
   Wave 2: T-02 [implement] 再現テスト + 修正（TDD）
-  Wave 3: T-03 [auto-quality] 品質チェック
-  Wave 4: T-04 [commit] コミット
-  → ユーザー承認
+          （auto-quality + talk-review + auto-verify 必須チェーン）
+  Wave 3: T-03 [commit] コミット
+  → 承認不要、自動的にPhase 5へ
 
 Phase 5-6: 実行・完了
 ```
@@ -115,7 +117,7 @@ Phase 2: スキップ
 
 Phase 3: スキップ（単一スキル、Phase 3スキップ条件充足）
 
-Phase 4: スキップ（Phase 4ゲートスキップ条件充足）
+Phase 4: スキップ（単一スキルのため計画不要）
 
 Phase 5: 実行
   auto-quality実行 → 結果表示
