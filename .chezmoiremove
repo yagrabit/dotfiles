@@ -65,6 +65,10 @@
 .config/karabiner
 .config/karabiner/assets/complex_modifications
 
+# pr系スキルから数字を除去（2026-04-05）
+.claude/skills/pr-1-worktree
+.claude/skills/pr-5-coderabbit-fix
+
 # ux系スキル整理・リネーム（2026-04-05）
 .claude/skills/ux-1-brand
 .claude/skills/ux-2-tokens
@@ -73,3 +77,6 @@
 .claude/skills/ux-5-design
 .claude/skills/ux-6-banner
 .claude/skills/ux-7-slides
+.claude/skills/pr-coderabbit-fix/SKILL.md
+.claude/skills/pr-worktree/SKILL.md
+.claude/skills/pr-worktree/scripts/create-pr-worktree.sh

@@ -111,13 +111,13 @@ odin-auto-improveのステップ0で以下のように参照される:
 
 ```
 ステップ1: ヒアリング
-  内容: pr-5-coderabbit-fixに修正後の自動返信機能がない
+  内容: pr-coderabbit-fixに修正後の自動返信機能がない
   タグ: [スキル品質]
   → ユーザー確認OK
 
 ステップ2: insightsファイルへの記録
   → .claude/artifacts/insights-20260328.md に追記
-  エントリ: "14:30 [スキル品質] pr-5-coderabbit-fixに修正後の自動コメント返信機能を追加すべき"
+  エントリ: "14:30 [スキル品質] pr-coderabbit-fixに修正後の自動コメント返信機能を追加すべき"
 
 ステップ3: 記録完了報告
   → 「記録しました。次回odin-auto-improve実行時に自動参照されます」
