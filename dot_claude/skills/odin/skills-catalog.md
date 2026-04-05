@@ -72,7 +72,7 @@
 
 | スキル名 | 役割 | 主な入力 | 主な出力 |
 |----------|------|---------|---------|
-| odin-knowledge | 永続ナレッジ���の管理（ingest/query/lint） | 成果物・テキスト・URL / 質問 / なし | ~/.claude/knowledge/*.md / 回答 / Lintレポート |
+| odin-knowledge | 永続ナレッジベースの管理（ingest/query/lint） | 成果物・テキスト・URL / 質問 / なし | ~/.claude/knowledge/*.md / 回答 / Lintレポート |
 
 ### ux系（デザイン制作）-- 3スキル
 

@@ -28,42 +28,63 @@ fi
 
 # リマインド不要なスキルを除外（auto系自身、外部プラグイン、汎用ツール等）
 # do-prはtalk-review内包、do-mergeは終端操作のためスキップ
+# auto-peer-review / talk-review はCodexレビューをトリガーするため除外しない
 case "$skill_name" in
+  odin-auto-peer-review|odin-talk-review)
+    # 後続のcase文でCodexレビューをトリガーする
+    ;;
   odin-auto-*|simplify|codex:*|coderabbit:*|superpowers:*|odin-do-pr|odin-do-merge)
     exit 0
     ;;
 esac
 
-# do系スキル完了後のリマインド
+# do系スキル完了後の必須チェーン（正本: execution-loop.md § 5-3）
 case "$skill_name" in
   odin-do-implement|odin-do-refactor)
-    echo "⚠️ [§5-3 auto-insert] ${skill_name}完了。ユーザーへの報告・質問の前に以下を順番に実行すること:"
+    echo "⚠️ [§5-3 必須チェーン] ${skill_name}完了。ユーザーへの報告・質問の前に以下を順番に実行すること（省略禁止）:"
     echo "  1. Skill(odin-auto-quality) — --fix付き"
     echo "  2. Skill(simplify) — AI生成コードの冗長性除去"
-    echo "  3. Skill(odin-auto-review) — 全実装完了時のみ（次WaveにDo-PRがあればスキップ）"
-    echo "  4. Skill(odin-auto-verify) — タスク完了宣言前"
+    echo "  3. Skill(odin-auto-verify) — タスク完了宣言前"
+    echo "  ※ 全do系タスク完了後には Skill(odin-talk-review) を必ず実行すること（Codex含むクロスモデルレビュー）"
     exit 0
     ;;
   odin-do-test)
-    echo "⚠️ [§5-3 auto-insert] ${skill_name}完了。ユーザーへの報告・質問の前に以下を順番に実行すること:"
+    echo "⚠️ [§5-3 必須チェーン] ${skill_name}完了。ユーザーへの報告・質問の前に以下を順番に実行すること（省略禁止）:"
     echo "  1. Skill(odin-auto-quality) — --fix付き"
-    echo "  2. Skill(odin-auto-review) — 全実装完了時のみ（次WaveにDo-PRがあればスキップ）"
+    echo "  2. Skill(simplify) — AI生成コードの冗長性除去"
     echo "  3. Skill(odin-auto-verify) — タスク完了宣言前"
     exit 0
     ;;
   odin-do-commit|odin-do-qa-execute)
-    echo "⚠️ [§5-3 auto-insert] ${skill_name}完了。ユーザーへの報告・質問の前に以下を実行すること:"
+    echo "⚠️ [§5-3 必須チェーン] ${skill_name}完了。ユーザーへの報告・質問の前に以下を実行すること（省略禁止）:"
     echo "  1. Skill(odin-auto-quality) — --fix付き"
     echo "  2. Skill(odin-auto-verify) — タスク完了宣言前"
     exit 0
     ;;
 esac
 
-# think系スキル（design/requirements/plan）完了後のリマインド
+# think系スキル完了後の必須チェーン（正本: execution-loop.md § 5-3）
 case "$skill_name" in
-  odin-think-design|odin-think-requirements|odin-think-plan)
-    echo "⚠️ [§5-3 auto-insert] ${skill_name}完了。ユーザーへの報告・質問の前に以下を実行すること:"
+  odin-think-research|odin-think-requirements|odin-think-design|odin-think-plan|odin-think-investigate|odin-think-analyze)
+    echo "⚠️ [§5-3 必須チェーン] ${skill_name}完了。ユーザーへの報告・質問の前に以下を実行すること（省略禁止）:"
     echo "  1. Skill(odin-auto-peer-review) — ドキュメントの独立ピアレビュー"
+    echo "  2. codex:rescue — Codex（異なるモデル）による独立レビュー"
+    exit 0
+    ;;
+esac
+
+# Codexレビュートリガー（auto-peer-review / talk-review 完了後）
+# 正本: execution-loop.md § 5-3
+case "$skill_name" in
+  odin-auto-peer-review)
+    echo "⚠️ [§5-3 必須チェーン] auto-peer-review完了。Codex独立レビューを実行すること（省略禁止）:"
+    echo "  1. codex:rescue — Codex（異なるモデル）による独立レビュー"
+    exit 0
+    ;;
+  odin-talk-review)
+    echo "⚠️ [§5-3 必須チェーン] talk-review完了。Codex独立レビューと最終検証を実行すること（省略禁止）:"
+    echo "  1. codex:rescue — Codex（異なるモデル）による独立レビュー"
+    echo "  2. Skill(odin-auto-verify) — 最終検証"
     exit 0
     ;;
 esac

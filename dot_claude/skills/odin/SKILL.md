@@ -18,7 +18,7 @@ superpowersプラグインが必須（dispatching-parallel-agents / systematic-d
 
 ## 配下スキル
 
-→ [skills-catalog.md](skills-catalog.md) 参照（think系7 / do系7 / talk系4 / auto系8 / codex系1 / learn系2 / design系3）
+→ [skills-catalog.md](skills-catalog.md) 参照（think系7 / do系7 / talk系5 / auto系8 / codex系1 / learn系2 / design系3 / knowledge系1 / ux系3）
 
 ## 鉄則
 
@@ -30,8 +30,8 @@ superpowersプラグインが必須（dispatching-parallel-agents / systematic-d
 4. 自律進行を最優先する。ユーザーへの質問は「外部判断が必要な場合」のみ許可される
    - 外部判断が必要な場合: 要件が曖昧で推論不可能、ビジネス上の優先度判断が必要、破壊的操作の承認（ガードレール参照）、3回リトライ失敗
    - 外部判断が不要な場合: 設計・計画の承認、技術選択の確認、レビュー結果の改善判断、コヒーレンスWARN
-   - 承認ゲートの代わりに、レビュースキル（talk-review + Codex）とauto-peer-reviewで品質を担保する
-5. 推測を禁止する。調査（think系）→ 計画（think-plan）→ レビュー（auto-peer-review / talk-review）→ 実行（do系）のサイクルを自律的に回す。推測で進めず、必ず実態を調査してから判断する
+   - 承認ゲートの代わりに、レビュースキル（talk-review → codex:rescue）とauto-peer-review → codex:rescueの必須チェーンで品質を担保する
+5. 推測を禁止する。調査（think系）→ 計画（think-plan）→ レビュー（auto-peer-review → codex:rescue）→ 実行（do系）→ レビュー（talk-review → codex:rescue）のサイクルを自律的に回す。推測で進めず、必ず実態を調査してから判断する
 6. 問題が発生したら3回まで自動リトライ。3回失敗したらユーザーにエスカレーションする
 7. 出力する成果物にodin・Claude Code・AIツール等の名前を著者・作成者として記載しない
 

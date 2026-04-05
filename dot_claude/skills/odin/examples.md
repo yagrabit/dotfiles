@@ -50,23 +50,24 @@ Phase 4: タスク分解・計画（自動進行）
   Wave 1: T-01 [research] コードベース調査
   Wave 2: T-02 [requirements] 通知機能の要件整理
           T-03 [design] 設計ドキュメント作成
-          （各成果物にauto-peer-review必須）
+          （各成果物にauto-peer-review → codex:rescue必須）
   Wave 3: T-04 [plan] タスク分解・実装計画
-          （auto-peer-review必須）
+          （auto-peer-review → codex:rescue必須）
   Wave 4: T-05 [implement] 通知API実装(TDD)
           T-06 [implement] 通知UIコンポーネント実装(TDD)
           （各タスクにauto-quality + simplify + auto-verify必須）
-  Wave 5: T-07 [talk-review] フルレビュー（Codex含むクロスモデルレビュー）
-  Wave 6: T-08 [commit] コミット
-          T-09 [pr] PR作成
+  Wave 5: T-07 [talk-review] 品質・セキュリティレビュー
+          T-08 [codex:rescue] Codex独立レビュー
+  Wave 6: T-09 [commit] コミット
+          T-10 [pr] PR作成
   → 承認不要、自動的にPhase 5へ
 
 Phase 5: 実行ループ（自律実行）
-  Wave 1: research実行 → research-20260320-1430.md → auto-peer-review(PASS)
-  Wave 2: requirements + design 実行 → 成果物出力 → auto-peer-review(PASS)
-  Wave 3: plan実行 → plan-20260320-1500.md → auto-peer-review(PASS)
-  Wave 4: implement(API) + implement(UI) 並列実行 → auto-quality(PASS) + auto-verify(PASS)
-  Wave 5: talk-review(Codex含む) → 指摘0件
+  Wave 1: research実行 → research-20260320-1430.md → auto-peer-review(PASS) → codex:rescue(PASS)
+  Wave 2: requirements + design 実行 → 成果物出力 → auto-peer-review(PASS) → codex:rescue(PASS)
+  Wave 3: plan実行 → plan-20260320-1500.md → auto-peer-review(PASS) → codex:rescue(PASS)
+  Wave 4: implement(API) + implement(UI) 並列実行 → auto-quality(PASS) + simplify + auto-verify(PASS)
+  Wave 5: talk-review → codex:rescue(独立レビュー) → auto-verify(最終検証PASS)
   Wave 6: commit + pr 実行 → PR #45 作成
 
 Phase 6: 完了報告

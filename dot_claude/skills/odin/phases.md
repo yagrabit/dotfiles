@@ -123,7 +123,7 @@ Phase 1-2の結果を以下の形式で要約する:
 
 要約をユーザーに出力し、承認を待たずにPhase 4へ自動的に進行する。
 
-ユーザーは要約を見て問題があればいつでも介入できる。odinは中断されない限り進行を続ける。設計・計画の承認はユーザー確認不要（鉄則4参照）。その代わり、think系成果物にはauto-peer-review、do系成果物にはtalk-review（Codex含む）の必須レビューチェーンで品質を担保する。
+ユーザーは要約を見て問題があればいつでも介入できる。odinは中断されない限り進行を続ける。設計・計画の承認はユーザー確認不要（鉄則4参照）。その代わり、think系成果物にはauto-peer-review → codex:rescue、do系成果物にはtalk-review → codex:rescueの必須レビューチェーンで品質を担保する（正本: execution-loop.md § 5-3）。
 
 ### 完了チェックポイント（Phase 3）
 
@@ -135,7 +135,7 @@ Phase 1-2の結果を以下の形式で要約する:
 
 ### 4-1. タスクリスト生成
 
-承認された目的・制約・アプローチに基づき、タスクリストを生成する。
+Phase 1-3で確定した目的・制約・アプローチに基づき、タスクリストを生成する。
 
 タスク分解の原則:
 - 1タスク = 1つの配下スキルで完結する作業単位
@@ -187,11 +187,12 @@ Wave 3（Wave 2完了後、並列可能）:
   （各タスクにauto-quality + simplify + auto-verify必須チェーン）
 
 Wave 4（全do系タスク完了後）:
-  T-06: [odin-talk-review] フルレビュー（Codex含むクロスモデルレビュー）
+  T-06: [odin-talk-review] 品質・セキュリティレビュー
+  T-07: [codex:rescue] Codex独立レビュー
 
 Wave 5:
-  T-07: [odin-do-commit] コミット
-  T-08: [odin-do-pr] PR作成
+  T-08: [odin-do-commit] コミット
+  T-09: [odin-do-pr] PR作成
 
 見積もり: 逐次 {N}分 / 並列 {N}分
 ```
@@ -201,8 +202,8 @@ Wave 5:
 計画をユーザーに出力し、承認を待たずに自動的にPhase 5へ進行する。
 
 ユーザー承認ゲートの代わりに、以下のレビューゲートで品質を担保する:
-- think系スキル（design, requirements, plan）の成果物は、完了後にauto-peer-reviewで独立レビューを必ず実施する
-- do系スキル完了後は、auto-quality → talk-review（Codex含む）→ auto-verifyの必須チェーンを実行する
+- think系スキル（research, requirements, design, plan, investigate, analyze）の成果物は、完了後にauto-peer-review → codex:rescue（独立レビュー）を必ず実施する（正本: execution-loop.md § 5-3）
+- do系スキル完了後は、auto-quality → simplify → auto-verify（各タスク）、全do完了後にtalk-review → codex:rescue → auto-verify（最終検証）の必須チェーンを実行する（正本: execution-loop.md § 5-3）
 - レビューで重大な問題（設計の根本的矛盾、要件との不整合等）が検出された場合は、Findingベースのフェーズルーティング（§ 5-3.7）で自動差し戻しする
 
 ユーザーは計画を見て問題があればいつでも介入できる。odinは中断されない限り進行を続ける。
