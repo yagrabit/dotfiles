@@ -1,6 +1,6 @@
 ---
 name: odin-talk-review
-description: code-reviewer・security-reviewer・simplify・coderabbit:code-reviewer・codex:reviewを並列実行し、品質/セキュリティ/パフォーマンスの多角的コードレビュー結果を重大/改善/情報の3段階で統合して報告する。PR差分・ブランチ差分・指定ファイルを対象にできる。「レビューして」「PRをレビューして」「コードを見て」で起動。odinから自動起動される場合もある。
+description: code-reviewer・security-reviewer・simplify・coderabbit・codex(直接実行)を並列実行し、品質/セキュリティ/パフォーマンスの多角的コードレビュー結果を重大/改善/情報の3段階で統合して報告する。PR差分・ブランチ差分・指定ファイルを対象にできる。「レビューして」「PRをレビューして」「コードを見て」で起動。odinから自動起動される場合もある。
 user-invocable: true
 allowed-tools: Bash, Read, Grep, Glob, Agent, Skill, AskUserQuestion
 ---
@@ -125,13 +125,19 @@ VCSDDのAdversary設計に倣い、レビューエージェントにはコンテ
    - 変更コードの再利用性・効率性をチェックする
 
 4. Agentツールで subagent_type に "coderabbit:code-reviewer" を指定して起動する
-   - スキップ条件: system-reminderのスキル一覧に `coderabbit:` プレフィックスのスキルが存在しない場合のみスキップ可。存在する場合は必ず実行する
-   - スキップ時は「coderabbit:プレフィックスのスキルがsystem-reminderに見つからないためスキップ」と記録する
+   - 存在チェック（Codexとは独立）: system-reminderのスキル一覧に `coderabbit:` プレフィックスのスキルが存在するか確認する
+   - 存在しない場合のみスキップ。スキップ時は「coderabbit:プレフィックスのスキルがsystem-reminderに見つからないためスキップ」と記録する
+   - この判定はCodexの存在有無に影響されない。CodeRabbitとCodexは完全に独立してチェックする
 
-5. Skillツールで `codex:review` を実行する（Codex経由のレビュー）
-   - `--base main --wait` オプションを付けて実行する
-   - スキップ条件: system-reminderのスキル一覧に `codex:` プレフィックスのスキルが存在しない場合のみスキップ可。存在する場合は必ず実行する
-   - スキップ時は「codex:プレフィックスのスキルがsystem-reminderに見つからないためスキップ」と記録する
+5. Agentツールで Codex レビューを実行する（model: sonnet）
+   - 存在チェック（CodeRabbitとは独立）: Agentの冒頭で以下を実行し、codex-companion.mjsの存在を確認する
+     ```bash
+     CODEX_ROOT=$(jq -r '.plugins["codex@openai-codex"][0].installPath // empty' ~/.claude/plugins/installed_plugins.json 2>/dev/null)
+     [ -n "$CODEX_ROOT" ] && [ -f "$CODEX_ROOT/scripts/codex-companion.mjs" ] && echo "available" || echo "unavailable"
+     ```
+   - 利用可能な場合: `node "$CODEX_ROOT/scripts/codex-companion.mjs" review --base main --wait` を実行し、結果をそのまま返す
+   - 利用不可の場合のみスキップ。スキップ時は「Codexプラグインが未インストールのためスキップ」と記録する
+   - この判定はCodeRabbitの存在有無に影響されない。CodeRabbitとCodexは完全に独立してチェックする
 
 全レビューの完了を待つ。
 
