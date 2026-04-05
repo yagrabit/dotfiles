@@ -65,7 +65,7 @@
 | スキル名 | 役割 | 主な入力 | 主な出力 |
 |----------|------|---------|---------|
 | odin-design-dissect | WebサイトURLからデザインシステムを抽出・分析（learn/auditモード） | WebサイトURL | dissect-*.md / audit-*.md |
-| odin-design-generate | 分析結果からDS生成（HTMLビジュアルガイド + tokens.json + design.md）、対話的改善 | dissect-*.md / audit-*.md | design-system/ ディレクトリ一式 |
+| odin-design-generate | 分析結果からDS生成（HTMLビジュアルガイド + tokens.json + DESIGN.md）、対話的改善 | dissect-*.md / audit-*.md | design-system/ ディレクトリ一式 |
 | odin-design-knowledge | デザイン分析ナレッジの検索・比較・統計・学習進捗管理 | 検索クエリ/比較対象 | 検索結果 / 比較表 / 統計 / 進捗レポート |
 
 ### ux系（デザイン制作）-- 3スキル
