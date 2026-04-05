@@ -129,14 +129,18 @@ VCSDDのAdversary設計に倣い、レビューエージェントにはコンテ
    - 存在しない場合のみスキップ。スキップ時は「coderabbit:プレフィックスのスキルがsystem-reminderに見つからないためスキップ」と記録する
    - この判定はCodexの存在有無に影響されない。CodeRabbitとCodexは完全に独立してチェックする
 
-5. Agentツールで Codex レビューを実行する（model: sonnet）
-   - 存在チェック（CodeRabbitとは独立）: Agentの冒頭で以下を実行し、codex-companion.mjsの存在を確認する
+5. Bashツールで Codex レビューを直接実行する（サブエージェント不要）
+   - codex-companion.mjsは別プロセスで動作するため、コンテキスト隔離は維持される
+   - 存在チェックと実行を1つのBashコマンドで行う:
      ```bash
      CODEX_ROOT=$(jq -r '.plugins["codex@openai-codex"][0].installPath // empty' ~/.claude/plugins/installed_plugins.json 2>/dev/null)
-     [ -n "$CODEX_ROOT" ] && [ -f "$CODEX_ROOT/scripts/codex-companion.mjs" ] && echo "available" || echo "unavailable"
+     if [ -n "$CODEX_ROOT" ] && [ -f "$CODEX_ROOT/scripts/codex-companion.mjs" ]; then
+       node "$CODEX_ROOT/scripts/codex-companion.mjs" review --base main --wait
+     else
+       echo "[codex] Codexプラグインが未インストールのためスキップ"
+     fi
      ```
-   - 利用可能な場合: `node "$CODEX_ROOT/scripts/codex-companion.mjs" review --base main --wait` を実行し、結果をそのまま返す
-   - 利用不可の場合のみスキップ。スキップ時は「Codexプラグインが未インストールのためスキップ」と記録する
+   - 他の4レビューのAgent起動と同じレスポンスでBashを呼び出し、並列実行する
    - この判定はCodeRabbitの存在有無に影響されない。CodeRabbitとCodexは完全に独立してチェックする
 
 全レビューの完了を待つ。
