@@ -223,6 +223,22 @@ Wave 5:
 Skillツールで `odin-auto-verify` を実行し、全体の成果を最終検証する。
 superpowers:verification-before-completion の原則に従い、証拠を収集してから完了を主張する。
 
+### 6-1.5. 知見の自動保存（バックグラウンド・まとめ保存）
+
+§5-X.5（随時保存）でカバーされなかった成果物を対象に、セッション完了時のまとめingestを行う。
+§5-X.5との二重ingestは `_log.md` の重複チェックで防止する。
+
+発動条件: 使用スキルに think-design / think-investigate / talk-propose が含まれる場合、
+またはADR（adr-*.md）が生成された場合。
+
+- ユーザーへの確認は不要。作業をブロックしない
+- 対象: セッション中に生成されたthink系成果物のうち、§5-X.5で未ingestのもの
+- 完了したら「知見をknowledgeに保存しました」と通知のみ
+
+スキップ条件:
+- do系スキルのみの計画（実装・テスト・コミットのみ）
+- `~/.claude/knowledge/_log.md` で全成果物のingestが記録済み
+
 ### 6-2. 成果物サマリーの提示
 
 以下の形式でユーザーに報告する:
