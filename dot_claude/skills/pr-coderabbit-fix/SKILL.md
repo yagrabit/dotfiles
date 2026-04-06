@@ -24,23 +24,68 @@ PRが見つからない場合はユーザーに確認する。
 
 ## 2. CodeRabbitコメントの取得
 
-3つのAPIエンドポイントから並行してコメントを取得する。CodeRabbitのユーザー名は `coderabbitai` でフィルタする。
+3種類のコメントを並行して取得する。インラインコメントはGraphQL APIで未解決スレッドのみに絞り込む。
+
+owner/repo は `gh repo view --json owner,name` で取得する。
+
+### 2-1. インラインレビューコメント（未解決のみ）
+
+REST APIにはスレッドの解決状態（resolved）が存在しないため、GraphQL APIを使う。
+`isResolved == false` でフィルタし、解決済みコメントを除外する。
 
 ```bash
-# インラインレビューコメント（ファイルの特定行に対する指摘）
-gh api repos/{owner}/{repo}/pulls/{number}/comments \
-  --jq '.[] | select(.user.login | test("coderabbit")) | {id, path, line, body}'
+gh api graphql -f query='
+{
+  repository(owner: "{owner}", name: "{repo}") {
+    pullRequest(number: {number}) {
+      reviewThreads(first: 100) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          path
+          line
+          comments(first: 10) {
+            nodes {
+              id
+              body
+              author { login }
+            }
+          }
+        }
+      }
+    }
+  }
+}' --jq '
+[
+  .data.repository.pullRequest.reviewThreads.nodes[]
+  | select(.isResolved == false)
+  | select(.comments.nodes | any(.author.login | test("coderabbit")))
+  | {
+      threadId: .id,
+      path: .path,
+      line: .line,
+      isOutdated: .isOutdated,
+      comments: [.comments.nodes[] | {id: .id, body: .body, author: .author.login}]
+    }
+]'
+```
 
-# issueコメント（PR全体に対するサマリーやウォークスルー）
+注意: `isOutdated == true` のスレッドはコードが更新されて古くなった指摘。未解決でもoutdatedなら優先度を下げる。
+
+### 2-2. issueコメント（PR全体のサマリー・ウォークスルー）
+
+```bash
 gh api repos/{owner}/{repo}/issues/{number}/comments \
   --jq '.[] | select(.user.login | test("coderabbit")) | {id, body}'
+```
 
-# レビューコメント（レビュー本文、Outside diff range の指摘を含む）
+### 2-3. レビュー本文（Outside diff range の指摘を含む）
+
+```bash
 gh api repos/{owner}/{repo}/pulls/{number}/reviews \
   --jq '.[] | select(.user.login | test("coderabbit")) | {id, state, body}'
 ```
-
-owner/repo は `gh repo view --json owner,name` で取得できる。
 
 ## 3. コメントの分類と要約
 
@@ -69,17 +114,38 @@ git diff <base-branch>...HEAD -- <file-path>
 - diff範囲外（変更していない行）への指摘 → 既存の問題
 - このPRで片方だけ修正して片方を見落とした場合 → 顕在化した既存問題（対応推奨）
 
-## 5. 判定結果の報告
+## 5. インパクト分析
 
-判定結果をカテゴリ別に表形式で報告する:
+各指摘について、修正する価値を以下の観点で評価する。単にファイルと指摘を列挙するのではなく、「なぜ直すべきか（または直さなくてよいか）」をユーザーが判断できる情報を提供する。
 
+分析観点:
+- セキュリティリスク: 脆弱性につながるか（XSS、インジェクション、認証バイパス等）
+- バグ発生確率: 本番で不具合を引き起こす可能性があるか
+- パフォーマンス影響: レスポンスタイムやリソース消費に影響するか
+- 保守性: 将来の変更時に問題を引き起こすか（可読性低下、密結合等）
+- コードスタイル: 一貫性・規約違反レベルの指摘か
+
+各指摘に対して以下を判定する:
+- インパクトレベル: High（本番障害・セキュリティリスク）/ Medium（品質低下・将来の技術負債）/ Low（スタイル・好み）
+- 修正コスト: 行数・影響範囲の概算
+- 推奨: 修正する / 後回し（チケット化）/ 対応不要
+
+影響範囲が不明な指摘は、コードを読んで呼び出し元・依存先を確認してから判定する。推測で判定しない。
+
+## 6. 判定結果の報告
+
+判定結果をカテゴリ別に表形式で報告する。各指摘にインパクトレベルと推奨アクションを付与する。
+
+報告カテゴリ:
 1. このPRで導入された問題（対応必須）
 2. このPRで顕在化した既存の問題（対応推奨）
 3. 既存の問題 / diff範囲外（スコープ外）
 
+表の列: ファイル / 行 / 指摘概要 / インパクト / 修正コスト / 推奨
+
 ユーザーにどの指摘を対応するか確認する。
 
-## 6. 修正の実施
+## 7. 修正の実施
 
 ユーザーが対応を承認したら、修正を行う。
 修正はサブエージェントに委譲し、完了後に成果物を検証する。
@@ -89,7 +155,7 @@ git diff <base-branch>...HEAD -- <file-path>
 - ただし提案をそのまま適用せず、コードの文脈を読んでから修正する
 - 修正のスコープは指摘された箇所に限定し、周辺コードのリファクタリングはしない
 
-## 7. コミット
+## 8. コミット
 
 修正が完了したら、コミットメッセージを作成してコミットする。
 コミットする前にユーザーの承認を得る。
@@ -102,7 +168,7 @@ fix: CodeRabbitレビュー指摘への対応
 - 修正2の説明
 ```
 
-## 8. pushの実行
+## 9. pushの実行
 
 コミット完了後、CodeRabbitが修正を確認できるようリモートにpushする。
 
@@ -112,7 +178,7 @@ git push
 
 push後、CodeRabbitが新しいコミットに対してレビューを更新するのを待つ。
 
-## 9. 対応済みコメントへの返信
+## 10. 対応済みコメントへの返信
 
 push後、修正・コミットが完了した指摘に対して、CodeRabbitのレビューコメントに「修正しました」と返信する。
 
@@ -127,4 +193,4 @@ gh api repos/{owner}/{repo}/issues/{number}/comments \
 ```
 
 対応しなかった指摘（diff範囲外・スコープ外と判定したもの）には返信しない。
-返信対象は、ステップ6で実際に修正を行ったコメントのみに限定する。
+返信対象は、ステップ7で実際に修正を行ったコメントのみに限定する。
