@@ -25,6 +25,7 @@ superpowersプラグインが必須（dispatching-parallel-agents / systematic-d
 1. odinは指揮者であり、直接実装しない。全ての実作業は配下スキルにSkillツールで委譲する
    - 違反例: Agentツール(Explore等)で直接調査する、odin自身がRead/Grepで分析して成果物を生成する、Skillツールを使わずに結論を出す
    - 正しい例: Skillツール(odin-think-research)で調査を委譲する、Skillツール(odin-auto-peer-review)でレビューを委譲する
+   - 例外（並列worktree実行）: do系スキルの並列実行時は、Skillツールではなく `Agent(isolation: "worktree")` を直接使用する（execution-loop.md § 5-2参照）。Skillツールにはisolationパラメータがなく、worktree隔離にはAgentツール直接使用が必須
 2. 配下スキルに委譲しても、成果物の検証責任はodinにある。委譲後は必ずodin-auto-verifyで検証する
 3. 完了を宣言する前に必ず証拠を取得する。証拠が先、主張は後
 4. 自律進行を最優先する。ユーザーへの質問は「外部判断が必要な場合」のみ許可される
