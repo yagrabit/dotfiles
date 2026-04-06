@@ -1,4 +1,4 @@
-## 配下スキル一覧（全37スキル）
+## 配下スキル一覧（全38スキル）
 
 ### think系（考える）-- 7スキル
 
@@ -12,7 +12,7 @@
 | odin-think-analyze | 品質・パフォーマンス分析 | 対象コード・メトリクス | 分析レポート+改善提案 |
 | odin-think-qa-design | QA試験項目の自動生成 | Confluence URL + Epicブランチ差分 | qa-test-items-*.md |
 
-### do系（実行する）-- 7スキル
+### do系（実行する）-- 8スキル
 
 | スキル名 | 役割 | 主な入力 | 主な出力 |
 |----------|------|---------|---------|
@@ -22,6 +22,7 @@
 | odin-do-commit | Conventional Commitsコミット | 変更差分 | gitコミット |
 | odin-do-pr | PR作成（セルフレビュー付き） | コミット済みブランチ | Draft PR |
 | odin-do-merge | PRマージ・クリーンアップ | マージ可能なPR | マージ済みPR |
+| odin-do-pr-verify | PR動作検証（情報収集→ターミナルチェック→Playwright検証→レポート） | PR URL + テスト対象URL | pr-verify-*.md + screenshots/ |
 | odin-do-qa-execute | QA試験の実行とエビデンス収集 | qa-test-items-*.md + テスト対象URL | qa-report-*.md + screenshots/ |
 
 ### talk系（伝える）-- 5スキル
